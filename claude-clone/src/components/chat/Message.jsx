@@ -1,4 +1,4 @@
-import { memo, useState, useCallback, useMemo } from "react";
+import { memo, useState, useCallback, useMemo, useEffect } from "react";
 import { ClaudeLogo, IconCopy, IconThumbUp, IconThumbDown, IconRefresh, IconPencil } from "../icons/index.jsx";
 import Avatar from "../layout/Avatar.jsx";
 import { renderMarkdown } from "../../utils/markdown.jsx";

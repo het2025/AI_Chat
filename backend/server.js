@@ -37,6 +37,7 @@ const MODELS = [
   "meta-llama/llama-3-8b-instruct:free",
   "meta-llama/llama-3.2-3b-instruct:free",
   "nousresearch/hermes-3-llama-3.1-8b",
+  "nvidia/nemotron-3-super-120b-a12b:free"
 ];
 
 const DEFAULT_SYSTEM_PROMPT = `You are a Patel AI assistant.
