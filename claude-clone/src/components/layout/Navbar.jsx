@@ -69,24 +69,31 @@ const Navbar = memo(function Navbar({ model, setModel, personaId, setPersonaId, 
             }}>
               {MODELS.map((m) => (
                 <button key={m.id} onClick={() => { setModel(m.id); setModelOpen(false); }} style={{
-                  width: "100%", textAlign: "left", padding: "9px 14px",
+                  width: "100%", textAlign: "left", padding: "10px 14px",
                   border: "none", background: "transparent", cursor: "pointer",
-                  display: "flex", alignItems: "center", justifyContent: "space-between",
-                  color: "var(--text-primary)", fontSize: 13, transition: "background 100ms",
+                  display: "flex", flexDirection: "column", gap: 2,
+                  color: "var(--text-primary)", transition: "background 100ms",
                 }}
                   onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-tertiary)")}
                   onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontWeight: model === m.id ? 500 : 400 }}>{m.label}</span>
-                    {m.badge && (
-                      <span style={{
-                        fontSize: 10, padding: "1px 6px", borderRadius: 9999,
-                        background: m.badgeColor + "22", color: m.badgeColor, fontWeight: 500,
-                      }}>{m.badge}</span>
-                    )}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 13, fontWeight: model === m.id ? 600 : 500 }}>{m.label}</span>
+                      {m.badge && (
+                        <span style={{
+                          fontSize: 10, padding: "1px 6px", borderRadius: 9999,
+                          background: m.badgeColor + "22", color: m.badgeColor, fontWeight: 500,
+                        }}>{m.badge}</span>
+                      )}
+                    </div>
+                    {model === m.id && <IconCheck />}
                   </div>
-                  {model === m.id && <IconCheck />}
+                  {m.description && (
+                    <div style={{ fontSize: 11, color: "var(--text-tertiary)" }}>
+                      {m.description}
+                    </div>
+                  )}
                 </button>
               ))}
             </div>

@@ -33,18 +33,12 @@ const chatLimiter = rateLimit({
    🧠  AI Models (free tier)
    ───────────────────────────────────────────────────────── */
 const MODELS = [
-  "google/gemma-3-12b-it:free",
-  "openai/gpt-oss-120b:free",
   "nvidia/nemotron-3-super-120b-a12b:free",
-  "google/gemma-3-4b-it:free",
-  "openai/gpt-oss-20b:free",
   "liquid/lfm-2.5-1.2b-thinking:free",
   "nvidia/nemotron-nano-12b-v2-vl:free",
-  "google/gemma-3n-e4b-it:free",
   "nvidia/nemotron-nano-9b-v2:free",
   "liquid/lfm-2.5-1.2b-instruct:free",
-  "nvidia/nemotron-3-nano-30b-a3b:free",
-  "google/gemma-3n-e2b-it:free"
+  "nvidia/nemotron-3-nano-30b-a3b:free"
 ];
 
 const DEFAULT_SYSTEM_PROMPT = `You are a Patel AI assistant.
