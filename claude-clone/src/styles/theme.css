@@ -1,0 +1,39 @@
+/* ─── Light Mode (default) ────────────────────────────── */
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9f9f8;
+  --bg-tertiary: #f4f4f0;
+  --bg-input: #ffffff;
+  --border: #e5e5e3;
+  --text-primary: #1a1a19;
+  --text-secondary: #6b6b6b;
+  --text-tertiary: #9b9b9b;
+  --accent: #d97706;
+  --accent-hover: #b45309;
+  --user-bubble: #f4f4f0;
+  --assistant-bg: transparent;
+  --scrollbar-thumb: #d1d1d0;
+  --code-bg: #f6f6f4;
+  --code-header-bg: #eeeeec;
+  color-scheme: light;
+}
+
+/* ─── Dark Mode ───────────────────────────────────────── */
+.dark-mode {
+  --bg-primary: #1a1a19;
+  --bg-secondary: #212120;
+  --bg-tertiary: #2a2a29;
+  --bg-input: #1a1a19;
+  --border: #333332;
+  --text-primary: #ececec;
+  --text-secondary: #9b9b9b;
+  --text-tertiary: #6b6b6b;
+  --accent: #d97706;
+  --accent-hover: #b45309;
+  --user-bubble: #2a2a29;
+  --assistant-bg: transparent;
+  --scrollbar-thumb: #444443;
+  --code-bg: #161615;
+  --code-header-bg: #1e1e1d;
+  color-scheme: dark;
+}

@@ -1,0 +1,64 @@
+/* ─── Cursor blink ────────────────────────────────────── */
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.cursor-blink {
+  animation: cursor-blink 0.5s step-end infinite;
+}
+
+/* ─── Dot pulse (typing indicator) ────────────────────── */
+@keyframes dot-pulse {
+  0%, 100% { transform: scale(0.5); opacity: 0.4; }
+  50% { transform: scale(1); opacity: 1; }
+}
+.dot-1 { animation: dot-pulse 1.2s ease-in-out infinite; }
+.dot-2 { animation: dot-pulse 1.2s ease-in-out 0.2s infinite; }
+.dot-3 { animation: dot-pulse 1.2s ease-in-out 0.4s infinite; }
+
+/* ─── Message slide-up ────────────────────────────────── */
+@keyframes msg-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.msg-in { animation: msg-in 200ms ease-out both; }
+
+/* ─── Card stagger ────────────────────────────────────── */
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.card-in-0 { animation: card-in 300ms ease-out 0ms both; }
+.card-in-1 { animation: card-in 300ms ease-out 50ms both; }
+.card-in-2 { animation: card-in 300ms ease-out 100ms both; }
+.card-in-3 { animation: card-in 300ms ease-out 150ms both; }
+
+/* ─── Dark mode toggle rotate ─────────────────────────── */
+@keyframes spin-in {
+  from { transform: rotate(-180deg); }
+  to { transform: rotate(0); }
+}
+.spin-in { animation: spin-in 300ms ease-out both; }
+
+/* ─── Dropdown ────────────────────────────────────────── */
+@keyframes dropdown-in {
+  from { opacity: 0; transform: scaleY(0.95); }
+  to { opacity: 1; transform: scaleY(1); }
+}
+.dropdown-in {
+  animation: dropdown-in 150ms ease-out both;
+  transform-origin: top;
+}
+
+/* ─── Sidebar slide ───────────────────────────────────── */
+@keyframes sidebar-in {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+.sidebar-slide { animation: sidebar-in 250ms ease-out both; }
+
+/* ─── Theme transition ────────────────────────────────── */
+.theme-transition,
+.theme-transition * {
+  transition: background-color 300ms ease, border-color 300ms ease, color 300ms ease !important;
+}
