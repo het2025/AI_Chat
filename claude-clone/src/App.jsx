@@ -40,6 +40,7 @@ export default function App() {
   const [activeArtifact, setActiveArtifact] = useState(null);
 
   const messagesEndRef = useRef(null);
+  const chatContainerRef = useRef(null);
   const searchInputRef = useRef(null);
   const abortRef = useRef(null);
   const nextIdRef = useRef(100);
@@ -181,6 +182,29 @@ export default function App() {
     URL.revokeObjectURL(url);
   }, [activeId, conversations, exportConversation]);
 
+  // ─── PDF Export ────────────────────────────────────────
+  const handleExportPDF = useCallback(() => {
+    if (!chatContainerRef.current || !activeId) return;
+    
+    const activeConv = conversations.find((c) => c.id === activeId);
+    const filename = `${(activeConv?.title || "conversation").replace(/[^a-z0-9]/gi, "_").toLowerCase()}.pdf`;
+    
+    const element = chatContainerRef.current;
+    const opt = {
+      margin: 10,
+      filename: filename,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, logging: false },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    if (window.html2pdf) {
+      window.html2pdf().set(opt).from(element).save();
+    } else {
+      alert("PDF library is still loading. Please try again in a moment.");
+    }
+  }, [activeId, conversations]);
+
   // ─── Navigation ────────────────────────────────────────
   const handleNewChat = useCallback(() => {
     newChat();
@@ -257,12 +281,12 @@ export default function App() {
         <Navbar model={model} setModel={setModel} 
           personaId={personaId} setPersonaId={setPersonaId}
           darkMode={darkMode} toggleDark={toggleDark}
-          onToggleSidebar={() => setSidebarOpen(true)} onShare={handleShare} />
+          onToggleSidebar={() => setSidebarOpen(true)} onShare={handleShare} onExportPDF={handleExportPDF} />
 
         {displayMessages.length === 0 && !isTyping ? (
           <WelcomeScreen onSuggestion={handleSuggestion} />
         ) : (
-          <div className="custom-scroll" style={{ flex: 1, overflowY: "auto", padding: "24px 24px 140px" }}>
+          <div ref={chatContainerRef} className="custom-scroll" style={{ flex: 1, overflowY: "auto", padding: "24px 24px 140px" }}>
             <div style={{ maxWidth: 800, margin: "0 auto" }}>
               {displayMessages.map((msg) => (
                 <Message key={msg.id} msg={msg} isStreaming={msg.streaming} onEdit={handleEditMessage} onRegenerate={handleRegenerateMessage} />

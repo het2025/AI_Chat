@@ -4,7 +4,7 @@ import Avatar from "./Avatar.jsx";
 import { MODELS } from "../../utils/constants.js";
 import { PERSONAS } from "../../utils/personas.js";
 
-const Navbar = memo(function Navbar({ model, setModel, personaId, setPersonaId, darkMode, toggleDark, onToggleSidebar, onShare }) {
+const Navbar = memo(function Navbar({ model, setModel, personaId, setPersonaId, darkMode, toggleDark, onToggleSidebar, onShare, onExportPDF }) {
   const [modelOpen, setModelOpen] = useState(false);
   const [personaOpen, setPersonaOpen] = useState(false);
   const [darkKey, setDarkKey] = useState(0);
@@ -146,11 +146,12 @@ const Navbar = memo(function Navbar({ model, setModel, personaId, setPersonaId, 
       {/* Right */}
       <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
         {[
-          { icon: <IconShare />, action: onShare },
-          { icon: <span key={darkKey} className="spin-in">{darkMode ? <IconSun /> : <IconMoon />}</span>, action: handleToggle },
+          { icon: <IconShare />, action: onShare, title: "Export Markdown" },
+          { icon: <span style={{ fontSize: 16 }}>📄</span>, action: onExportPDF, title: "Export PDF" },
+          { icon: <span key={darkKey} className="spin-in">{darkMode ? <IconSun /> : <IconMoon />}</span>, action: handleToggle, title: "Toggle Theme" },
           { icon: <Avatar size={28} />, action: () => {} },
         ].map((btn, i) => (
-          <button key={i} onClick={btn.action} style={{
+          <button key={i} onClick={btn.action} title={btn.title} style={{
             width: 32, height: 32, borderRadius: "50%", border: "none",
             background: "transparent", cursor: "pointer", color: "var(--text-secondary)",
             display: "flex", alignItems: "center", justifyContent: "center",
