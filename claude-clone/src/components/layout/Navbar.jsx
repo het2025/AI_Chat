@@ -37,9 +37,10 @@ const Navbar = memo(function Navbar({ model, setModel, personaId, setPersonaId, 
       justifyContent: "space-between", 
       padding: "0 20px",
       flexShrink: 0, 
-      position: "relative", // Ensure relative positioning for z-index
-      zIndex: 1000, // Very high z-index to stay above everything
-      background: "var(--bg-primary)", // Force solid variable background
+      position: "relative",
+      zIndex: 1000, 
+      background: "var(--bg-primary, #ffffff)", // SOLID FALLBACK
+      opacity: 1, // FORCE FULL OPACITY
     }}>
       {/* Left */}
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>

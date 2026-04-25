@@ -250,9 +250,10 @@ const Sidebar = memo(function Sidebar({
         {userMenuOpen && (
           <div style={{
             position: "absolute", bottom: "100%", left: 10, right: 10,
-            background: "var(--bg-primary)", borderRadius: 12, border: "1px solid var(--border)",
-            boxShadow: "0 -4px 20px rgba(0,0,0,0.1)", marginBottom: 8, overflow: "hidden",
-            zIndex: 100
+            background: "var(--bg-primary, #ffffff)", // SOLID BACKGROUND
+            borderRadius: 12, border: "1px solid var(--border)",
+            boxShadow: "0 -4px 20px rgba(0,0,0,0.15)", marginBottom: 8, overflow: "hidden",
+            zIndex: 1000
           }}>
             <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--border)" }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>
