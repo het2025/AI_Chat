@@ -316,7 +316,14 @@ export default function App() {
         />
       )}
 
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", position: "relative" }}>
+      <div style={{ 
+        flex: 1, 
+        display: "flex", 
+        flexDirection: "column", 
+        overflow: "hidden", 
+        position: "relative",
+        background: "var(--bg-primary, #ffffff)" // SOLID BASE BACKGROUND
+      }}>
         <Navbar model={model} setModel={setModel} 
           personaId={personaId} setPersonaId={setPersonaId}
           darkMode={darkMode} toggleDark={toggleDark}

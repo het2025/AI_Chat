@@ -16,6 +16,7 @@ const WelcomeScreen = memo(function WelcomeScreen({ onSuggestion }) {
     <div style={{
       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
       flex: 1, padding: "40px 24px", textAlign: "center",
+      background: "var(--bg-primary, #ffffff)" // SOLID BACKGROUND
     }}>
       <div style={{ marginBottom: 20 }}>
         <ClaudeLogo size={48} />
@@ -34,11 +35,12 @@ const WelcomeScreen = memo(function WelcomeScreen({ onSuggestion }) {
             onClick={() => onSuggestion(`${s.title} — ${s.sub}`)}
             style={{
               textAlign: "left", padding: 16, borderRadius: 12,
-              border: "1px solid var(--border)", background: "transparent",
+              border: "1px solid var(--border)", 
+              background: "var(--bg-secondary, #f9f9f8)", // SOLID BUTTON BACKGROUND
               cursor: "pointer", transition: "background 150ms ease",
             }}
             onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-tertiary)")}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "var(--bg-secondary)")}
           >
             <div style={{
               width: 32, height: 32, borderRadius: 8, background: "var(--bg-tertiary)",
