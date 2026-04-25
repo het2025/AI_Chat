@@ -41,7 +41,7 @@ export default function App() {
   const [isTyping, setIsTyping] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [personaId, setPersonaId] = useState("patel");
-  const [model, setModel] = useState("nvidia/nemotron-3-super-120b-a12b:free");
+  const [model, setModel] = useState("mistralai/mistral-nemotron");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
   const [initialInput, setInitialInput] = useState("");

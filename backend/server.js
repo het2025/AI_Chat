@@ -29,9 +29,9 @@ const chatLimiter = rateLimit({
 
 /* ─── OPTIMIZED MODEL LIST ─── */
 const MODELS = [
+  "mistralai/mistral-nemotron",
   "nvidia/nemotron-nano-9b-v2:free",
   "nvidia/nemotron-3-nano-30b-a3b:free",
-  "mistralai/mistral-nemotron",
   "nvidia/nemotron-3-super-120b-a12b:free",
   "liquid/lfm-2.5-1.2b-instruct:free"
 ];
