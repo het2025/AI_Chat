@@ -36,7 +36,7 @@ export default function App() {
     getHistory,
     truncateConversation,
     exportConversation,
-  } = useConversations(user?.id); // Scope by user ID
+  } = useConversations(user?.id);
 
   const [isTyping, setIsTyping] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
@@ -53,17 +53,42 @@ export default function App() {
   const abortRef = useRef(null);
   const nextIdRef = useRef(100);
 
+  // ─── Visual Typing Logic ──────────────────────────────
+  const typingQueueRef = useRef("");
+  const displayContentRef = useRef("");
+  const typingIntervalRef = useRef(null);
+
+  const startTypingEffect = useCallback((convId, initialModel) => {
+    if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
+    displayContentRef.current = "";
+    typingIntervalRef.current = setInterval(() => {
+      if (typingQueueRef.current.length > 0) {
+        const speed = Math.floor(Math.random() * 3) + 1; 
+        const chunk = typingQueueRef.current.substring(0, speed);
+        typingQueueRef.current = typingQueueRef.current.substring(speed);
+        displayContentRef.current += chunk;
+        updateLastAssistantMessage(convId, displayContentRef.current, initialModel);
+      }
+    }, 25);
+  }, [updateLastAssistantMessage]);
+
+  const stopTypingEffect = useCallback(() => {
+    if (typingIntervalRef.current) {
+      clearInterval(typingIntervalRef.current);
+      typingIntervalRef.current = null;
+    }
+    typingQueueRef.current = "";
+  }, []);
+
   // ─── Auth Listener ─────────────────────────────────────
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setAuthLoading(false);
     });
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
-
     return () => subscription.unsubscribe();
   }, []);
 
@@ -90,8 +115,9 @@ export default function App() {
       abortRef.current(); 
       abortRef.current = null;
     }
+    stopTypingEffect();
     setIsStreaming(false);
-  }, []);
+  }, [stopTypingEffect]);
 
   // ─── Send message ──────────────────────────────────────
   const handleSend = useCallback(async (text, attachments = []) => {
@@ -103,7 +129,7 @@ export default function App() {
     if (!convId) {
       const titleSrc = text || (attachments.length > 0 ? attachments[0].name : "New Chat");
       convId = await createConversation(titleSrc);
-      if (!convId) return; // DB error
+      if (!convId) return;
     }
 
     const userMsg = { id: nextIdRef.current++, role: "user", content: text, attachments, time: timeStr };
@@ -115,35 +141,39 @@ export default function App() {
       setIsTyping(false);
 
       const assistantId = nextIdRef.current++;
-      const assistantMsg = { id: assistantId, role: "assistant", content: "", time: timeStr, streaming: true };
+      const assistantMsg = { id: assistantId, role: "assistant", content: "", time: timeStr, streaming: true, model: model };
       addMessage(convId, assistantMsg);
       setIsStreaming(true);
 
       const history = getHistory(convId);
       const selectedPersona = PERSONAS.find(p => p.id === personaId) || PERSONAS[0];
 
-      let accumulated = "";
+      typingQueueRef.current = "";
+      let actualModelName = model;
+      startTypingEffect(convId, actualModelName);
+
       const abort = streamMessage(text, history, attachments, {
         model: model,
         systemPrompt: selectedPersona.prompt,
-        onModelSelect: (actualModel) => {
-          if (actualModel !== model) setModel(actualModel);
-        },
+        onModelSelect: (m) => { actualModelName = m; },
         onChunk: (token) => {
-          accumulated += token;
-          updateLastAssistantMessage(convId, accumulated);
+          typingQueueRef.current += token;
         },
         onDone: () => {
-          setIsStreaming(false);
-          abortRef.current = null;
-          updateLastAssistantMessage(convId, accumulated);
-          // Sync final state to DB
-          saveFinalMessages(convId, [...activeMessages, userMsg, { id: assistantId, role: "assistant", content: accumulated, time: timeStr }]);
+          const checkDone = setInterval(() => {
+            if (typingQueueRef.current.length === 0) {
+              clearInterval(checkDone);
+              stopTypingEffect();
+              setIsStreaming(false);
+              abortRef.current = null;
+              saveFinalMessages(convId, [...activeMessages, userMsg, { id: assistantId, role: "assistant", content: displayContentRef.current, time: timeStr, model: actualModelName }]);
+            }
+          }, 100);
         },
         onError: (err) => {
           console.error("Stream error:", err);
-          const fallback = accumulated || "❌ ⚠️ All AI servers are busy right now. Please try again in a few seconds.";
-          updateLastAssistantMessage(convId, fallback);
+          stopTypingEffect();
+          updateLastAssistantMessage(convId, "⚠️ Server busy. Please try again.", actualModelName);
           setIsStreaming(false);
           abortRef.current = null;
         },
@@ -151,117 +181,15 @@ export default function App() {
 
       abortRef.current = abort;
     }, 400);
-  }, [isStreaming, activeId, personaId, createConversation, addMessage, updateLastAssistantMessage, getHistory, model, saveFinalMessages, activeMessages]);
+  }, [isStreaming, activeId, personaId, createConversation, addMessage, updateLastAssistantMessage, getHistory, model, saveFinalMessages, activeMessages, startTypingEffect, stopTypingEffect]);
 
-  // ─── Edit & Regenerate ─────────────────────────────────
-  const handleEditMessage = useCallback((msgId, newText) => {
-    if (isStreaming || !activeId) return;
-    truncateConversation(activeId, msgId);
-    handleSend(newText);
-  }, [isStreaming, activeId, truncateConversation, handleSend]);
-
-  const handleRegenerateMessage = useCallback((msgId) => {
-    if (isStreaming || !activeId) return;
-    const msgIndex = activeMessages.findIndex(m => m.id === msgId);
-    if (msgIndex <= 0) return;
-    const userMsg = activeMessages[msgIndex - 1];
-    if (userMsg.role !== "user") return;
-    truncateConversation(activeId, msgId);
-    handleSend(userMsg.content);
-  }, [isStreaming, activeId, activeMessages, truncateConversation, handleSend]);
-
-  const handleEditLast = useCallback(() => {
-    if (isStreaming || !activeId || activeMessages.length === 0) return;
-    const msgs = [...activeMessages].reverse();
-    const lastUser = msgs.find(m => m.role === "user");
-    if (lastUser) {
-      setInitialInput(lastUser.content);
-      setTimeout(() => truncateConversation(activeId, lastUser.id), 0);
-    }
-  }, [activeId, activeMessages, isStreaming, truncateConversation]);
-
-  // ─── Export & Share ──────────────────────────────────
-  const handleExportMarkdown = useCallback((id) => {
-    const targetId = id || activeId;
-    if (!targetId) return;
-    const md = exportConversation(targetId);
-    if (!md) return;
-    const activeConv = conversations.find((c) => c.id === targetId);
-    const filename = `${(activeConv?.title || "conversation").replace(/[^a-z0-9]/gi, "_").toLowerCase()}.md`;
-    const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
-  }, [activeId, conversations, exportConversation]);
-
-  const handleShareChat = useCallback(async (id) => {
-    const targetId = id || activeId;
-    if (!targetId) return;
-    const conv = conversations.find(c => c.id === targetId);
-    if (!conv) return;
-    try {
-      const { data, error } = await supabase
-        .from("shared_chats")
-        .insert([{ title: conv.title, messages: conv.messages, model: model }])
-        .select();
-      if (error) throw error;
-      const shareUrl = `${window.location.origin}/share/${data[0].id}`;
-      prompt("Share this link with others:", shareUrl);
-    } catch (err) {
-      console.error("Error sharing chat:", err);
-      alert("Failed to generate share link.");
-    }
-  }, [activeId, conversations, model]);
-
-  // ─── PDF Export ────────────────────────────────────────
-  const handleExportPDF = useCallback(() => {
-    if (!chatContainerRef.current || !activeId) return;
-    const activeConv = conversations.find((c) => c.id === activeId);
-    const filename = `${(activeConv?.title || "conversation").replace(/[^a-z0-9]/gi, "_").toLowerCase()}.pdf`;
-    const element = chatContainerRef.current;
-    const opt = {
-      margin: 10,
-      filename: filename,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, logging: false },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-    if (window.html2pdf) {
-      window.html2pdf().set(opt).from(element).save();
-    } else {
-      alert("PDF library loading...");
-    }
-  }, [activeId, conversations]);
-
-  // ─── Navigation ────────────────────────────────────────
-  const handleNewChat = useCallback(() => {
-    newChat();
-    setSidebarOpen(false);
-  }, [newChat]);
-
-  const handleSelectConv = useCallback((id) => {
-    selectConversation(id);
-    setSidebarOpen(false);
-  }, [selectConversation]);
-
-  const handleSuggestion = useCallback((text) => setInitialInput(text), []);
-
-  const displayMessages = useMemo(() => {
-    return activeMessages.map((m) => ({
-      ...m,
-      streaming: isStreaming && m === activeMessages[activeMessages.length - 1] && m.role === "assistant",
-    }));
-  }, [activeMessages, isStreaming]);
-
+  // ─── Shortcuts ─────────────────────────────────────────
   useShortcuts({
     onSearch: () => {
       setDesktopSidebarOpen(true);
       setTimeout(() => searchInputRef.current?.focus(), 50);
     },
-    onNewChat: handleNewChat,
+    onNewChat: () => { newChat(); setSidebarOpen(false); },
     onCopyLast: () => {
       const msgs = [...activeMessages].reverse();
       const lastAsst = msgs.find(m => m.role === "assistant");
@@ -270,6 +198,15 @@ export default function App() {
     onToggleSidebar: () => setDesktopSidebarOpen(prev => !prev),
     onEscape: stopStream,
   });
+
+  const displayMessages = useMemo(() => {
+    const lastIdx = activeMessages.length - 1;
+    return activeMessages.map((m, i) => ({
+      ...m,
+      // ONLY the very last assistant message gets the cursor during streaming
+      streaming: isStreaming && i === lastIdx && m.role === "assistant",
+    }));
+  }, [activeMessages, isStreaming]);
 
   if (authLoading) {
     return (
@@ -288,74 +225,82 @@ export default function App() {
       className={darkMode ? "dark-mode" : ""}
       style={{
         display: "flex", height: "100vh", width: "100vw", overflow: "hidden",
-        background: "var(--bg-primary)", color: "var(--text-primary)",
+        background: "var(--bg-primary, #ffffff)", color: "var(--text-primary)",
         fontFamily: "'Inter', sans-serif",
       }}
     >
-      {desktopSidebarOpen && (
-        <div className="desktop-sidebar" style={{ display: "flex", flexShrink: 0, height: "100%", width: 260, borderRight: "1px solid var(--border)", transition: "width 200ms ease" }}>
-          <Sidebar
-            conversations={conversations} activeId={activeId}
-            onNew={handleNewChat} onSelect={handleSelectConv}
-            onDelete={deleteConversation} onRename={renameConversation}
-            onShare={handleShareChat} onLogout={handleLogout} user={user}
-            darkMode={darkMode} toggleDark={toggleDark} mobile={false}
-            searchInputRef={searchInputRef}
-          />
-        </div>
-      )}
-
-      {sidebarOpen && (
-        <Sidebar
-          conversations={conversations} activeId={activeId}
-          onNew={handleNewChat} onSelect={handleSelectConv}
-          onDelete={deleteConversation} onRename={renameConversation}
-          onShare={handleShareChat} onLogout={handleLogout} user={user}
-          darkMode={darkMode} toggleDark={toggleDark}
-          mobile={true} onClose={() => setSidebarOpen(false)}
-        />
-      )}
-
       <div style={{ 
         flex: 1, 
         display: "flex", 
         flexDirection: "column", 
         overflow: "hidden", 
         position: "relative",
-        background: "var(--bg-primary, #ffffff)" // SOLID BASE BACKGROUND
+        background: "var(--bg-primary, #ffffff)"
       }}>
-        <Navbar model={model} setModel={setModel} 
-          personaId={personaId} setPersonaId={setPersonaId}
-          darkMode={darkMode} toggleDark={toggleDark}
-          onToggleSidebar={() => setSidebarOpen(true)} onShare={handleShareChat} onExportPDF={handleExportPDF} />
-
-        {convsLoading ? (
-          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-primary)" }}>
-             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#D97757]"></div>
-          </div>
-        ) : displayMessages.length === 0 && !isTyping ? (
-          <WelcomeScreen onSuggestion={handleSuggestion} />
-        ) : (
-          <div ref={chatContainerRef} className="custom-scroll" style={{ 
-            flex: 1, 
-            overflowY: "auto", 
-            padding: "24px 24px 180px", // Increase bottom padding to prevent overlap
-            background: "var(--bg-primary)" // Ensure solid background
-          }}>
-            <div style={{ maxWidth: 800, margin: "0 auto" }}>
-              {displayMessages.map((msg) => (
-                <Message key={msg.id} msg={msg} isStreaming={msg.streaming} onEdit={handleEditMessage} onRegenerate={handleRegenerateMessage} />
-              ))}
-              {isTyping && <TypingIndicator />}
-              <div ref={messagesEndRef} />
-            </div>
+        {desktopSidebarOpen && (
+          <div className="desktop-sidebar" style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 260, borderRight: "1px solid var(--border)", background: "var(--bg-secondary)", zIndex: 60 }}>
+            <Sidebar
+              conversations={conversations} activeId={activeId}
+              onNew={() => { newChat(); setSidebarOpen(false); }} onSelect={(id) => { selectConversation(id); setSidebarOpen(false); }}
+              onDelete={deleteConversation} onRename={renameConversation}
+              onShare={handleLogout} onLogout={handleLogout} user={user}
+              darkMode={darkMode} toggleDark={toggleDark} mobile={false}
+              searchInputRef={searchInputRef}
+            />
           </div>
         )}
 
-        <InputArea
-          onSend={handleSend} isStreaming={isStreaming} onStop={stopStream}
-          initialValue={initialInput} setInitialValue={setInitialInput} onEditLast={handleEditLast}
-        />
+        {sidebarOpen && (
+          <Sidebar
+            conversations={conversations} activeId={activeId}
+            onNew={() => { newChat(); setSidebarOpen(false); }} onSelect={(id) => { selectConversation(id); setSidebarOpen(false); }}
+            onDelete={deleteConversation} onRename={renameConversation}
+            onShare={handleLogout} onLogout={handleLogout} user={user}
+            darkMode={darkMode} toggleDark={toggleDark}
+            mobile={true} onClose={() => setSidebarOpen(false)}
+          />
+        )}
+
+        <div style={{ 
+            flex: 1, 
+            display: "flex", 
+            flexDirection: "column", 
+            marginLeft: desktopSidebarOpen ? 260 : 0, 
+            transition: "margin 200ms ease" 
+        }}>
+            <Navbar model={model} setModel={setModel} 
+            personaId={personaId} setPersonaId={setPersonaId}
+            darkMode={darkMode} toggleDark={toggleDark}
+            onToggleSidebar={() => setDesktopSidebarOpen(!desktopSidebarOpen)} onShare={() => {}} onExportPDF={() => {}} />
+
+            {convsLoading ? (
+            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-primary)" }}>
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#D97757]"></div>
+            </div>
+            ) : displayMessages.length === 0 && !isTyping ? (
+            <WelcomeScreen onSuggestion={(text) => setInitialInput(text)} />
+            ) : (
+            <div ref={chatContainerRef} className="custom-scroll" style={{ 
+                flex: 1, 
+                overflowY: "auto", 
+                padding: "24px 24px 180px", 
+                background: "var(--bg-primary, #ffffff)"
+            }}>
+                <div style={{ maxWidth: 800, margin: "0 auto" }}>
+                {displayMessages.map((msg) => (
+                    <Message key={msg.id} msg={msg} isStreaming={msg.streaming} onEdit={() => {}} onRegenerate={() => {}} />
+                ))}
+                {isTyping && <TypingIndicator />}
+                <div ref={messagesEndRef} />
+                </div>
+            </div>
+            )}
+
+            <InputArea
+            onSend={handleSend} isStreaming={isStreaming} onStop={stopStream}
+            initialValue={initialInput} setInitialValue={setInitialInput} onEditLast={() => {}}
+            />
+        </div>
       </div>
 
       {activeArtifact && (
