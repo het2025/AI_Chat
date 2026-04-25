@@ -1,9 +1,9 @@
-import { memo, useState, useCallback, useMemo, useEffect } from "react";
+ import { memo, useState, useCallback, useMemo, useEffect } from "react";
 import { ClaudeLogo, IconCopy, IconThumbUp, IconThumbDown, IconRefresh, IconPencil } from "../icons/index.jsx";
 import Avatar from "../layout/Avatar.jsx";
 import { renderMarkdown } from "../../utils/markdown.jsx";
 
-const Message = memo(function Message({ msg, isStreaming, onEdit, onRegenerate }) {
+const Message = memo(function Message({ msg, isStreaming, onEdit, onRegenerate, isReadOnly = false }) {
   const [hovering, setHovering] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -43,7 +43,7 @@ const Message = memo(function Message({ msg, isStreaming, onEdit, onRegenerate }
 
   const handleEditSubmit = useCallback(() => {
     if (editText.trim() && editText !== msg.content) {
-      onEdit(msg.id, editText.trim());
+      onEdit?.(msg.id, editText.trim());
     }
     setIsEditing(false);
   }, [editText, msg.content, msg.id, onEdit]);
@@ -74,18 +74,20 @@ const Message = memo(function Message({ msg, isStreaming, onEdit, onRegenerate }
           ) : (
             <>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <button
-                  onClick={() => setIsEditing(true)}
-                  style={{
-                    opacity: hovering ? 1 : 0, transition: "opacity 150ms",
-                    width: 28, height: 28, borderRadius: "50%", border: "none", background: "transparent",
-                    color: "var(--text-secondary)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.background = "var(--bg-tertiary)"}
-                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                >
-                  <IconPencil />
-                </button>
+                {!isReadOnly && (
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    style={{
+                      opacity: hovering ? 1 : 0, transition: "opacity 150ms",
+                      width: 28, height: 28, borderRadius: "50%", border: "none", background: "transparent",
+                      color: "var(--text-secondary)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = "var(--bg-tertiary)"}
+                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                  >
+                    <IconPencil />
+                  </button>
+                )}
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, maxWidth: "min(85%, 600px)" }}>
                   {msg.attachments && msg.attachments.length > 0 && (
                     <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
@@ -140,35 +142,37 @@ const Message = memo(function Message({ msg, isStreaming, onEdit, onRegenerate }
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
         <ClaudeLogo size={22} />
         <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>Patel</span>
-        <div style={{
-          display: "flex", gap: 2, marginLeft: 4,
-          opacity: hovering && !isStreaming ? 1 : 0, transition: "opacity 150ms ease",
-        }}>
-          {[
-            { icon: copied ? <span style={{ fontSize: 10, padding: "0 2px" }}>✓</span> : <IconCopy />, action: handleCopy, label: "Copy" },
-            { icon: isSpeaking ? <span style={{ fontSize: 12 }}>⏹</span> : <span style={{ fontSize: 12 }}>🔊</span>, action: handleSpeak, label: isSpeaking ? "Stop" : "Speak", active: isSpeaking },
-            { icon: <IconThumbUp />, action: () => setLiked("up"), label: "Like", active: liked === "up" },
-            { icon: <IconThumbDown />, action: () => setLiked("down"), label: "Dislike", active: liked === "down" },
-            { icon: <IconRefresh />, action: () => onRegenerate(msg.id), label: "Regenerate" },
-          ].map(({ icon, action, label, active }) => (
-            <button
-              key={label}
-              onClick={action}
-              title={label}
-              style={{
-                width: 28, height: 28, borderRadius: 6, border: "none",
-                background: active ? "var(--bg-tertiary)" : "transparent",
-                color: active ? "var(--accent)" : "var(--text-secondary)",
-                cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-                transition: "background 150ms",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-tertiary)")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = active ? "var(--bg-tertiary)" : "transparent")}
-            >
-              {icon}
-            </button>
-          ))}
-        </div>
+        {!isReadOnly && (
+          <div style={{
+            display: "flex", gap: 2, marginLeft: 4,
+            opacity: hovering && !isStreaming ? 1 : 0, transition: "opacity 150ms ease",
+          }}>
+            {[
+              { icon: copied ? <span style={{ fontSize: 10, padding: "0 2px" }}>✓</span> : <IconCopy />, action: handleCopy, label: "Copy" },
+              { icon: isSpeaking ? <span style={{ fontSize: 12 }}>⏹</span> : <span style={{ fontSize: 12 }}>🔊</span>, action: handleSpeak, label: isSpeaking ? "Stop" : "Speak", active: isSpeaking },
+              { icon: <IconThumbUp />, action: () => setLiked("up"), label: "Like", active: liked === "up" },
+              { icon: <IconThumbDown />, action: () => setLiked("down"), label: "Dislike", active: liked === "down" },
+              { icon: <IconRefresh />, action: () => onRegenerate?.(msg.id), label: "Regenerate" },
+            ].map(({ icon, action, label, active }) => (
+              <button
+                key={label}
+                onClick={action}
+                title={label}
+                style={{
+                  width: 28, height: 28, borderRadius: 6, border: "none",
+                  background: active ? "var(--bg-tertiary)" : "transparent",
+                  color: active ? "var(--accent)" : "var(--text-secondary)",
+                  cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                  transition: "background 150ms",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-tertiary)")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = active ? "var(--bg-tertiary)" : "transparent")}
+              >
+                {icon}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
       <div style={{
         fontSize: 14, lineHeight: 1.75, color: "var(--text-primary)",

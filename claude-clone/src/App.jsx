@@ -4,6 +4,7 @@ import { useConversations } from "./hooks/useConversations.js";
 import { useShortcuts } from "./hooks/useShortcuts.js";
 import { streamMessage } from "./utils/api.js";
 import { PERSONAS } from "./utils/personas.js";
+import { supabase } from "./utils/supabase.js";
 
 import Sidebar from "./components/layout/Sidebar.jsx";
 import Navbar from "./components/layout/Navbar.jsx";
@@ -12,28 +13,35 @@ import Message from "./components/chat/Message.jsx";
 import TypingIndicator from "./components/chat/TypingIndicator.jsx";
 import WelcomeScreen from "./components/chat/WelcomeScreen.jsx";
 import InputArea from "./components/chat/InputArea.jsx";
+import AuthPage from "./components/chat/AuthPage.jsx";
 
 export default function App() {
   const { darkMode, toggleDark } = useTheme();
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
   const {
     conversations,
     activeId,
     activeMessages,
+    isLoading: convsLoading,
     createConversation,
     addMessage,
     updateLastAssistantMessage,
+    saveFinalMessages,
     deleteConversation,
+    renameConversation,
     selectConversation,
     newChat,
     getHistory,
     truncateConversation,
     exportConversation,
-  } = useConversations();
+  } = useConversations(user?.id); // Scope by user ID
 
   const [isTyping, setIsTyping] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [personaId, setPersonaId] = useState("patel");
-  const [model, setModel] = useState("sonnet");
+  const [model, setModel] = useState("nvidia/nemotron-3-super-120b-a12b:free");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
   const [initialInput, setInitialInput] = useState("");
@@ -44,6 +52,24 @@ export default function App() {
   const searchInputRef = useRef(null);
   const abortRef = useRef(null);
   const nextIdRef = useRef(100);
+
+  // ─── Auth Listener ─────────────────────────────────────
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setAuthLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = useCallback(async () => {
+    await supabase.auth.signOut();
+  }, []);
 
   // ─── Auto-scroll ───────────────────────────────────────
   const scrollToBottom = useCallback(() => {
@@ -61,51 +87,48 @@ export default function App() {
   // ─── Stop streaming ────────────────────────────────────
   const stopStream = useCallback(() => {
     if (abortRef.current) {
-      abortRef.current(); // call the abort function from streamMessage
+      abortRef.current(); 
       abortRef.current = null;
     }
     setIsStreaming(false);
   }, []);
 
   // ─── Send message ──────────────────────────────────────
-  const handleSend = useCallback((text, attachments = []) => {
+  const handleSend = useCallback(async (text, attachments = []) => {
     if (isStreaming) return;
 
     const timeStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
-    // Determine or create conversation
     let convId = activeId;
     if (!convId) {
-      // Create title from text or first attachment
       const titleSrc = text || (attachments.length > 0 ? attachments[0].name : "New Chat");
-      convId = createConversation(titleSrc);
+      convId = await createConversation(titleSrc);
+      if (!convId) return; // DB error
     }
 
-    // Add user message to conversation
     const userMsg = { id: nextIdRef.current++, role: "user", content: text, attachments, time: timeStr };
     addMessage(convId, userMsg);
 
-    // Show typing indicator
     setIsTyping(true);
 
     setTimeout(() => {
       setIsTyping(false);
 
-      // Add empty assistant message (will be filled by streaming)
       const assistantId = nextIdRef.current++;
       const assistantMsg = { id: assistantId, role: "assistant", content: "", time: timeStr, streaming: true };
       addMessage(convId, assistantMsg);
       setIsStreaming(true);
 
-      // Get conversation history for multi-turn context
       const history = getHistory(convId);
-
-      // Start SSE streaming
       const selectedPersona = PERSONAS.find(p => p.id === personaId) || PERSONAS[0];
 
       let accumulated = "";
       const abort = streamMessage(text, history, attachments, {
+        model: model,
         systemPrompt: selectedPersona.prompt,
+        onModelSelect: (actualModel) => {
+          if (actualModel !== model) setModel(actualModel);
+        },
         onChunk: (token) => {
           accumulated += token;
           updateLastAssistantMessage(convId, accumulated);
@@ -113,8 +136,9 @@ export default function App() {
         onDone: () => {
           setIsStreaming(false);
           abortRef.current = null;
-          // Mark streaming complete — update the message to not be streaming
           updateLastAssistantMessage(convId, accumulated);
+          // Sync final state to DB
+          saveFinalMessages(convId, [...activeMessages, userMsg, { id: assistantId, role: "assistant", content: accumulated, time: timeStr }]);
         },
         onError: (err) => {
           console.error("Stream error:", err);
@@ -127,7 +151,7 @@ export default function App() {
 
       abortRef.current = abort;
     }, 400);
-  }, [isStreaming, activeId, personaId, createConversation, addMessage, updateLastAssistantMessage, getHistory]);
+  }, [isStreaming, activeId, personaId, createConversation, addMessage, updateLastAssistantMessage, getHistory, model, saveFinalMessages, activeMessages]);
 
   // ─── Edit & Regenerate ─────────────────────────────────
   const handleEditMessage = useCallback((msgId, newText) => {
@@ -138,41 +162,32 @@ export default function App() {
 
   const handleRegenerateMessage = useCallback((msgId) => {
     if (isStreaming || !activeId) return;
-    
-    // msgId is the assistant's message. We need to find the user message right before it.
     const msgIndex = activeMessages.findIndex(m => m.id === msgId);
     if (msgIndex <= 0) return;
-    
     const userMsg = activeMessages[msgIndex - 1];
     if (userMsg.role !== "user") return;
-
-    // Truncate at the assistant message (removing it and everything after)
     truncateConversation(activeId, msgId);
-    // Send the user message content again to trigger new generation
     handleSend(userMsg.content);
   }, [isStreaming, activeId, activeMessages, truncateConversation, handleSend]);
 
   const handleEditLast = useCallback(() => {
     if (isStreaming || !activeId || activeMessages.length === 0) return;
-    // Find last user message
     const msgs = [...activeMessages].reverse();
     const lastUser = msgs.find(m => m.role === "user");
     if (lastUser) {
       setInitialInput(lastUser.content);
-      // Wait for React to render InputArea with updated initialInput, then truncate
       setTimeout(() => truncateConversation(activeId, lastUser.id), 0);
     }
   }, [activeId, activeMessages, isStreaming, truncateConversation]);
 
-  // ─── Export Conversation ───────────────────────────────
-  const handleShare = useCallback(() => {
-    if (!activeId) return;
-    const md = exportConversation(activeId);
+  // ─── Export & Share ──────────────────────────────────
+  const handleExportMarkdown = useCallback((id) => {
+    const targetId = id || activeId;
+    if (!targetId) return;
+    const md = exportConversation(targetId);
     if (!md) return;
-
-    const activeConv = conversations.find((c) => c.id === activeId);
+    const activeConv = conversations.find((c) => c.id === targetId);
     const filename = `${(activeConv?.title || "conversation").replace(/[^a-z0-9]/gi, "_").toLowerCase()}.md`;
-    
     const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -182,13 +197,30 @@ export default function App() {
     URL.revokeObjectURL(url);
   }, [activeId, conversations, exportConversation]);
 
+  const handleShareChat = useCallback(async (id) => {
+    const targetId = id || activeId;
+    if (!targetId) return;
+    const conv = conversations.find(c => c.id === targetId);
+    if (!conv) return;
+    try {
+      const { data, error } = await supabase
+        .from("shared_chats")
+        .insert([{ title: conv.title, messages: conv.messages, model: model }])
+        .select();
+      if (error) throw error;
+      const shareUrl = `${window.location.origin}/share/${data[0].id}`;
+      prompt("Share this link with others:", shareUrl);
+    } catch (err) {
+      console.error("Error sharing chat:", err);
+      alert("Failed to generate share link.");
+    }
+  }, [activeId, conversations, model]);
+
   // ─── PDF Export ────────────────────────────────────────
   const handleExportPDF = useCallback(() => {
     if (!chatContainerRef.current || !activeId) return;
-    
     const activeConv = conversations.find((c) => c.id === activeId);
     const filename = `${(activeConv?.title || "conversation").replace(/[^a-z0-9]/gi, "_").toLowerCase()}.pdf`;
-    
     const element = chatContainerRef.current;
     const opt = {
       margin: 10,
@@ -197,11 +229,10 @@ export default function App() {
       html2canvas: { scale: 2, useCORS: true, logging: false },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
-
     if (window.html2pdf) {
       window.html2pdf().set(opt).from(element).save();
     } else {
-      alert("PDF library is still loading. Please try again in a moment.");
+      alert("PDF library loading...");
     }
   }, [activeId, conversations]);
 
@@ -218,7 +249,6 @@ export default function App() {
 
   const handleSuggestion = useCallback((text) => setInitialInput(text), []);
 
-  // Build display messages from active conversation
   const displayMessages = useMemo(() => {
     return activeMessages.map((m) => ({
       ...m,
@@ -226,7 +256,6 @@ export default function App() {
     }));
   }, [activeMessages, isStreaming]);
 
-  // ─── Shortcuts ─────────────────────────────────────────
   useShortcuts({
     onSearch: () => {
       setDesktopSidebarOpen(true);
@@ -242,51 +271,70 @@ export default function App() {
     onEscape: stopStream,
   });
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#FAFAF8] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#D97757]"></div>
+      </div>
+    );
+  }
 
+  if (!user) {
+    return <AuthPage onAuthSuccess={(user) => setUser(user)} />;
+  }
 
-  // ─── Render ────────────────────────────────────────────
   return (
     <div
       className={darkMode ? "dark-mode" : ""}
       style={{
         display: "flex", height: "100vh", width: "100vw", overflow: "hidden",
         background: "var(--bg-primary)", color: "var(--text-primary)",
-        fontFamily: "'Söhne', 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif",
+        fontFamily: "'Inter', sans-serif",
       }}
     >
-      {/* Desktop Sidebar */}
       {desktopSidebarOpen && (
         <div className="desktop-sidebar" style={{ display: "flex", flexShrink: 0, height: "100%", width: 260, borderRight: "1px solid var(--border)", transition: "width 200ms ease" }}>
           <Sidebar
             conversations={conversations} activeId={activeId}
             onNew={handleNewChat} onSelect={handleSelectConv}
+            onDelete={deleteConversation} onRename={renameConversation}
+            onShare={handleShareChat} onLogout={handleLogout} user={user}
             darkMode={darkMode} toggleDark={toggleDark} mobile={false}
             searchInputRef={searchInputRef}
           />
         </div>
       )}
 
-      {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <Sidebar
           conversations={conversations} activeId={activeId}
           onNew={handleNewChat} onSelect={handleSelectConv}
+          onDelete={deleteConversation} onRename={renameConversation}
+          onShare={handleShareChat} onLogout={handleLogout} user={user}
           darkMode={darkMode} toggleDark={toggleDark}
           mobile={true} onClose={() => setSidebarOpen(false)}
         />
       )}
 
-      {/* Main Area */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", position: "relative" }}>
         <Navbar model={model} setModel={setModel} 
           personaId={personaId} setPersonaId={setPersonaId}
           darkMode={darkMode} toggleDark={toggleDark}
-          onToggleSidebar={() => setSidebarOpen(true)} onShare={handleShare} onExportPDF={handleExportPDF} />
+          onToggleSidebar={() => setSidebarOpen(true)} onShare={handleShareChat} onExportPDF={handleExportPDF} />
 
-        {displayMessages.length === 0 && !isTyping ? (
+        {convsLoading ? (
+          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-primary)" }}>
+             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#D97757]"></div>
+          </div>
+        ) : displayMessages.length === 0 && !isTyping ? (
           <WelcomeScreen onSuggestion={handleSuggestion} />
         ) : (
-          <div ref={chatContainerRef} className="custom-scroll" style={{ flex: 1, overflowY: "auto", padding: "24px 24px 140px" }}>
+          <div ref={chatContainerRef} className="custom-scroll" style={{ 
+            flex: 1, 
+            overflowY: "auto", 
+            padding: "24px 24px 180px", // Increase bottom padding to prevent overlap
+            background: "var(--bg-primary)" // Ensure solid background
+          }}>
             <div style={{ maxWidth: 800, margin: "0 auto" }}>
               {displayMessages.map((msg) => (
                 <Message key={msg.id} msg={msg} isStreaming={msg.streaming} onEdit={handleEditMessage} onRegenerate={handleRegenerateMessage} />
@@ -303,7 +351,6 @@ export default function App() {
         />
       </div>
 
-      {/* Artifact Panel */}
       {activeArtifact && (
         <ArtifactPanel artifact={activeArtifact} onClose={() => setActiveArtifact(null)} />
       )}

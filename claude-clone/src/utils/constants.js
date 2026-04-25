@@ -5,6 +5,13 @@
  */
 export const MODELS = [
   { 
+    id: "mistralai/mistral-nemotron", 
+    label: "Patel Mistral Nemotron", 
+    badge: "New", 
+    badgeColor: "#10b981",
+    description: "High performance & high quality"
+  },
+  { 
     id: "nvidia/nemotron-3-super-120b-a12b:free", 
     label: "Patel Nemotron Super [1x]", 
     badge: "Smartest", 

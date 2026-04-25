@@ -4,11 +4,18 @@ import dotenv from "dotenv";
 import axios from "axios";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
+import OpenAI from "openai";
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Initialize NVIDIA client
+const nvidiaClient = new OpenAI({
+  apiKey: process.env.NVIDIA_API_KEY,
+  baseURL: 'https://integrate.api.nvidia.com/v1',
+});
 
 /* ─────────────────────────────────────────────────────────
    🛡️  Middleware
@@ -33,6 +40,7 @@ const chatLimiter = rateLimit({
    🧠  AI Models (free tier)
    ───────────────────────────────────────────────────────── */
 const MODELS = [
+  "mistralai/mistral-nemotron",
   "nvidia/nemotron-3-super-120b-a12b:free",
   "liquid/lfm-2.5-1.2b-thinking:free",
   "nvidia/nemotron-nano-12b-v2-vl:free",
@@ -105,10 +113,24 @@ function buildMessages(message, history = [], attachments = [], systemPrompt = n
 /* ─────────────────────────────────────────────────────────
    🔁  Try Models (non-streaming)
    ───────────────────────────────────────────────────────── */
-async function tryModels(messages, retry = false) {
-  for (const model of MODELS) {
+async function tryModels(messages, retry = false, preferredModel = null) {
+  const priorityList = [...new Set([preferredModel, ...MODELS].filter(m => m && MODELS.includes(m)))];
+
+  for (const model of priorityList) {
     try {
       console.log("⚡ Trying:", model);
+
+      if (model === "mistralai/mistral-nemotron") {
+        const completion = await nvidiaClient.chat.completions.create({
+          model: model,
+          messages: messages,
+          temperature: 0.7,
+          max_tokens: 1024,
+        });
+        console.log("✅ Success (NVIDIA):", model);
+        return completion.choices[0].message.content;
+      }
+
       const res = await axios.post(
         "https://openrouter.ai/api/v1/chat/completions",
         { model, messages, temperature: 0.7, max_tokens: 1024 },
@@ -116,15 +138,17 @@ async function tryModels(messages, retry = false) {
           headers: {
             Authorization: `Bearer ${process.env.API_KEY}`,
             "Content-Type": "application/json",
+            "HTTP-Referer": process.env.FRONTEND_URL || "http://localhost:5173",
+            "X-Title": "Patel AI Clone"
           },
           timeout: 30000,
         }
       );
-      console.log("✅ Success:", model);
+      console.log("✅ Success (OpenRouter):", model);
       return res.data.choices[0].message.content;
     } catch (err) {
       console.log("❌ Failed:", model, "-", err.message);
-      await delay(1500);
+      await delay(2000);
     }
   }
   if (!retry) {
@@ -138,10 +162,36 @@ async function tryModels(messages, retry = false) {
 /* ─────────────────────────────────────────────────────────
    🔁  Try Models (streaming via SSE)
    ───────────────────────────────────────────────────────── */
-async function tryModelsStream(messages, res) {
-  for (const model of MODELS) {
+async function tryModelsStream(messages, res, preferredModel = null) {
+  const priorityList = [...new Set([preferredModel, ...MODELS].filter(m => m && MODELS.includes(m)))];
+
+  for (const model of priorityList) {
     try {
       console.log("⚡ [stream] Trying:", model);
+
+      // Send the currently active model name to the client
+      res.write(`data: ${JSON.stringify({ activeModel: model })}\n\n`);
+
+      if (model === "mistralai/mistral-nemotron") {
+        const stream = await nvidiaClient.chat.completions.create({
+          model: model,
+          messages: messages,
+          temperature: 0.7,
+          max_tokens: 1024,
+          stream: true,
+        });
+
+        console.log("✅ [stream] Connected (NVIDIA):", model);
+
+        for await (const chunk of stream) {
+          const token = chunk.choices[0]?.delta?.content || "";
+          if (token) {
+            res.write(`data: ${JSON.stringify({ token })}\n\n`);
+          }
+        }
+        res.write("data: [DONE]\n\n");
+        return true;
+      }
 
       const response = await axios.post(
         "https://openrouter.ai/api/v1/chat/completions",
@@ -150,13 +200,15 @@ async function tryModelsStream(messages, res) {
           headers: {
             Authorization: `Bearer ${process.env.API_KEY}`,
             "Content-Type": "application/json",
+            "HTTP-Referer": process.env.FRONTEND_URL || "http://localhost:5173",
+            "X-Title": "Patel AI Clone"
           },
           timeout: 60000,
           responseType: "stream",
         }
       );
 
-      console.log("✅ [stream] Connected:", model);
+      console.log("✅ [stream] Connected (OpenRouter):", model);
 
       // Pipe the OpenRouter SSE stream to our client
       return new Promise((resolve, reject) => {
@@ -200,7 +252,7 @@ async function tryModelsStream(messages, res) {
       });
     } catch (err) {
       console.log("❌ [stream] Failed:", model, "-", err.message);
-      await delay(1000);
+      await delay(2000);
     }
   }
   throw new Error("All models failed (stream)");
@@ -218,7 +270,7 @@ app.get("/health", (_req, res) => {
    ───────────────────────────────────────────────────────── */
 app.post("/chat", chatLimiter, async (req, res) => {
   try {
-    const { message, history, attachments, systemPrompt } = req.body;
+    const { message, history, attachments, systemPrompt, model } = req.body;
 
     if (typeof message !== "string") {
       return res.status(400).json({ error: "A valid 'message' string is required." });
@@ -228,7 +280,7 @@ app.post("/chat", chatLimiter, async (req, res) => {
     }
 
     const messages = buildMessages(message, history, attachments, systemPrompt);
-    const reply = await tryModels(messages);
+    const reply = await tryModels(messages, false, model);
     res.json({ reply });
   } catch (error) {
     console.error("🚨 FINAL ERROR:", error.message);
@@ -243,7 +295,7 @@ app.post("/chat", chatLimiter, async (req, res) => {
    ───────────────────────────────────────────────────────── */
 app.post("/chat/stream", chatLimiter, async (req, res) => {
   try {
-    const { message, history, attachments, systemPrompt } = req.body;
+    const { message, history, attachments, systemPrompt, model } = req.body;
 
     if (typeof message !== "string") {
       return res.status(400).json({ error: "A valid 'message' string is required." });
@@ -267,7 +319,7 @@ app.post("/chat/stream", chatLimiter, async (req, res) => {
       console.log("📡 Client disconnected");
     });
 
-    await tryModelsStream(messages, res);
+    await tryModelsStream(messages, res, model);
     res.end();
   } catch (error) {
     console.error("🚨 STREAM ERROR:", error.message);

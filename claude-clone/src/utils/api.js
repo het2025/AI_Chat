@@ -6,11 +6,11 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
  * @param {Array} history - Previous messages [{role, content}, ...].
  * @returns {Promise<string>} The assistant's reply text.
  */
-export async function sendMessage(message, history = [], attachments = [], systemPrompt = null) {
+export async function sendMessage(message, history = [], attachments = [], systemPrompt = null, model = null) {
   const res = await fetch(`${API_URL}/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message, history, attachments, systemPrompt }),
+    body: JSON.stringify({ message, history, attachments, systemPrompt, model }),
   });
 
   if (!res.ok) {
@@ -27,13 +27,13 @@ export async function sendMessage(message, history = [], attachments = [], syste
  * Calls onChunk for each text token, onDone when complete, onError on failure.
  * Returns an abort function.
  */
-export function streamMessage(message, history = [], attachments = [], { onChunk, onDone, onError, systemPrompt = null }) {
+export function streamMessage(message, history = [], attachments = [], { onChunk, onDone, onError, onModelSelect, systemPrompt = null, model = null }) {
   const controller = new AbortController();
 
   fetch(`${API_URL}/chat/stream`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message, history, attachments, systemPrompt }),
+    body: JSON.stringify({ message, history, attachments, systemPrompt, model }),
     signal: controller.signal,
   })
     .then(async (res) => {
@@ -63,6 +63,7 @@ export function streamMessage(message, history = [], attachments = [], { onChunk
             }
             try {
               const parsed = JSON.parse(data);
+              if (parsed.activeModel) onModelSelect?.(parsed.activeModel);
               if (parsed.token) onChunk?.(parsed.token);
               if (parsed.error) { onError?.(new Error(parsed.error)); return; }
             } catch {

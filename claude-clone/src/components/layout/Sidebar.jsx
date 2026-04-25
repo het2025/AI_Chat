@@ -2,9 +2,16 @@ import { memo, useState, useMemo } from "react";
 import { ClaudeLogo, IconPencil, IconSearch, IconDots, IconStar } from "../icons/index.jsx";
 import Avatar from "./Avatar.jsx";
 
-const Sidebar = memo(function Sidebar({ conversations, activeId, onNew, onSelect, darkMode, toggleDark, mobile, onClose, searchInputRef }) {
+const Sidebar = memo(function Sidebar({ 
+  conversations, activeId, onNew, onSelect, onDelete, onRename, onShare, onLogout, user,
+  darkMode, toggleDark, mobile, onClose, searchInputRef 
+}) {
   const [search, setSearch] = useState("");
   const [hoveredId, setHoveredId] = useState(null);
+  const [menuOpenId, setMenuOpenId] = useState(null);
+  const [renamingId, setRenamingId] = useState(null);
+  const [renameValue, setRenameValue] = useState("");
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const filtered = useMemo(() => {
     if (!search) return conversations;
@@ -37,6 +44,13 @@ const Sidebar = memo(function Sidebar({ conversations, activeId, onNew, onSelect
     return g;
   }, [filtered]);
 
+  const handleRenameSubmit = (id) => {
+    if (renameValue.trim()) {
+      onRename(id, renameValue.trim());
+    }
+    setRenamingId(null);
+  };
+
   const GroupSection = ({ label, items }) => {
     if (!items.length) return null;
     return (
@@ -48,38 +62,121 @@ const Sidebar = memo(function Sidebar({ conversations, activeId, onNew, onSelect
         {items.map((c) => (
           <div key={c.id} style={{ position: "relative" }}
             onMouseEnter={() => setHoveredId(c.id)}
-            onMouseLeave={() => setHoveredId(null)}
+            onMouseLeave={() => { setHoveredId(null); if (menuOpenId === c.id) setMenuOpenId(null); }}
           >
-            <button
-              onClick={() => { onSelect(c.id); if (mobile) onClose(); }}
-              style={{
-                width: "100%", textAlign: "left", padding: "7px 12px", borderRadius: 8, border: "none",
-                background: activeId === c.id ? "var(--bg-tertiary)" : "transparent",
-                color: "var(--text-primary)", fontSize: 13,
-                fontWeight: activeId === c.id ? 500 : 400,
-                cursor: "pointer", transition: "background 100ms ease",
-                whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-                paddingRight: hoveredId === c.id ? 36 : 12,
-              }}
-              onMouseEnter={(e) => { if (activeId !== c.id) e.currentTarget.style.background = "var(--bg-tertiary)"; }}
-              onMouseLeave={(e) => { if (activeId !== c.id) e.currentTarget.style.background = "transparent"; }}
-            >
-              <div style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                {c.title}
+            {renamingId === c.id ? (
+              <div style={{ padding: "4px 12px" }}>
+                <input
+                  autoFocus
+                  value={renameValue}
+                  onChange={(e) => setRenameValue(e.target.value)}
+                  onBlur={() => handleRenameSubmit(c.id)}
+                  onKeyDown={(e) => e.key === "Enter" && handleRenameSubmit(c.id)}
+                  style={{
+                    width: "100%", padding: "5px 8px", borderRadius: 6,
+                    border: "1px solid var(--accent)", background: "var(--bg-primary)",
+                    color: "var(--text-primary)", fontSize: 13, outline: "none"
+                  }}
+                />
               </div>
-              {c.snippet && (
-                <div style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {c.snippet}
-                </div>
-              )}
-            </button>
-            {hoveredId === c.id && (
-              <button style={{
-                position: "absolute", right: 6, top: "50%", transform: "translateY(-50%)",
-                width: 24, height: 24, borderRadius: 6, border: "none",
-                background: "var(--bg-tertiary)", color: "var(--text-secondary)",
-                cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-              }}><IconDots /></button>
+            ) : (
+              <>
+                <button
+                  onClick={() => { onSelect(c.id); if (mobile) onClose(); }}
+                  style={{
+                    width: "100%", textAlign: "left", padding: "7px 12px", borderRadius: 8, border: "none",
+                    background: activeId === c.id ? "var(--bg-tertiary)" : "transparent",
+                    color: "var(--text-primary)", fontSize: 13,
+                    fontWeight: activeId === c.id ? 500 : 400,
+                    cursor: "pointer", transition: "background 100ms ease",
+                    whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                    paddingRight: hoveredId === c.id ? 36 : 12,
+                  }}
+                  onMouseEnter={(e) => { if (activeId !== c.id) e.currentTarget.style.background = "var(--bg-tertiary)"; }}
+                  onMouseLeave={(e) => { if (activeId !== c.id) e.currentTarget.style.background = "transparent"; }}
+                >
+                  <div style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    {c.title}
+                  </div>
+                  {c.snippet && (
+                    <div style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {c.snippet}
+                    </div>
+                  )}
+                </button>
+                {(hoveredId === c.id || menuOpenId === c.id) && (
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMenuOpenId(menuOpenId === c.id ? null : c.id);
+                    }}
+                    style={{
+                      position: "absolute", right: 6, top: 7,
+                      width: 24, height: 24, borderRadius: 6, border: "none",
+                      background: menuOpenId === c.id ? "var(--bg-secondary)" : "var(--bg-tertiary)", 
+                      color: "var(--text-secondary)",
+                      cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                      zIndex: 10
+                    }}
+                  ><IconDots /></button>
+                )}
+
+                {/* Dropdown Menu */}
+                {menuOpenId === c.id && (
+                  <div style={{
+                    position: "absolute", right: 6, top: 34,
+                    width: 140, background: "var(--bg-primary)",
+                    borderRadius: 8, border: "1px solid var(--border)",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.15)", zIndex: 100,
+                    padding: "4px 0"
+                  }}>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setRenamingId(c.id);
+                        setRenameValue(c.title);
+                        setMenuOpenId(null);
+                      }}
+                      style={{
+                        width: "100%", textAlign: "left", padding: "8px 12px",
+                        background: "transparent", border: "none", color: "var(--text-primary)",
+                        fontSize: 13, cursor: "pointer"
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = "var(--bg-tertiary)"}
+                      onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                    >Rename</button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onShare(c.id);
+                        setMenuOpenId(null);
+                      }}
+                      style={{
+                        width: "100%", textAlign: "left", padding: "8px 12px",
+                        background: "transparent", border: "none", color: "var(--text-primary)",
+                        fontSize: 13, cursor: "pointer"
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = "var(--bg-tertiary)"}
+                      onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                    >Share</button>
+                    <div style={{ height: 1, background: "var(--border)", margin: "4px 0" }} />
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (confirm("Delete this chat?")) onDelete(c.id);
+                        setMenuOpenId(null);
+                      }}
+                      style={{
+                        width: "100%", textAlign: "left", padding: "8px 12px",
+                        background: "transparent", border: "none", color: "#ef4444",
+                        fontSize: 13, cursor: "pointer"
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = "var(--bg-tertiary)"}
+                      onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                    >Delete</button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         ))}
@@ -148,18 +245,57 @@ const Sidebar = memo(function Sidebar({ conversations, activeId, onNew, onSelect
         {GroupSection({ label: "Older", items: groups.older })}
       </div>
 
-      {/* Bottom */}
-      <div style={{ borderTop: "1px solid var(--border)", padding: 10 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 6px", borderRadius: 8 }}>
+      {/* Bottom User Area */}
+      <div style={{ borderTop: "1px solid var(--border)", padding: 10, position: "relative" }}>
+        {userMenuOpen && (
+          <div style={{
+            position: "absolute", bottom: "100%", left: 10, right: 10,
+            background: "var(--bg-primary)", borderRadius: 12, border: "1px solid var(--border)",
+            boxShadow: "0 -4px 20px rgba(0,0,0,0.1)", marginBottom: 8, overflow: "hidden",
+            zIndex: 100
+          }}>
+            <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--border)" }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>
+                {user?.user_metadata?.full_name || "User"}
+              </div>
+              <div style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 2 }}>
+                {user?.email}
+              </div>
+            </div>
+            <button
+              onClick={() => { onLogout(); setUserMenuOpen(false); }}
+              style={{
+                width: "100%", textAlign: "left", padding: "10px 16px",
+                background: "transparent", border: "none", color: "#ef4444",
+                fontSize: 13, fontWeight: 500, cursor: "pointer"
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = "var(--bg-tertiary)"}
+              onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+            >Log out</button>
+          </div>
+        )}
+
+        <div 
+          onClick={() => setUserMenuOpen(!userMenuOpen)}
+          style={{ 
+            display: "flex", alignItems: "center", gap: 8, padding: "6px 6px", 
+            borderRadius: 8, cursor: "pointer", transition: "background 150ms"
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.background = "var(--bg-tertiary)"}
+          onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+        >
           <Avatar size={28} />
-          <span style={{ fontSize: 13, fontWeight: 500, color: "var(--text-primary)", flex: 1 }}>User</span>
+          <span style={{ fontSize: 13, fontWeight: 500, color: "var(--text-primary)", flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            {user?.user_metadata?.full_name || user?.email?.split('@')[0] || "User"}
+          </span>
           <button style={{ border: "none", background: "transparent", cursor: "pointer", color: "var(--text-secondary)" }}><IconDots /></button>
         </div>
+        
         <button style={{
           display: "flex", alignItems: "center", gap: 5, width: "100%",
           padding: "5px 6px", border: "none", background: "transparent",
           cursor: "pointer", color: "var(--accent)", fontSize: 12, borderRadius: 6,
-          transition: "background 150ms",
+          transition: "background 150ms", marginTop: 4
         }}
           onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-tertiary)")}
           onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
