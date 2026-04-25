@@ -6,9 +6,8 @@ import CodeBlock from "../components/ui/CodeBlock";
 
 /**
  * Full markdown renderer using react-markdown with GFM + math support.
- * Replaces the old hand-written regex renderer.
  */
-export function MarkdownContent({ content }) {
+export function MarkdownContent({ content, isStreaming }) {
   return (
     <div className="prose-content">
       <ReactMarkdown
@@ -21,21 +20,19 @@ export function MarkdownContent({ content }) {
           },
 
           // Code blocks → CodeBlock component with syntax highlighting
-          // Inline code → <code> tag
           code({ className, children, ...props }) {
             const match = /language-(\w+)/.exec(className || "");
             const code = String(children).replace(/\n$/, "");
 
-            // Fenced code block (has language) or multi-line code
+            // Fenced code block or multi-line code
             if (match || code.includes("\n")) {
-              return <CodeBlock lang={match?.[1] || ""} code={code} />;
+              return <CodeBlock lang={match?.[1] || ""} code={code} isStreaming={isStreaming} />;
             }
 
             // Inline code
             return <code className={className} {...props}>{children}</code>;
           },
 
-          // Table wrapper for horizontal scroll
           table({ children }) {
             return (
               <div className="table-wrapper">
@@ -44,7 +41,6 @@ export function MarkdownContent({ content }) {
             );
           },
 
-          // Task list items
           li({ children, node, ...props }) {
             const hasCheckbox = node?.children?.[0]?.type === "element" && node.children[0].tagName === "input";
             return (
@@ -54,7 +50,6 @@ export function MarkdownContent({ content }) {
             );
           },
 
-          // External links open in new tab
           a({ href, children, ...props }) {
             return (
               <a href={href} target="_blank" rel="noreferrer" {...props}>
@@ -70,7 +65,6 @@ export function MarkdownContent({ content }) {
   );
 }
 
-// Keep backward compat export name
-export function renderMarkdown(text) {
-  return <MarkdownContent content={text} />;
+export function renderMarkdown(text, isStreaming = false) {
+  return <MarkdownContent content={text} isStreaming={isStreaming} />;
 }

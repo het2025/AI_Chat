@@ -113,12 +113,13 @@ const InputArea = memo(function InputArea({ onSend, isStreaming, onStop, initial
 
   return (
     <div style={{
-      position: "absolute", bottom: 0, left: 0, right: 0,
-      background: "var(--bg-primary, #ffffff)", // SOLID FALLBACK
+      width: "100%",
+      background: "var(--bg-primary, #ffffff)", 
       borderTop: "1px solid var(--border)", 
-      padding: "20px 16px 16px",
-      zIndex: 100, // Stay above messages
-      opacity: 1, // FORCE FULL OPACITY
+      padding: "16px 16px 32px",
+      zIndex: 100,
+      opacity: 1,
+      flexShrink: 0 // DO NOT SHRINK
     }}>
       <div style={{ maxWidth: 800, margin: "0 auto", width: "100%" }}>
         <div style={{

@@ -22,7 +22,12 @@ const Message = memo(function Message({ msg, isStreaming, onEdit, onRegenerate, 
     setIsEditing(false);
   }, [editText, msg.content, msg.id, onEdit]);
 
-  // --- User Message View ---
+  // --- Optimized Markdown Rendering ---
+  const markdownBody = useMemo(() => {
+    // Pass isStreaming down to prevent flicker in CodeBlocks
+    return renderMarkdown(msg.content, isStreaming);
+  }, [msg.content, isStreaming]);
+
   if (msg.role === "user") {
     return (
       <div className="msg-in" style={{ display: "flex", justifyContent: "flex-end", alignItems: "flex-end", gap: 12, marginBottom: 24 }} onMouseEnter={() => setHovering(true)} onMouseLeave={() => setHovering(false)}>
@@ -51,7 +56,6 @@ const Message = memo(function Message({ msg, isStreaming, onEdit, onRegenerate, 
     );
   }
 
-  // --- Assistant Message View ---
   return (
     <div className="msg-in" style={{ marginBottom: 40 }} onMouseEnter={() => setHovering(true)} onMouseLeave={() => setHovering(false)}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
@@ -70,9 +74,9 @@ const Message = memo(function Message({ msg, isStreaming, onEdit, onRegenerate, 
       <div style={{ maxWidth: 800, margin: "0 auto", padding: "0 12px" }}>
         <div style={{ fontSize: 16, lineHeight: 1.85, color: "var(--text-primary)", fontWeight: 450 }}>
           <div style={{ display: "inline" }}>
-            {renderMarkdown(msg.content || (isStreaming ? "..." : ""))}
+            {markdownBody}
           </div>
-          {isStreaming && <span className="cursor-blink">|</span>}
+          {isStreaming && <span style={{ marginLeft: 2, color: "#D97757", fontWeight: "bold" }}>...</span>}
         </div>
       </div>
     </div>

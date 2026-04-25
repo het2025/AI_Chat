@@ -1,21 +1,35 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, memo } from "react";
 import hljs from "highlight.js";
-import { IconPlay } from "../icons/index.jsx";
+import { IconPlay, IconCopy } from "../icons/index.jsx";
 
-export default function CodeBlock({ lang, code }) {
+const CodeBlock = memo(function CodeBlock({ lang, code, isStreaming }) {
   const [copied, setCopied] = useState(false);
   const codeRef = useRef(null);
+  const lastHighlightedCode = useRef("");
 
+  // Only highlight when not streaming or when a significant chunk is added
   useEffect(() => {
-    if (codeRef.current) {
+    if (!codeRef.current) return;
+    
+    // During streaming, we avoid heavy highlighting to prevent flickering
+    if (isStreaming) {
+        // Just set the text content directly for speed and stability
+        codeRef.current.textContent = code;
+        return;
+    }
+
+    // When streaming stops, apply the full highlight.js effect
+    if (lastHighlightedCode.current !== code) {
       codeRef.current.removeAttribute("data-highlighted");
+      codeRef.current.textContent = code;
       try {
         hljs.highlightElement(codeRef.current);
-      } catch {
-        // fallback
+        lastHighlightedCode.current = code;
+      } catch (e) {
+        console.error("Highlight error:", e);
       }
     }
-  }, [code, lang]);
+  }, [code, lang, isStreaming]);
 
   const handleCopy = useCallback(() => {
     navigator.clipboard.writeText(code).catch(() => {});
@@ -32,30 +46,30 @@ export default function CodeBlock({ lang, code }) {
   return (
     <div className="code-block-wrap" style={{ 
       borderRadius: 12, overflow: "hidden", border: "1px solid var(--border)", 
-      background: "var(--code-bg)", margin: "16px 0",
-      boxShadow: "0 4px 12px rgba(0,0,0,0.05)"
+      background: "#0d1117", margin: "16px 0",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
     }}>
       <div className="code-block-header" style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "10px 16px", background: "var(--code-header-bg)",
-        borderBottom: "1px solid var(--border)"
+        padding: "10px 16px", background: "#161b22",
+        borderBottom: "1px solid #30363d"
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-           <span style={{ fontSize: 11, fontWeight: 800, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+           <span style={{ fontSize: 11, fontWeight: 800, color: "#8b949e", textTransform: "uppercase" }}>
              {lang || "code"}
            </span>
-           {isArtifact && (
+           {isArtifact && !isStreaming && (
              <span style={{ 
-               fontSize: 9, fontWeight: 900, background: "rgba(217, 119, 87, 0.1)", color: "#D97757", 
+               fontSize: 9, fontWeight: 900, background: "rgba(217, 119, 87, 0.2)", color: "#D97757", 
                padding: "2px 6px", borderRadius: 4, textTransform: "uppercase" 
              }}>
-               Preview Available
+               Ready to Preview
              </span>
            )}
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          {isArtifact && (
+          {isArtifact && !isStreaming && (
             <button 
               onClick={handleOpenArtifact}
               style={{ 
@@ -63,16 +77,7 @@ export default function CodeBlock({ lang, code }) {
                 padding: "6px 12px", borderRadius: 8, border: "none",
                 background: "#D97757", color: "#FFFFFF",
                 fontSize: 12, fontWeight: 700, cursor: "pointer",
-                boxShadow: "0 2px 6px rgba(217, 119, 87, 0.3)",
                 transition: "all 0.2s ease"
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.background = "#C96442";
-                e.currentTarget.style.transform = "translateY(-1px)";
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.background = "#D97757";
-                e.currentTarget.style.transform = "translateY(0)";
               }}
             >
               <IconPlay size={12} fill="white" /> Run Preview
@@ -81,25 +86,24 @@ export default function CodeBlock({ lang, code }) {
           <button 
             onClick={handleCopy}
             style={{
-              padding: "6px 12px", borderRadius: 8, border: "1px solid var(--border)",
-              background: "var(--bg-primary)", color: "var(--text-primary)",
-              fontSize: 11, fontWeight: 600, cursor: "pointer",
-              transition: "all 0.15s ease"
+              padding: "6px 12px", borderRadius: 8, border: "1px solid #30363d",
+              background: "transparent", color: "#8b949e",
+              fontSize: 11, fontWeight: 600, cursor: "pointer"
             }}
-            onMouseEnter={e => e.currentTarget.style.background = "var(--bg-tertiary)"}
-            onMouseLeave={e => e.currentTarget.style.background = "var(--bg-primary)"}
           >
             {copied ? "✓ Copied" : "Copy"}
           </button>
         </div>
       </div>
       <pre style={{ margin: 0, padding: "20px", overflowX: "auto" }}>
-        <code ref={codeRef} className={`block-code ${lang ? `language-${lang}` : ""}`} style={{ 
-          fontSize: 13, fontFamily: "'JetBrains Mono', monospace", lineHeight: 1.6 
+        <code ref={codeRef} className={`language-${lang || 'text'}`} style={{ 
+          fontSize: 13, fontFamily: "'JetBrains Mono', monospace", lineHeight: 1.6, color: "#e6edf3"
         }}>
           {code}
         </code>
       </pre>
     </div>
   );
-}
+});
+
+export default CodeBlock;
