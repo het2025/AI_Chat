@@ -14,6 +14,7 @@ import TypingIndicator from "./components/chat/TypingIndicator.jsx";
 import WelcomeScreen from "./components/chat/WelcomeScreen.jsx";
 import InputArea from "./components/chat/InputArea.jsx";
 import AuthPage from "./components/chat/AuthPage.jsx";
+import SmokeyCursor from "./components/lightswind/smokey-cursor.tsx";
 
 export default function App() {
   const { darkMode, toggleDark } = useTheme();
@@ -184,25 +185,26 @@ export default function App() {
   if (!user) return <AuthPage onAuthSuccess={(user) => setUser(user)} />;
 
   return (
-    <div
-      className={darkMode ? "dark-mode theme-transition" : "theme-transition"}
-      style={{
-        display: "grid",
-        // SIDEBAR | CHAT | ARTIFACT (optional)
-        gridTemplateColumns: `
-          ${desktopSidebarOpen ? "260px" : "0px"} 
-          1fr 
-          ${activeArtifact ? "min(95vw, 650px)" : "0px"}
-        `,
-        height: "100vh",
-        width: "100vw",
-        overflow: "hidden",
-        background: "var(--bg-primary, #ffffff)",
-        color: "var(--text-primary)",
-        fontFamily: "'Inter', sans-serif",
-        transition: "grid-template-columns 300ms cubic-bezier(0.16, 1, 0.3, 1)"
-      }}
-    >
+    <>
+      <SmokeyCursor className="pointer-events-none fixed inset-0 z-50" />
+      <div
+        className={darkMode ? "dark-mode theme-transition" : "theme-transition"}
+        style={{
+          display: "grid",
+          gridTemplateColumns: `
+            ${desktopSidebarOpen ? "260px" : "0px"} 
+            1fr 
+            ${activeArtifact ? "min(95vw, 650px)" : "0px"}
+          `,
+          height: "100vh",
+          width: "100vw",
+          overflow: "hidden",
+          background: "var(--bg-primary, #ffffff)",
+          color: "var(--text-primary)",
+          fontFamily: "'Inter', sans-serif",
+          transition: "grid-template-columns 300ms cubic-bezier(0.16, 1, 0.3, 1)"
+        }}
+      >
       {/* Sidebar Area */}
       <div style={{ overflow: "hidden", borderRight: desktopSidebarOpen ? "1px solid var(--border)" : "none", background: "var(--bg-secondary)" }}>
         <Sidebar
@@ -263,7 +265,7 @@ export default function App() {
           />
       </div>
 
-      {/* Artifact Panel Area - SLIDES IN ON THE RIGHT */}
+      {/* Artifact Panel Area */}
       <div style={{ 
           overflow: "hidden", 
           borderLeft: activeArtifact ? "1px solid var(--border)" : "none",
@@ -288,5 +290,6 @@ export default function App() {
         />
       )}
     </div>
+    </>
   );
 }
