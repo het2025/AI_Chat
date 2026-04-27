@@ -14,6 +14,7 @@ import TypingIndicator from "./components/chat/TypingIndicator.jsx";
 import WelcomeScreen from "./components/chat/WelcomeScreen.jsx";
 import InputArea from "./components/chat/InputArea.jsx";
 import AuthPage from "./components/chat/AuthPage.jsx";
+import MagicLoader from "./components/ui/MagicLoader.jsx";
 
 export default function App() {
   const { darkMode, toggleDark } = useTheme();
@@ -128,35 +129,55 @@ export default function App() {
     }
     const userMsg = { id: nextIdRef.current++, role: "user", content: text, attachments, time: timeStr };
     addMessage(convId, userMsg);
-    setIsTyping(true);
+    
+    setIsTyping(true); // START MAGIC LOADER
+
+    let isFirstChunk = true;
+    let actualModelName = model;
+    const history = getHistory(convId);
+    
+    // We wrap streamMessage in a small timeout so the UI updates
     setTimeout(() => {
-      setIsTyping(false);
-      const assistantId = nextIdRef.current++;
-      const assistantMsg = { id: assistantId, role: "assistant", content: "", time: timeStr, model: model };
-      addMessage(convId, assistantMsg);
-      setIsStreaming(true);
-      const history = getHistory(convId);
-      const selectedPersona = PERSONAS.find(p => p.id === personaId) || PERSONAS[0];
-      typingQueueRef.current = "";
-      let actualModelName = model;
-      startTypingEffect(convId, actualModelName);
       const abort = streamMessage(text, history, attachments, {
         model: model,
-        systemPrompt: selectedPersona.prompt,
+        systemPrompt: PERSONAS.find(p => p.id === personaId)?.prompt || PERSONAS[0].prompt,
         onModelSelect: (m) => { actualModelName = m; },
-        onChunk: (token) => { typingQueueRef.current += token; },
+        onChunk: (token) => { 
+          if (isFirstChunk) { // Only set up the assistant message block once the AI has actually begun streaming text!
+            isFirstChunk = false;
+            setIsTyping(false); // STOP LOADER
+            const assistantId = nextIdRef.current++;
+            addMessage(convId, { id: assistantId, role: "assistant", content: "", time: timeStr, model: actualModelName });
+            setIsStreaming(true);
+            typingQueueRef.current = "";
+            startTypingEffect(convId, actualModelName);
+          }
+          typingQueueRef.current += token; 
+        },
         onDone: () => {
+          // Fallback if nothing was ever streamed
+          if (isFirstChunk) {
+            isFirstChunk = false;
+            setIsTyping(false);
+            const assistantId = nextIdRef.current++;
+            addMessage(convId, { id: assistantId, role: "assistant", content: "", time: timeStr, model: actualModelName });
+            setIsStreaming(true);
+            typingQueueRef.current = "";
+            startTypingEffect(convId, actualModelName);
+          }
+
           const checkDone = setInterval(() => {
             if (typingQueueRef.current.length === 0) {
               clearInterval(checkDone);
               stopTypingEffect();
               setIsStreaming(false);
               abortRef.current = null;
-              saveFinalMessages(convId, [...activeMessages, userMsg, { id: assistantId, role: "assistant", content: displayContentRef.current, time: timeStr, model: actualModelName }]);
+              saveFinalMessages(convId, [...activeMessages, userMsg, { id: nextIdRef.current - 1, role: "assistant", content: displayContentRef.current, time: timeStr, model: actualModelName }]);
             }
           }, 50);
         },
         onError: (err) => {
+          if (isFirstChunk) { setIsTyping(false); }
           stopTypingEffect();
           updateLastAssistantMessage(convId, "⚠️ Error.", actualModelName);
           setIsStreaming(false);
@@ -176,8 +197,9 @@ export default function App() {
   }, [activeMessages, isStreaming]);
 
   if (authLoading) return (
-    <div className="min-h-screen bg-[#FAFAF8] flex items-center justify-center">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#D97757]"></div>
+    <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col items-center justify-center gap-4">
+      <MagicLoader size={60} speed={1.5} particleCount={2} hueRange={[10, 40]} />
+      <div style={{ color: "var(--text-secondary)", fontSize: 13, fontWeight: 500 }}>Authenticating...</div>
     </div>
   );
 
@@ -239,8 +261,8 @@ export default function App() {
             }}>
                 <div style={{ maxWidth: 800, margin: "0 auto", width: "100%" }}>
                 {convsLoading ? (
-                   <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#D97757]"></div>
+                   <div style={{ display: "flex", flexDirection: "column", gap: 16, alignItems: "center", justifyContent: "center", height: "100%", paddingBottom: "20vh" }}>
+                      <MagicLoader size={60} speed={1.5} particleCount={2} hueRange={[10, 40]} />
                    </div>
                 ) : displayMessages.length === 0 && !isTyping ? (
                   <WelcomeScreen onSuggestion={(text) => setInitialInput(text)} />

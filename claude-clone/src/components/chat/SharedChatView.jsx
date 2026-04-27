@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { supabase } from "../../utils/supabase";
 import Message from "./Message";
 import { ClaudeLogo } from "../icons/index.jsx";
+import MagicLoader from "../ui/MagicLoader.jsx";
 
 export default function SharedChatView() {
   const { id } = useParams();
@@ -33,7 +34,8 @@ export default function SharedChatView() {
 
   if (loading) {
     return (
-      <div style={{ display: "flex", height: "100vh", alignItems: "center", justifyContent: "center", background: "var(--bg-primary)" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 16, height: "100vh", alignItems: "center", justifyContent: "center", background: "var(--bg-primary)" }}>
+        <MagicLoader size={60} speed={1.5} particleCount={2} hueRange={[10, 40]} />
         <div style={{ color: "var(--text-secondary)" }}>Loading shared chat...</div>
       </div>
     );

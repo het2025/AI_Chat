@@ -1,6 +1,7 @@
 import { memo, useState, useEffect, useRef, useMemo } from "react";
 import { IconCode, IconPlay, IconX, IconCopy, IconRefresh } from "../icons/index.jsx";
 import CodeBlock from "../ui/CodeBlock.jsx";
+import MagicLoader from "../ui/MagicLoader.jsx";
 
 const ArtifactPanel = memo(function ArtifactPanel({ artifact, onClose }) {
   const [tab, setTab] = useState("preview"); 
@@ -156,7 +157,7 @@ const ArtifactPanel = memo(function ArtifactPanel({ artifact, onClose }) {
           <>
             {isLoading && (
                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "white", zIndex: 10 }}>
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#D97757]"></div>
+                  <MagicLoader size={60} speed={1.5} particleCount={2} hueRange={[10, 40]} />
                </div>
             )}
             <iframe 
