@@ -14,7 +14,6 @@ import TypingIndicator from "./components/chat/TypingIndicator.jsx";
 import WelcomeScreen from "./components/chat/WelcomeScreen.jsx";
 import InputArea from "./components/chat/InputArea.jsx";
 import AuthPage from "./components/chat/AuthPage.jsx";
-import SmokeyCursor from "./components/lightswind/smokey-cursor.tsx";
 
 export default function App() {
   const { darkMode, toggleDark } = useTheme();
@@ -186,7 +185,6 @@ export default function App() {
 
   return (
     <>
-      <SmokeyCursor className="pointer-events-none fixed inset-0 z-50" />
       <div
         className={darkMode ? "dark-mode theme-transition" : "theme-transition"}
         style={{

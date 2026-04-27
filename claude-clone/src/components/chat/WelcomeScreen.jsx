@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 import { ClaudeLogo } from "../icons/index.jsx";
 
 const WelcomeScreen = memo(function WelcomeScreen({ onSuggestion }) {
