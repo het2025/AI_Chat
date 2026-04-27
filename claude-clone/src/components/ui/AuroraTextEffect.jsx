@@ -28,7 +28,7 @@ export function AuroraTextEffect({
   return (
     <div
       className={cn(
-        "flex items-center justify-center overflow-hidden bg-transparent w-full py-4",
+        "flex items-center justify-center overflow-visible bg-transparent w-full py-4",
         className
       )}
     >

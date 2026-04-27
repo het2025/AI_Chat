@@ -158,7 +158,9 @@ const MagicLoader = ({
         className="max-w-full max-h-full"
         style={{
           width: size,
-          height: size
+          height: size,
+          maskImage: "radial-gradient(circle at center, black 40%, transparent 70%)",
+          WebkitMaskImage: "radial-gradient(circle at center, black 40%, transparent 70%)"
         }}
       />
     </div>

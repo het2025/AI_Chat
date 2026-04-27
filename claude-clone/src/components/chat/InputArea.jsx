@@ -2,7 +2,7 @@ import { memo, useState, useRef, useEffect, useCallback } from "react";
 import { IconPaperclip, IconSearch, IconZap, IconArrowUp, IconStop } from "../icons/index.jsx";
 import { MagneticButton } from "../ui/MagneticButton.jsx";
 
-const InputArea = memo(function InputArea({ onSend, isStreaming, onStop, initialValue, setInitialValue, onEditLast }) {
+const InputArea = memo(function InputArea({ onSend, isStreaming, onStop, initialValue, setInitialValue, onEditLast, isWelcomeScreen }) {
   const [text, setText] = useState(initialValue || "");
   const [attachments, setAttachments] = useState([]);
   const [isListening, setIsListening] = useState(false);
@@ -115,8 +115,7 @@ const InputArea = memo(function InputArea({ onSend, isStreaming, onStop, initial
   return (
     <div style={{
       width: "100%",
-      background: "var(--bg-primary, #ffffff)", 
-      borderTop: "1px solid var(--border)", 
+      background: isWelcomeScreen ? "transparent" : "var(--bg-primary, #ffffff)", 
       padding: "16px 16px 32px",
       zIndex: 100,
       opacity: 1,

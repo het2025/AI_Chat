@@ -1,6 +1,8 @@
 import { memo, useState } from "react";
 import { ClaudeLogo } from "../icons/index.jsx";
 import { AuroraTextEffect } from "../ui/AuroraTextEffect.jsx";
+import { GlowingCards, GlowingCard } from "../ui/GlowingCards.jsx";
+import InteractiveGridBackground from "../ui/InteractiveGridBackground.jsx";
 
 const WelcomeScreen = memo(function WelcomeScreen({ onSuggestion }) {
   const hour = new Date().getHours();
@@ -14,49 +16,57 @@ const WelcomeScreen = memo(function WelcomeScreen({ onSuggestion }) {
   ];
 
   return (
-    <div style={{
-      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-      flex: 1, padding: "40px 24px", textAlign: "center",
-      background: "var(--bg-primary, #ffffff)" // SOLID BACKGROUND
-    }}>
-      <div style={{ marginBottom: 20 }}>
-        <ClaudeLogo size={80} />
+    <InteractiveGridBackground
+      className="absolute inset-0"
+      style={{ width: "100%", height: "100%" }}
+      gridSize={40}
+      glowRadius={15}
+      effectColor="rgba(217, 119, 87, 0.4)" // claude color
+      darkEffectColor="rgba(217, 119, 87, 0.4)"
+      gridColor="var(--bg-tertiary)"
+      darkGridColor="var(--bg-tertiary)"
+    >
+      <div style={{
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+        padding: "40px 24px 120px", textAlign: "center",
+        width: "100%", height: "100%"
+      }}>
+        <div style={{ marginBottom: 4 }}>
+          <ClaudeLogo size={80} />
+        </div>
+        <AuroraTextEffect 
+          text={`${greeting}, HeT`} 
+          fontSize="4.5rem" 
+          className="mb-2"
+          textClassName="leading-tight"
+        />
+        <p style={{ fontSize: "1rem", color: "var(--text-secondary)", marginBottom: 20 }}>
+          How can I help you today?
+        </p>
+        
+        <GlowingCards maxWidth="520px" gap="10px" glowRadius={20}>
+          {suggestions.map((s, i) => {
+            const colors = ["#22d3ee", "#fbbf24", "#4ade80", "#D97757"];
+            return (
+              <GlowingCard
+                key={i}
+                glowColor={colors[i]}
+                onClick={() => onSuggestion(`${s.title} — ${s.sub}`)}
+                className="!p-4 text-left"
+              >
+                <div style={{
+                  width: 32, height: 32, borderRadius: 8, background: "var(--bg-tertiary)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 16, marginBottom: 8,
+                }}>{s.emoji}</div>
+                <div style={{ fontSize: 13, fontWeight: 500, color: "var(--text-primary)", marginBottom: 2 }}>{s.title}</div>
+                <div style={{ fontSize: 12, color: "var(--text-secondary)" }}>{s.sub}</div>
+              </GlowingCard>
+            );
+          })}
+        </GlowingCards>
       </div>
-      <AuroraTextEffect 
-        text={`${greeting}, HeT`} 
-        fontSize="4.5rem" 
-        className="mb-8"
-        textClassName="leading-tight"
-      />
-      <p style={{ fontSize: "1rem", color: "var(--text-secondary)", marginBottom: 36 }}>
-        How can I help you today?
-      </p>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, width: "100%", maxWidth: 520 }}>
-        {suggestions.map((s, i) => (
-          <button
-            key={i}
-            className={`card-in-${i}`}
-            onClick={() => onSuggestion(`${s.title} — ${s.sub}`)}
-            style={{
-              textAlign: "left", padding: 16, borderRadius: 12,
-              border: "1px solid var(--border)", 
-              background: "var(--bg-secondary, #f9f9f8)", // SOLID BUTTON BACKGROUND
-              cursor: "pointer", transition: "background 150ms ease",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-tertiary)")}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "var(--bg-secondary)")}
-          >
-            <div style={{
-              width: 32, height: 32, borderRadius: 8, background: "var(--bg-tertiary)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 16, marginBottom: 8,
-            }}>{s.emoji}</div>
-            <div style={{ fontSize: 13, fontWeight: 500, color: "var(--text-primary)", marginBottom: 2 }}>{s.title}</div>
-            <div style={{ fontSize: 12, color: "var(--text-secondary)" }}>{s.sub}</div>
-          </button>
-        ))}
-      </div>
-    </div>
+    </InteractiveGridBackground>
   );
 });
 

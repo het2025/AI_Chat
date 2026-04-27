@@ -256,10 +256,8 @@ export default function App() {
             <div ref={chatContainerRef} className="custom-scroll" style={{ 
                 flex: 1, 
                 overflowY: "auto", 
-                padding: "24px 24px 40px",
-                background: "var(--bg-primary, #ffffff)"
+                background: "transparent"
             }}>
-                <div style={{ maxWidth: 800, margin: "0 auto", width: "100%" }}>
                 {convsLoading ? (
                    <div style={{ display: "flex", flexDirection: "column", gap: 16, alignItems: "center", justifyContent: "center", height: "100%", paddingBottom: "20vh" }}>
                       <MagicLoader size={60} speed={1.5} particleCount={2} hueRange={[10, 40]} />
@@ -267,21 +265,21 @@ export default function App() {
                 ) : displayMessages.length === 0 && !isTyping ? (
                   <WelcomeScreen onSuggestion={(text) => setInitialInput(text)} />
                 ) : (
-                  <>
+                  <div style={{ maxWidth: 800, margin: "0 auto", width: "100%", padding: "24px 24px 40px" }}>
                     {displayMessages.map((msg) => (
                         <Message key={msg.id} msg={msg} isStreaming={msg.streaming} onEdit={() => {}} onRegenerate={() => {}} />
                     ))}
                     {isTyping && <TypingIndicator />}
-                  </>
+                    <div ref={messagesEndRef} />
+                  </div>
                 )}
-                <div ref={messagesEndRef} />
-                </div>
             </div>
           </div>
 
           <InputArea
             onSend={handleSend} isStreaming={isStreaming} onStop={stopStream}
             initialValue={initialInput} setInitialValue={setInitialInput} onEditLast={() => {}}
+            isWelcomeScreen={displayMessages.length === 0 && !isTyping}
           />
       </div>
 

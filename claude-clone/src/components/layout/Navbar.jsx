@@ -1,9 +1,37 @@
 import { memo, useState, useRef, useEffect, useCallback } from "react";
-import { IconHamburger, IconChevronDown, IconCheck, IconShare, IconSun, IconMoon } from "../icons/index.jsx";
-import Avatar from "./Avatar.jsx";
+import { IconHamburger, IconChevronDown, IconCheck } from "../icons/index.jsx";
 import { MODELS } from "../../utils/constants.js";
 import { PERSONAS } from "../../utils/personas.js";
-import { MagneticButton } from "../ui/MagneticButton.jsx";
+import Dock from "../ui/Dock.jsx";
+
+const T3D_ICONS = {
+  share: "/share.png",
+  pdf: "/pdf.png",
+  sun: "/sun.png",
+  moon: "/moon.png",
+  settings: "/setting.png"
+};
+
+const Icon3DWrapper = ({ src, alt, size = 28 }) => (
+  <div style={{
+    width: "100%", height: "100%",
+    display: "flex", alignItems: "center", justifyContent: "center",
+    transform: "perspective(500px) translateZ(10px) rotateX(10deg) rotateY(-5deg)",
+    position: "relative"
+  }}>
+    <div style={{ 
+      filter: "drop-shadow(2px 4px 6px rgba(0,0,0,0.2))",
+      transition: "transform 0.2s ease",
+      width: size,
+      height: size,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
+    }}>
+      <img src={src} alt={alt} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+    </div>
+  </div>
+);
 
 const Navbar = memo(function Navbar({ model, setModel, personaId, setPersonaId, darkMode, toggleDark, onToggleSidebar, onShare, onExportPDF }) {
   const [modelOpen, setModelOpen] = useState(false);
@@ -40,8 +68,8 @@ const Navbar = memo(function Navbar({ model, setModel, personaId, setPersonaId, 
       flexShrink: 0, 
       position: "relative",
       zIndex: 1000, 
-      background: "var(--bg-primary, #ffffff)", // SOLID FALLBACK
-      opacity: 1, // FORCE FULL OPACITY
+      background: "var(--bg-primary, #ffffff)",
+      opacity: 1,
     }}>
       {/* Left */}
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -164,33 +192,35 @@ const Navbar = memo(function Navbar({ model, setModel, personaId, setPersonaId, 
       </div>
 
       {/* Right */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        {[
-          { icon: <IconShare size={18} />, action: onShare, title: "Export Markdown" },
-          { icon: <span style={{ fontSize: 18 }}>📄</span>, action: onExportPDF, title: "Export PDF" },
-          { icon: <span key={darkKey} className="spin-in">{darkMode ? <IconSun size={18} /> : <IconMoon size={18} />}</span>, action: handleToggle, title: "Toggle Theme" },
-          { icon: <Avatar size={32} />, action: () => {} },
-        ].map((btn, i) => (
-          <MagneticButton 
-            key={i} 
-            onClick={btn.action} 
-            title={btn.title} 
-            variant="none"
-            size="none"
-            radius={40}
-            strength={0.3}
-            style={{
-              width: 36, height: 36, borderRadius: 10, border: "none",
-              background: "transparent", cursor: "pointer", color: "var(--text-secondary)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              transition: "all 0.15s ease",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-tertiary)")}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-          >
-            {btn.icon}
-          </MagneticButton>
-        ))}
+      <div style={{ display: "flex", alignItems: "center", position: "relative" }}>
+        <Dock
+          panelHeight={48}
+          dockHeight={80}
+          baseItemSize={38}
+          magnification={56}
+          distance={100}
+          items={[
+            { 
+              icon: <Icon3DWrapper src={T3D_ICONS.share} alt="Share" />, 
+              onClick: onShare, label: "Share Markdown" 
+            },
+            { 
+              icon: <Icon3DWrapper src={T3D_ICONS.pdf} alt="PDF" />, 
+              onClick: onExportPDF, label: "Export PDF" 
+            },
+            { 
+              icon: <div key={darkKey} className={darkMode ? "" : "spin-in"}>
+                      <Icon3DWrapper src={darkMode ? T3D_ICONS.sun : T3D_ICONS.moon} alt="Theme" />
+                    </div>, 
+              onClick: handleToggle, label: "Toggle Theme" 
+            },
+            { 
+              icon: <Icon3DWrapper src={T3D_ICONS.settings} alt="Settings" />, 
+              onClick: () => {}, label: "Settings" 
+            },
+          ]}
+          className="border-none shadow-none bg-transparent !px-0 !pb-0"
+        />
       </div>
     </div>
   );
