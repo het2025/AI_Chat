@@ -1,25 +1,8 @@
 import React, { useState } from 'react';
 import { supabase } from '../../utils/supabase';
-
-const PatelAILogo = ({ size = 24, className = "" }) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 100 100" 
-    fill="none" 
-    xmlns="http://www.w3.org/2000/svg"
-    className={className}
-  >
-    <circle cx="50" cy="50" r="48" fill="currentColor" fillOpacity="0.15" />
-    <circle cx="50" cy="50" r="38" stroke="currentColor" strokeWidth="4" />
-    <path 
-      d="M50 30V70M30 50H70" 
-      stroke="currentColor" 
-      strokeWidth="8" 
-      strokeLinecap="round" 
-    />
-  </svg>
-);
+import RippleButton from '../ui/RippleButton.jsx';
+import { PasswordStrengthIndicator } from '../ui/PasswordStrengthIndicator.jsx';
+import { ClaudeLogo } from '../icons/index.jsx';
 
 const AuthPage = ({ onAuthSuccess }) => {
   const [isLogin, setIsLogin] = useState(true);
@@ -166,10 +149,8 @@ const AuthPage = ({ onAuthSuccess }) => {
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 md:px-12">
         <div className="flex items-center gap-2.5">
-          <div className="p-1 bg-white rounded-xl shadow-sm border border-gray-100">
-            <PatelAILogo size={24} className="text-[#D97757]" />
-          </div>
-          <span className="text-xl font-bold tracking-tight">PatelAI</span>
+          <ClaudeLogo size={32} />
+          <span className="text-xl font-bold tracking-tight">EKKA AI</span>
         </div>
       </header>
 
@@ -263,22 +244,19 @@ const AuthPage = ({ onAuthSuccess }) => {
                 </div>
 
                 <div className="space-y-1">
-                  <div className="flex justify-between items-center px-1">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Password</label>
-                    {isLogin && <button type="button" className="text-[10px] font-bold text-[#D97757] hover:underline">Forgot?</button>}
-                  </div>
-                  <div className="relative">
-                    <input 
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="••••••••"
-                      className={`w-full px-4 py-3.5 bg-gray-50 border ${errors.password ? 'border-red-400' : 'border-gray-100'} rounded-2xl outline-none focus:border-[#D97757] transition-all font-medium text-sm`}
-                      value={formData.password}
-                      onChange={(e) => setFormData({...formData, password: e.target.value})}
-                    />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs">
-                      {showPassword ? 'Hide' : 'Show'}
-                    </button>
-                  </div>
+                  {isLogin && (
+                    <div className="flex justify-end px-1 mb-[-28px] relative z-20">
+                      <button type="button" className="text-[10px] font-bold text-[#D97757] hover:underline">Forgot?</button>
+                    </div>
+                  )}
+                  <PasswordStrengthIndicator
+                    label="Password"
+                    value={formData.password}
+                    onChange={(val) => setFormData({...formData, password: val})}
+                    error={errors.password}
+                    showScore={!isLogin}
+                    placeholder="••••••••"
+                  />
                   {errors.password && <p className="text-[10px] text-red-500 font-bold ml-1">{errors.password}</p>}
                 </div>
 
@@ -296,9 +274,10 @@ const AuthPage = ({ onAuthSuccess }) => {
                   </div>
                 )}
 
-                <button 
+                <RippleButton 
                   type="submit"
                   disabled={isLoading}
+                  circleColor="#ffffff"
                   className="w-full bg-[#D97757] hover:bg-[#C96442] active:scale-[0.98] text-white font-bold py-4 rounded-2xl shadow-xl shadow-[#D97757]/20 transition-all flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {isLoading ? (
@@ -307,7 +286,7 @@ const AuthPage = ({ onAuthSuccess }) => {
                        <span>Verifying...</span>
                     </div>
                   ) : (isLogin ? 'Sign In' : 'Create Private Account')}
-                </button>
+                </RippleButton>
               </form>
 
               <div className="mt-8 mb-6 flex items-center gap-4">
@@ -317,8 +296,8 @@ const AuthPage = ({ onAuthSuccess }) => {
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-center">
-                <button onClick={() => handleSocialLogin('google')} className="py-3 border border-gray-100 rounded-2xl hover:bg-gray-50 transition-all text-xs font-bold text-gray-600">Google</button>
-                <button onClick={() => handleSocialLogin('github')} className="py-3 border border-gray-100 rounded-2xl hover:bg-gray-50 transition-all text-xs font-bold text-gray-600">GitHub</button>
+                <RippleButton onClick={() => handleSocialLogin('google')} circleColor="#e5e7eb" className="py-3 border border-gray-100 rounded-2xl hover:bg-gray-50 transition-all text-xs font-bold text-gray-600">Google</RippleButton>
+                <RippleButton onClick={() => handleSocialLogin('github')} circleColor="#e5e7eb" className="py-3 border border-gray-100 rounded-2xl hover:bg-gray-50 transition-all text-xs font-bold text-gray-600">GitHub</RippleButton>
               </div>
             </div>
 

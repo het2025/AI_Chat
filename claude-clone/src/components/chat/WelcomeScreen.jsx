@@ -1,5 +1,6 @@
 import { memo, useState } from "react";
 import { ClaudeLogo } from "../icons/index.jsx";
+import { AuroraTextEffect } from "../ui/AuroraTextEffect.jsx";
 
 const WelcomeScreen = memo(function WelcomeScreen({ onSuggestion }) {
   const hour = new Date().getHours();
@@ -19,11 +20,14 @@ const WelcomeScreen = memo(function WelcomeScreen({ onSuggestion }) {
       background: "var(--bg-primary, #ffffff)" // SOLID BACKGROUND
     }}>
       <div style={{ marginBottom: 20 }}>
-        <ClaudeLogo size={48} />
+        <ClaudeLogo size={80} />
       </div>
-      <h1 style={{ fontSize: "1.75rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: 8 }}>
-        {greeting}, HeT
-      </h1>
+      <AuroraTextEffect 
+        text={`${greeting}, HeT`} 
+        fontSize="4.5rem" 
+        className="mb-8"
+        textClassName="leading-tight"
+      />
       <p style={{ fontSize: "1rem", color: "var(--text-secondary)", marginBottom: 36 }}>
         How can I help you today?
       </p>

@@ -3,6 +3,7 @@ import { IconHamburger, IconChevronDown, IconCheck, IconShare, IconSun, IconMoon
 import Avatar from "./Avatar.jsx";
 import { MODELS } from "../../utils/constants.js";
 import { PERSONAS } from "../../utils/personas.js";
+import { MagneticButton } from "../ui/MagneticButton.jsx";
 
 const Navbar = memo(function Navbar({ model, setModel, personaId, setPersonaId, darkMode, toggleDark, onToggleSidebar, onShare, onExportPDF }) {
   const [modelOpen, setModelOpen] = useState(false);
@@ -170,17 +171,25 @@ const Navbar = memo(function Navbar({ model, setModel, personaId, setPersonaId, 
           { icon: <span key={darkKey} className="spin-in">{darkMode ? <IconSun size={18} /> : <IconMoon size={18} />}</span>, action: handleToggle, title: "Toggle Theme" },
           { icon: <Avatar size={32} />, action: () => {} },
         ].map((btn, i) => (
-          <button key={i} onClick={btn.action} title={btn.title} style={{
-            width: 36, height: 36, borderRadius: 10, border: "none",
-            background: "transparent", cursor: "pointer", color: "var(--text-secondary)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            transition: "all 0.15s ease",
-          }}
+          <MagneticButton 
+            key={i} 
+            onClick={btn.action} 
+            title={btn.title} 
+            variant="none"
+            size="none"
+            radius={40}
+            strength={0.3}
+            style={{
+              width: 36, height: 36, borderRadius: 10, border: "none",
+              background: "transparent", cursor: "pointer", color: "var(--text-secondary)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              transition: "all 0.15s ease",
+            }}
             onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-tertiary)")}
             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
           >
             {btn.icon}
-          </button>
+          </MagneticButton>
         ))}
       </div>
     </div>

@@ -1,6 +1,7 @@
 import { memo, useState, useMemo } from "react";
 import { ClaudeLogo, IconPencil, IconSearch, IconDots, IconStar } from "../icons/index.jsx";
 import Avatar from "./Avatar.jsx";
+import { MagneticButton } from "../ui/MagneticButton.jsx";
 
 const Sidebar = memo(function Sidebar({ 
   conversations, activeId, onNew, onSelect, onDelete, onRename, onShare, onLogout, user,
@@ -197,7 +198,7 @@ const Sidebar = memo(function Sidebar({
       {/* Header */}
       <div style={{ padding: "14px 12px 10px", display: "flex", alignItems: "center", gap: 8 }}>
         <ClaudeLogo size={22} />
-        <span style={{ fontWeight: 600, fontSize: 15, color: "var(--text-primary)" }}>Patel</span>
+        <span style={{ fontWeight: 600, fontSize: 15, color: "var(--text-primary)" }}>EKKA</span>
         {mobile && (
           <button onClick={onClose} style={{ marginLeft: "auto", border: "none", background: "transparent", cursor: "pointer", color: "var(--text-secondary)", padding: 4 }}>✕</button>
         )}
@@ -205,7 +206,13 @@ const Sidebar = memo(function Sidebar({
 
       {/* New chat */}
       <div style={{ padding: "0 10px 10px" }}>
-        <button onClick={onNew} style={{
+        <MagneticButton 
+          onClick={onNew} 
+          variant="none"
+          size="none"
+          radius={40}
+          strength={0.2}
+          style={{
           width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
           padding: "8px 12px", borderRadius: 8, border: "1px solid var(--border)",
           background: "transparent", color: "var(--text-primary)", fontSize: 13,
@@ -214,9 +221,11 @@ const Sidebar = memo(function Sidebar({
           onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-tertiary)")}
           onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
         >
-          <span>New chat</span>
-          <IconPencil />
-        </button>
+          <div style={{ display: "flex", alignItems: "center", justifyItems: "space-between", width: "100%" }}>
+            <span style={{ marginRight: "auto" }}>New chat</span>
+            <IconPencil />
+          </div>
+        </MagneticButton>
       </div>
 
       {/* Search */}

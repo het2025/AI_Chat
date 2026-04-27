@@ -2,6 +2,7 @@ import { memo, useState, useEffect, useRef, useMemo } from "react";
 import { IconCode, IconPlay, IconX, IconCopy, IconRefresh } from "../icons/index.jsx";
 import CodeBlock from "../ui/CodeBlock.jsx";
 import MagicLoader from "../ui/MagicLoader.jsx";
+import { MagneticButton } from "../ui/MagneticButton.jsx";
 
 const ArtifactPanel = memo(function ArtifactPanel({ artifact, onClose }) {
   const [tab, setTab] = useState("preview"); 
@@ -133,17 +134,17 @@ const ArtifactPanel = memo(function ArtifactPanel({ artifact, onClose }) {
 
           <div style={{ width: 1, height: 20, background: "var(--border)" }}></div>
 
-          <button onClick={handleRefresh} style={{ width: 32, height: 32, borderRadius: 8, border: "none", background: "transparent", color: "var(--text-secondary)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }} title="Refresh Preview">
+          <MagneticButton onClick={handleRefresh} variant="none" size="none" radius={40} strength={0.3} style={{ width: 32, height: 32, borderRadius: 8, border: "none", background: "transparent", color: "var(--text-secondary)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }} title="Refresh Preview">
             <IconRefresh size={16} />
-          </button>
+          </MagneticButton>
 
-          <button onClick={handleCopy} style={{ width: 32, height: 32, borderRadius: 8, border: "none", background: "transparent", color: copied ? "#10b981" : "var(--text-secondary)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }} title="Copy Code">
+          <MagneticButton onClick={handleCopy} variant="none" size="none" radius={40} strength={0.3} style={{ width: 32, height: 32, borderRadius: 8, border: "none", background: "transparent", color: copied ? "#10b981" : "var(--text-secondary)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }} title="Copy Code">
             <IconCopy size={16} />
-          </button>
+          </MagneticButton>
 
-          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, border: "none", background: "#1a1a1a", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <MagneticButton onClick={onClose} variant="none" size="none" radius={40} strength={0.3} style={{ width: 32, height: 32, borderRadius: 8, border: "none", background: "#1a1a1a", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <IconX size={16} />
-          </button>
+          </MagneticButton>
         </div>
       </div>
 

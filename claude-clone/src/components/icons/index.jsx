@@ -117,17 +117,7 @@ export const IconHamburger = () => (
 );
 
 export const ClaudeLogo = ({ size = 24 }) => (
-  <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
-    <defs>
-      <linearGradient id="claude-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#f59e0b"/>
-        <stop offset="100%" stopColor="#d97706"/>
-      </linearGradient>
-    </defs>
-    <path d="M24 4 L42 14 L42 34 L24 44 L6 34 L6 14 Z" fill="url(#claude-grad)"/>
-    <path d="M18 16 L24 13 L30 16 L30 32 L24 35 L18 32 Z" fill="white" opacity="0.9"/>
-    <circle cx="24" cy="24" r="4" fill="url(#claude-grad)"/>
-  </svg>
+  <img src="/EKKA_AI.png" width={size} height={size} alt="EKKA AI Logo" style={{ display: "block" }} />
 );
 
 export const IconPlay = ({ size = 16 }) => (

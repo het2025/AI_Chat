@@ -1,5 +1,6 @@
 import { memo, useState, useRef, useEffect, useCallback } from "react";
 import { IconPaperclip, IconSearch, IconZap, IconArrowUp, IconStop } from "../icons/index.jsx";
+import { MagneticButton } from "../ui/MagneticButton.jsx";
 
 const InputArea = memo(function InputArea({ onSend, isStreaming, onStop, initialValue, setInitialValue, onEditLast }) {
   const [text, setText] = useState(initialValue || "");
@@ -203,8 +204,13 @@ const InputArea = memo(function InputArea({ onSend, isStreaming, onStop, initial
             <span style={{ fontSize: 11, color: "var(--text-tertiary)", fontWeight: 500 }}>
               Press Enter to send, Shift + Enter for new line
             </span>
-            <button
+            <MagneticButton
               onClick={handleSend}
+              variant="none"
+              size="none"
+              radius={40}
+              strength={0.5}
+              disabled={!hasText && !isStreaming}
               style={{
                 width: 36, height: 36, borderRadius: "50%", border: "none",
                 background: isStreaming ? "#1a1a1a" : hasText ? "#D97757" : "var(--bg-tertiary)",
@@ -216,7 +222,7 @@ const InputArea = memo(function InputArea({ onSend, isStreaming, onStop, initial
               }}
             >
               {isStreaming ? <IconStop size={18} fill="white" /> : <IconArrowUp size={20} />}
-            </button>
+            </MagneticButton>
           </div>
         </div>
       </div>
