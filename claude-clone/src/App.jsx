@@ -179,9 +179,10 @@ export default function App() {
         onError: (err) => {
           if (isFirstChunk) { setIsTyping(false); }
           stopTypingEffect();
-          updateLastAssistantMessage(convId, "⚠️ Error.", actualModelName);
+          updateLastAssistantMessage(convId, "⚠️ I encountered an error while processing your request. Please check your connection or try again later.", actualModelName);
           setIsStreaming(false);
           abortRef.current = null;
+          console.error("Streaming error:", err);
         },
       });
       abortRef.current = abort;

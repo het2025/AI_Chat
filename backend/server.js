@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 5000;
 
 const nvidiaClient = new OpenAI({
   apiKey: process.env.NVIDIA_API_KEY,
-  baseURL: 'https://integrate.api.nvidia.com/v1',
+  baseURL: "https://integrate.api.nvidia.com/v1",
 });
 
 app.use(cors({ origin: true, credentials: true }));
@@ -36,9 +36,10 @@ const MODELS = [
   "liquid/lfm-2.5-1.2b-instruct:free"
 ];
 
-const DEFAULT_SYSTEM_PROMPT = `You are PatelAI. Provide direct, full code responses. 
-IMPORTANT: If code is long, provide it entirely without cutting off. 
-No LaTeX. Plain text only. Use bullet points (-) for lists.`;
+const DEFAULT_SYSTEM_PROMPT = `You are EKKA AI, a helpful and sophisticated AI assistant. 
+Provide clear, accurate, and comprehensive responses. 
+When providing code, ensure it is complete and well-formatted. 
+Use Markdown for structure, including bullet points and headers where appropriate.`;
 
 function buildMessages(message, history = [], attachments = [], systemPrompt = null) {
   const activeSystemPrompt = { role: "system", content: systemPrompt || DEFAULT_SYSTEM_PROMPT };
@@ -54,7 +55,7 @@ async function tryModelsStream(messages, res, preferredModel = null) {
 
   for (const model of priorityList) {
     try {
-      console.log(`🚀 [STREAM] Using: ${model}`);
+      console.log(`🚀 [STREAM] Attempting model: ${model}`);
       res.write(`data: ${JSON.stringify({ activeModel: model })}\n\n`);
 
       if (model === "mistralai/mistral-nemotron") {
@@ -62,7 +63,7 @@ async function tryModelsStream(messages, res, preferredModel = null) {
           model: model,
           messages: messages,
           temperature: 0.7,
-          max_tokens: 4096, // INCREASED LIMIT
+          max_tokens: 4096, 
           stream: true,
         });
         for await (const chunk of stream) {
@@ -80,7 +81,7 @@ async function tryModelsStream(messages, res, preferredModel = null) {
           headers: {
             Authorization: `Bearer ${process.env.API_KEY}`,
             "Content-Type": "application/json",
-            "X-Title": "Patel AI"
+            "X-Title": "EKKA AI"
           },
           timeout: 20000,
           responseType: "stream",
@@ -97,7 +98,9 @@ async function tryModelsStream(messages, res, preferredModel = null) {
               try {
                 const token = JSON.parse(data).choices?.[0]?.delta?.content;
                 if (token) res.write(`data: ${JSON.stringify({ token })}\n\n`);
-              } catch {}
+              } catch (e) {
+                // Silent catch for parse errors in stream
+              }
             }
           }
         });
@@ -105,21 +108,31 @@ async function tryModelsStream(messages, res, preferredModel = null) {
         response.data.on("error", reject);
       });
     } catch (err) {
-      console.log(`❌ ${model} failed...`);
+      console.error(`❌ [ERROR] Model ${model} failed:`, err.message);
     }
   }
-  throw new Error("All Failed");
+  throw new Error("Service Unavailable: All models failed to respond.");
 }
 
 app.post("/chat/stream", chatLimiter, async (req, res) => {
   try {
     const { message, history, attachments, systemPrompt, model } = req.body;
-    res.writeHead(200, { "Content-Type": "text/event-stream", "Cache-Control": "no-cache", "Connection": "keep-alive" });
+    res.writeHead(200, { 
+      "Content-Type": "text/event-stream", 
+      "Cache-Control": "no-cache", 
+      "Connection": "keep-alive" 
+    });
     const messages = buildMessages(message, history, attachments, systemPrompt);
     await tryModelsStream(messages, res, model);
     res.end();
   } catch (error) {
-    res.end();
+    console.error("Critical Stream Error:", error.message);
+    if (!res.headersSent) {
+      res.status(500).json({ error: "An unexpected error occurred during streaming." });
+    } else {
+      res.write(`data: ${JSON.stringify({ error: error.message })}\n\n`);
+      res.end();
+    }
   }
 });
 
