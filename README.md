@@ -86,3 +86,11 @@ EKKA AI is a sophisticated, full-stack AI chat application inspired by modern LL
   - `src/components/ui/`: Reusable, animated UI components.
   - `src/hooks/`: Custom React hooks for theme, shortcuts, and data fetching.
 
+## 🗺️ Future Roadmap
+
+- [ ] **Voice Integration**: Add speech-to-text and text-to-speech capabilities.
+- [ ] **Custom Personas**: Allow users to create and save custom system prompts.
+- [ ] **RAG (Retrieval-Augmented Generation)**: Enable uploading documents for context-aware chatting.
+- [ ] **Mobile App**: Develop a native mobile version using React Native.
+- [ ] **Shared Chats**: Implement public sharing links for specific conversations.
+
