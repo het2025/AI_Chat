@@ -88,9 +88,11 @@ EKKA AI is a sophisticated, full-stack AI chat application inspired by modern LL
 
 ## 🗺️ Future Roadmap
 
-- [ ] **Voice Integration**: Add speech-to-text and text-to-speech capabilities.
-- [ ] **Custom Personas**: Allow users to create and save custom system prompts.
-- [ ] **RAG (Retrieval-Augmented Generation)**: Enable uploading documents for context-aware chatting.
-- [ ] **Mobile App**: Develop a native mobile version using React Native.
-- [ ] **Shared Chats**: Implement public sharing links for specific conversations.
+- [ ] **Voice Integration**: Add speech-to-text and text-to-speech capabilities for hands-free interaction.
+- [ ] **Custom Personas**: Allow users to create, save, and share custom system prompts and AI personalities.
+- [ ] **RAG (Retrieval-Augmented Generation)**: Enable uploading PDFs and documents for context-aware chatting and analysis.
+- [ ] **Mobile App**: Develop a native mobile version using React Native or Flutter for on-the-go access.
+- [ ] **Shared Chats**: Implement secure public sharing links for specific conversations with optional password protection.
+- [ ] **Plugin System**: Create an extensible architecture for third-party tools and integrations (e.g., Google Search, Wolfram Alpha).
+- [ ] **Local LLM Support**: Integrate with Ollama or LocalAI to allow running models entirely on the user's hardware.
 
