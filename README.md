@@ -86,13 +86,19 @@ EKKA AI is a sophisticated, full-stack AI chat application inspired by modern LL
   - `src/components/ui/`: Reusable, animated UI components.
   - `src/hooks/`: Custom React hooks for theme, shortcuts, and data fetching.
 
-## 🗺️ Future Roadmap
+## 🤝 Contributing
 
-- [ ] **Voice Integration**: Add speech-to-text and text-to-speech capabilities for hands-free interaction.
-- [ ] **Custom Personas**: Allow users to create, save, and share custom system prompts and AI personalities.
-- [ ] **RAG (Retrieval-Augmented Generation)**: Enable uploading PDFs and documents for context-aware chatting and analysis.
-- [ ] **Mobile App**: Develop a native mobile version using React Native or Flutter for on-the-go access.
-- [ ] **Shared Chats**: Implement secure public sharing links for specific conversations with optional password protection.
-- [ ] **Plugin System**: Create an extensible architecture for third-party tools and integrations (e.g., Google Search, Wolfram Alpha).
-- [ ] **Local LLM Support**: Integrate with Ollama or LocalAI to allow running models entirely on the user's hardware.
+Contributions are welcome! If you'd like to help improve EKKA AI, please follow these steps:
+
+1.  **Fork the Project**
+2.  **Create your Feature Branch** (`git checkout -b feature/AmazingFeature`)
+3.  **Commit your Changes** (`git commit -m 'Add some AmazingFeature'`)
+4.  **Push to the Branch** (`git push origin feature/AmazingFeature`)
+5.  **Open a Pull Request**
+
+Please ensure your code follows the existing style and includes appropriate tests.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
