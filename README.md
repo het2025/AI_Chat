@@ -1,8 +1,13 @@
 # EKKA AI - Advanced AI Chat Interface
 
-EKKA AI is a sophisticated, full-stack AI chat application inspired by modern LLM interfaces like Claude. It features a high-performance React frontend and a robust Node.js backend, integrating with NVIDIA NIM for high-speed model inference and Supabase for real-time data persistence and authentication.
+> **A high-performance, aesthetically pleasing AI chat platform built for the modern web.**
 
-![EKKA AI Logo](claude-clone/public/EKKA_AI.png)
+EKKA AI is a sophisticated, full-stack AI chat application inspired by modern LLM interfaces like Claude. It bridges the gap between powerful AI models and an intuitive user experience, featuring a high-performance React frontend and a robust Node.js backend. 
+
+Key integrations include **NVIDIA NIM** for lightning-fast model inference and **Supabase** for secure, real-time data persistence and authentication.
+
+![EKKA AI Hero](claude-clone/src/assets/hero.png)
+*Desktop Interface Preview*
 
 ## 🚀 Key Features
 
