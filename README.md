@@ -110,6 +110,10 @@ Contributions are welcome! If you'd like to help improve EKKA AI, please follow 
 
 Please ensure your code follows the existing style and includes appropriate tests.
 
+## 💬 Support
+
+If you have any questions or find a bug, please open an issue in the GitHub repository or contact the project maintainers.
+
 ## 📄 License
 
 Distributed under the MIT License. See `LICENSE` for more information.
