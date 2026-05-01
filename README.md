@@ -91,6 +91,13 @@ Key integrations include **NVIDIA NIM** for lightning-fast model inference and *
   - `src/components/ui/`: Reusable, animated UI components.
   - `src/hooks/`: Custom React hooks for theme, shortcuts, and data fetching.
 
+## 🗺️ Roadmap
+
+- [ ] **Voice Integration**: Add text-to-speech and speech-to-text capabilities.
+- [ ] **File Analysis**: Enhanced support for PDF and document parsing.
+- [ ] **Shared Chats**: Public links for sharing specific conversations.
+- [ ] **Plugin System**: Support for custom tools and external API integrations.
+
 ## 🤝 Contributing
 
 Contributions are welcome! If you'd like to help improve EKKA AI, please follow these steps:
