@@ -114,6 +114,13 @@ Please ensure your code follows the existing style and includes appropriate test
 
 If you have any questions or find a bug, please open an issue in the GitHub repository or contact the project maintainers.
 
+## 🌟 Acknowledgments
+
+- [NVIDIA NIM](https://www.nvidia.com/en-us/ai/) for the powerful model inference.
+- [Supabase](https://supabase.com/) for the excellent backend-as-a-service.
+- [Tailwind CSS](https://tailwindcss.com/) for the styling framework.
+- The open-source AI community for continuous inspiration.
+
 ## 📄 License
 
 Distributed under the MIT License. See `LICENSE` for more information.
