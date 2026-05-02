@@ -107,6 +107,8 @@ Key integrations include **NVIDIA NIM** for lightning-fast model inference and *
 - [ ] **File Analysis**: Enhanced support for PDF and document parsing.
 - [ ] **Shared Chats**: Public links for sharing specific conversations.
 - [ ] **Plugin System**: Support for custom tools and external API integrations.
+- [ ] **Image Generation**: Integration with DALL-E or Stable Diffusion.
+- [ ] **Mobile App**: Dedicated mobile version for iOS and Android.
 
 ## 🤝 Contributing
 
