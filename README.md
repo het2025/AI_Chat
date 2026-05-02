@@ -131,6 +131,7 @@ If you have any questions or find a bug, please open an issue in the GitHub repo
 - [NVIDIA NIM](https://www.nvidia.com/en-us/ai/) for the powerful model inference.
 - [Supabase](https://supabase.com/) for the excellent backend-as-a-service.
 - [Tailwind CSS](https://tailwindcss.com/) for the styling framework.
+- [Vite](https://vitejs.dev/) for the ultra-fast development experience.
 - The open-source AI community for continuous inspiration.
 
 ## 📄 License
