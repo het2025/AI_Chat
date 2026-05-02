@@ -20,6 +20,16 @@ Key integrations include **NVIDIA NIM** for lightning-fast model inference and *
 - **Responsive UI**: Beautifully designed with Tailwind CSS, featuring a collapsible sidebar, dark/light modes, and framer-motion animations.
 - **Keyboard Shortcuts**: Power-user friendly with integrated shortcuts for quick navigation and actions.
 
+## ⌨️ Keyboard Shortcuts
+
+| Shortcut | Action |
+| :--- | :--- |
+| `Ctrl + /` | Show/Hide Shortcuts |
+| `Ctrl + K` | New Chat |
+| `Ctrl + B` | Toggle Sidebar |
+| `Ctrl + Enter` | Send Message |
+| `Esc` | Close Artifact/Panel |
+
 ## 🛠️ Tech Stack
 
 ### Frontend
