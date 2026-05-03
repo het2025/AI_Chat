@@ -6,6 +6,10 @@ EKKA AI is a sophisticated, full-stack AI chat application inspired by modern LL
 
 Key integrations include **NVIDIA NIM** for lightning-fast model inference and **Supabase** for secure, real-time data persistence and authentication.
 
+## 🌐 Live Demo
+
+Check out the live version of EKKA AI here: [https://ekka-ai.vercel.app](https://ekka-ai.vercel.app) *(Placeholder)*
+
 ![EKKA AI Hero](claude-clone/src/assets/hero.png)
 *Desktop Interface Preview*
 
