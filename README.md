@@ -153,6 +153,9 @@ Please ensure your code follows the existing style and includes appropriate test
 
 If you have any questions or find a bug, please open an issue in the GitHub repository or contact the project maintainers.
 
+**Give it a star! ⭐**
+If you like this project, please consider giving it a star on GitHub. It helps more people discover the project and keeps the maintainers motivated!
+
 ## 🌟 Acknowledgments
 
 - [NVIDIA NIM](https://www.nvidia.com/en-us/ai/) for the powerful model inference.
