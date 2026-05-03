@@ -165,7 +165,7 @@ If you like this project, please consider giving it a star on GitHub. It helps m
 ## 🌟 Acknowledgments
 
 - [NVIDIA NIM](https://www.nvidia.com/en-us/ai/) for the powerful model inference.
-- [Supabase](https://supabase.com/) for the excellent backend-as-a-service.
+- [Supabase](https://supabase.com/) for the excellent backend-as-a-service, enabling real-time chat persistence and secure auth.
 - [Tailwind CSS](https://tailwindcss.com/) for the styling framework.
 - [Vite](https://vitejs.dev/) for the ultra-fast development experience.
 - The open-source AI community for continuous inspiration.
