@@ -108,6 +108,15 @@ EKKA AI was built with a single goal: **to create the fastest and most beautiful
    npm run dev
    ```
 
+## 🛠️ Troubleshooting
+
+If you encounter issues during setup, check the following:
+
+- **NVIDIA API Key**: Ensure your API key is valid and has access to the models specified in `backend/server.js`.
+- **Supabase Configuration**: Verify that your Supabase URL and Anon Key are correctly set in the frontend `.env`.
+- **CORS Issues**: If the frontend cannot communicate with the backend, check that `FRONTEND_URL` in the backend `.env` matches your Vite dev server address (usually `http://localhost:5173`).
+- **Node Version**: Make sure you are using Node.js v18 or later (`node -v`).
+
 ## 📁 Project Structure
 
 - `backend/`: Express server handling LLM API requests and rate limiting.
