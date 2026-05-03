@@ -67,9 +67,10 @@ EKKA AI was built with a single goal: **to create the fastest and most beautiful
 ## 🏁 Getting Started
 
 ### Prerequisites
-- Node.js (v18 or higher)
-- A Supabase project
-- An NVIDIA NIM API Key
+- **Node.js**: v18.x or v20.x (LTS recommended)
+- **Package Manager**: npm or yarn
+- **Supabase Account**: For authentication and database
+- **NVIDIA Developer Account**: To access NVIDIA NIM APIs
 
 ### Installation
 
