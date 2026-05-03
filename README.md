@@ -119,12 +119,14 @@ EKKA AI was built with a single goal: **to create the fastest and most beautiful
 
 ## 🗺️ Roadmap
 
-- [ ] **Voice Integration**: Add text-to-speech and speech-to-text capabilities.
-- [ ] **File Analysis**: Enhanced support for PDF and document parsing.
-- [ ] **Shared Chats**: Public links for sharing specific conversations.
+- [x] **Core Chat Functionality**: Real-time streaming and history management.
+- [x] **Claude-style Artifacts**: Side panel for code and document previews.
+- [ ] **Voice Integration**: Add text-to-speech and speech-to-text capabilities (WIP).
+- [ ] **Multi-Modal Support**: Integration with vision-capable models (e.g., Llama 3.2 Vision).
+- [ ] **Advanced File Analysis**: Enhanced support for PDF, CSV, and complex document parsing.
+- [ ] **Shared Chats**: Generate public, shareable links for conversations.
 - [ ] **Plugin System**: Support for custom tools and external API integrations.
-- [ ] **Image Generation**: Integration with DALL-E or Stable Diffusion.
-- [ ] **Mobile App**: Dedicated mobile version for iOS and Android.
+- [ ] **Mobile App**: Dedicated mobile version for iOS and Android using React Native.
 
 ## 🤝 Contributing
 
