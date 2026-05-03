@@ -125,6 +125,7 @@ If you encounter issues during setup, check the following:
 ## 📁 Project Structure
 
 - `backend/`: Express server handling LLM API requests and rate limiting.
+  - [`server.js`](backend/server.js): Entry point for the Node.js backend.
 - `claude-clone/`: React frontend with modular components, hooks, and UI utilities.
   - `src/components/chat/`: Core chat logic (Message, InputArea, Auth).
   - `src/components/layout/`: Structural components (Sidebar, Navbar, ArtifactPanel).
