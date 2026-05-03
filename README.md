@@ -17,6 +17,14 @@ Key integrations include **NVIDIA NIM** for lightning-fast model inference and *
 ![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
 ![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)
 
+## 🌟 Why EKKA AI?
+
+EKKA AI was built with a single goal: **to create the fastest and most beautiful interface for interacting with Large Language Models.** While many interfaces focus solely on functionality, we believe that the *experience* of AI should be as fluid and inspiring as the technology itself.
+
+- **Speed First**: Leveraging NVIDIA NIM for sub-second response times.
+- **Aesthetic Excellence**: A UI that feels premium, utilizing subtle animations and modern design principles.
+- **Privacy & Security**: Built on Supabase to ensure your data and sessions are always protected.
+
 ## 🚀 Key Features
 
 - **Multi-Model Support**: Seamlessly switch between various LLMs, including Mistral Nemotron and NVIDIA Nemotron models.
