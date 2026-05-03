@@ -174,4 +174,6 @@ If you like this project, please consider giving it a star on GitHub. It helps m
 
 Distributed under the MIT License. See `LICENSE` for more information.
 
+Copyright (c) 2026 Het. All rights reserved.
+
 
