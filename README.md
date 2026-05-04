@@ -2,6 +2,11 @@
 
 > **A high-performance, aesthetically pleasing AI chat platform built for the modern web.**
 
+## 📊 Project Status
+![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)
+
 EKKA AI is a sophisticated, full-stack AI chat application inspired by modern LLM interfaces like Claude. It bridges the gap between powerful AI models and an intuitive user experience, featuring a high-performance React frontend and a robust Node.js backend. Designed to provide a seamless and powerful interface for interacting with state-of-the-art language models. 
 
 Key integrations include **NVIDIA NIM** for lightning-fast model inference and **Supabase** for secure, real-time data persistence and authentication.
