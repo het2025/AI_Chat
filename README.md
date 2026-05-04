@@ -36,6 +36,11 @@ EKKA AI was built with a single goal: **to create the fastest and most beautiful
 - **Aesthetic Excellence**: A UI that feels premium, utilizing subtle animations and modern design principles.
 - **Privacy & Security**: Built on Supabase to ensure your data and sessions are always protected.
 
+### ⚡ Performance Highlights
+- **Sub-100ms UI Latency**: Optimized React components and efficient state management.
+- **Fast Token Generation**: Direct integration with NVIDIA's global inference network.
+- **Lazy Loading**: Dynamic imports for heavy UI components to keep the initial bundle small.
+
 ## 🚀 Key Features
 
 - **Multi-Model Support**: Seamlessly switch between various LLMs, including Mistral Nemotron and NVIDIA Nemotron models.
