@@ -189,4 +189,9 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 Copyright (c) 2026 Het. All rights reserved.
 
+---
+## 📬 Stay Updated
+Follow the project on GitHub to stay updated with the latest features and improvements!
+
+
 
