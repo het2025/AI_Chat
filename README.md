@@ -30,6 +30,7 @@ Check out the live version of EKKA AI here: [https://ekka-ai.vercel.app](https:/
 
 EKKA AI was built with a single goal: **to create the fastest and most beautiful interface for interacting with Large Language Models.** While many interfaces focus solely on functionality, we believe that the *experience* of AI should be as fluid and inspiring as the technology itself.
 
+- **Core Vision**: Bridging the gap between cutting-edge AI and human-centric design.
 - **Speed First**: Leveraging NVIDIA NIM for sub-second response times.
 - **Aesthetic Excellence**: A UI that feels premium, utilizing subtle animations and modern design principles.
 - **Privacy & Security**: Built on Supabase to ensure your data and sessions are always protected.
