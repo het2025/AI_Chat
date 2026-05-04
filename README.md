@@ -154,6 +154,7 @@ If you encounter issues during setup, check the following:
 - [ ] **Shared Chats**: Generate public, shareable links for conversations.
 - [ ] **Plugin System**: Support for custom tools and external API integrations.
 - [ ] **Mobile App**: Dedicated mobile version for iOS and Android using React Native.
+- [ ] **Community Feedback Loop**: Integrated feedback system for model response quality.
 
 ## 🤝 Contributing
 
