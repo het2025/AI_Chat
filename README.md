@@ -2,6 +2,13 @@
 
 > **A high-performance, aesthetically pleasing AI chat platform built for the modern web.**
 
+## 🔗 Quick Links
+- [🌐 Live Demo](#-live-demo)
+- [🚀 Key Features](#-key-features)
+- [🏁 Getting Started](#-getting-started)
+- [🗺️ Roadmap](#-roadmap)
+- [🤝 Contributing](#-contributing)
+
 ## 📊 Project Status
 ![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
