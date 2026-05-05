@@ -65,6 +65,12 @@ EKKA AI was built with a single goal: **to create the fastest and most beautiful
 - **Responsive UI**: Beautifully designed with Tailwind CSS, featuring a collapsible sidebar, dark/light modes, and framer-motion animations.
 - **Keyboard Shortcuts**: Power-user friendly with integrated shortcuts for quick navigation and actions.
 
+## 🛡️ Security Features
+- **Secure Authentication**: Leveraging Supabase Auth for JWT-based session management.
+- **Row Level Security (RLS)**: Ensuring users can only access their own chat history.
+- **Environment Isolation**: Sensitive API keys are never exposed to the client-side.
+- **Rate Limiting**: Backend protection against API abuse and brute-force attacks.
+
 ## ⌨️ Keyboard Shortcuts
 
 | Shortcut | Action |
