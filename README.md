@@ -165,15 +165,24 @@ If you encounter issues during setup, check the following:
 
 ## 🗺️ Roadmap
 
+### 📅 Phase 1: Foundation (Completed)
 - [x] **Core Chat Functionality**: Real-time streaming and history management.
 - [x] **Claude-style Artifacts**: Side panel for code and document previews.
+- [x] **Secure Auth**: Supabase integration for user accounts.
+
+### 📅 Phase 2: Intelligence & Extension (Q2 2026)
 - [ ] **Voice Integration**: Add text-to-speech and speech-to-text capabilities (WIP).
 - [ ] **Multi-Modal Support**: Integration with vision-capable models (e.g., Llama 3.2 Vision).
 - [ ] **Advanced File Analysis**: Enhanced support for PDF, CSV, and complex document parsing.
+
+### 📅 Phase 3: Collaboration & Ecosystem (Q3 2026)
 - [ ] **Shared Chats**: Generate public, shareable links for conversations.
 - [ ] **Plugin System**: Support for custom tools and external API integrations.
 - [ ] **Mobile App**: Dedicated mobile version for iOS and Android using React Native.
+
+### 📅 Phase 4: Community & Growth (Q4 2026)
 - [ ] **Community Feedback Loop**: Integrated feedback system for model response quality.
+- [ ] **Pro Tier**: Advanced features for power users and enterprise.
 
 ## 🤝 Contributing
 
