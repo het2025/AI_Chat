@@ -43,6 +43,12 @@ EKKA AI was built with a single goal: **to create the fastest and most beautiful
 - **Aesthetic Excellence**: A UI that feels premium, utilizing subtle animations and modern design principles.
 - **Privacy & Security**: Built on Supabase to ensure your data and sessions are always protected.
 
+## 🎨 Core Design Principles
+1. **Speed**: Every interaction must feel instantaneous.
+2. **Simplicity**: Minimalistic UI to focus on the conversation.
+3. **Intelligence**: Context-aware features that anticipate user needs.
+4. **Consistency**: A unified look and feel across all components.
+
 ### ⚡ Performance Highlights
 - **Sub-100ms UI Latency**: Optimized React components and efficient state management.
 - **Fast Token Generation**: Direct integration with NVIDIA's global inference network.
