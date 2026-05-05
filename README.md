@@ -184,6 +184,12 @@ If you encounter issues during setup, check the following:
 - [ ] **Community Feedback Loop**: Integrated feedback system for model response quality.
 - [ ] **Pro Tier**: Advanced features for power users and enterprise.
 
+## 💡 Local Development Tips
+- **Node Version Management**: Use `nvm` to ensure you are on the correct Node.js version.
+- **Environment Variables**: Always use `.env.example` as a template for your local `.env` files.
+- **Fast Refresh**: Vite's HMR is incredibly fast; if it stops working, try clearing `node_modules/.vite`.
+- **Linting**: Run `npm run lint` before committing to ensure code quality and consistency.
+
 ## 🤝 Contributing
 
 Contributions are welcome! If you'd like to help improve EKKA AI, please follow these steps:
