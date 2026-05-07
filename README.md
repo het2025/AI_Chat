@@ -173,6 +173,7 @@ If you encounter issues during setup, check the following:
 - [x] **Core Chat Functionality**: Real-time streaming and history management.
 - [x] **Claude-style Artifacts**: Side panel for code and document previews.
 - [x] **Secure Auth**: Supabase integration for user accounts.
+- [x] **Mobile-responsive Design**: Optimized for various screen sizes.
 
 ### 📅 Phase 2: Intelligence & Extension (Q2 2026)
 - [ ] **Voice Integration**: Add text-to-speech and speech-to-text capabilities (WIP).
