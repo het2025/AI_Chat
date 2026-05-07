@@ -210,6 +210,7 @@ Please ensure your code follows the existing style and includes appropriate test
 ## 👥 Community & Support
 - **Discord**: Join our [Community Discord](https://discord.gg/placeholder) for real-time support and discussions.
 - **Twitter**: Follow [@EkkaAI](https://twitter.com/placeholder) for the latest updates and announcements.
+- **LinkedIn**: [Connect on LinkedIn](https://linkedin.com/in/het-patel-placeholder) for professional updates.
 - **GitHub Issues**: Report bugs or suggest features via the [Issue Tracker](https://github.com/het2025/AI_Chat/issues).
 - **Email**: For private inquiries, reach out to `support@ekka.ai`.
 
