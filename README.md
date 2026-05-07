@@ -6,6 +6,7 @@
 - [🌐 Live Demo](#-live-demo)
 - [🚀 Key Features](#-key-features)
 - [🏁 Getting Started](#-getting-started)
+- [🛠️ Troubleshooting](#️-troubleshooting)
 - [🗺️ Roadmap](#-roadmap)
 - [🤝 Contributing](#-contributing)
 
