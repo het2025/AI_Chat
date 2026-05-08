@@ -47,6 +47,14 @@ EKKA AI was built with a single goal: **to create the fastest and most beautiful
 - **Aesthetic Excellence**: A UI that feels premium, utilizing subtle animations and modern design principles.
 - **Privacy & Security**: Built on Supabase to ensure your data and sessions are always protected.
 
+## 🌌 Project Philosophy
+
+EKKA AI is more than just a chat interface; it's a testament to the belief that AI interaction should be **frictionless, beautiful, and accessible**. We prioritize:
+
+- **Empowerment**: Giving users the best tools to interact with the world's most powerful models.
+- **Design as a Feature**: Aesthetics aren't just "polish"—they are fundamental to a productive user experience.
+- **Open Standards**: Building with modern, standard technologies like React, Node.js, and Supabase to ensure longevity and community growth.
+
 ## 🎨 Core Design Principles
 1. **Speed**: Every interaction must feel instantaneous.
 2. **Simplicity**: Minimalistic UI to focus on the conversation.
