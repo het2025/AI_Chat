@@ -99,16 +99,18 @@ EKKA AI is more than just a chat interface; it's a testament to the belief that 
 ## 🛠️ Tech Stack
 
 ### Frontend
-- **Framework**: React 19 + Vite
-- **Styling**: Tailwind CSS + Framer Motion
-- **State/Auth**: Supabase JS SDK
-- **Icons**: Lucide React
-- **Content**: React Markdown + rehype-katex + highlight.js
+- **Framework**: **React 19** leveraging the latest concurrent features for a responsive UI.
+- **Build Tool**: **Vite** for ultra-fast development and optimized production bundles.
+- **Styling**: **Tailwind CSS** for a modern, utility-first design system.
+- **Animations**: **Framer Motion** for fluid, physics-based UI transitions and micro-interactions.
+- **Backend-as-a-Service**: **Supabase** handling secure authentication and real-time data persistence.
+- **Icons**: **Lucide React** for a consistent and accessible icon set.
+- **Content**: **React Markdown** with GFM and **KaTeX** for high-quality mathematical rendering.
 
 ### Backend
-- **Runtime**: Node.js (Express)
-- **AI Integration**: NVIDIA NIM (OpenAI-compatible API)
-- **Middleware**: Morgan, CORS, Express Rate Limit
+- **Runtime**: **Node.js** with **Express** for a lightweight and scalable API layer.
+- **AI Integration**: **NVIDIA NIM** (OpenAI-compatible) for state-of-the-art model inference.
+- **Middleware**: **Morgan** for logging, **CORS** for cross-origin security, and **Express Rate Limit** for API protection.
 
 ## 🏁 Getting Started
 
