@@ -79,11 +79,14 @@ EKKA AI was built with a single goal: **to create the fastest and most beautiful
 
 | Shortcut | Action |
 | :--- | :--- |
-| `Ctrl + /` | Show/Hide Shortcuts |
-| `Ctrl + K` | New Chat |
-| `Ctrl + B` | Toggle Sidebar |
-| `Ctrl + Enter` | Send Message |
-| `Esc` | Close Artifact/Panel |
+| `Ctrl + /` | Toggle Sidebar |
+| `Ctrl + K` | Focus Search |
+| `Ctrl + N` | New Chat |
+| `Ctrl + Shift + C` | Copy Last Response |
+| `Enter` | Send Message |
+| `Shift + Enter` | New Line |
+| `Arrow Up` | Edit Last Message (when input is empty) |
+| `Esc` | Stop Streaming / Defocus |
 
 ## 🛠️ Tech Stack
 
