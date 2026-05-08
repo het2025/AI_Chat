@@ -190,10 +190,13 @@ If you encounter issues during setup, check the following:
 - [ ] **Voice Integration**: Add text-to-speech and speech-to-text capabilities (WIP).
 - [ ] **Multi-Modal Support**: Integration with vision-capable models (e.g., Llama 3.2 Vision).
 - [ ] **Advanced File Analysis**: Enhanced support for PDF, CSV, and complex document parsing.
+- [ ] **Custom Personas**: Create and save custom system prompts for different use cases.
+- [ ] **Web Search**: Integration with search APIs for real-time information retrieval.
 
 ### 📅 Phase 3: Collaboration & Ecosystem (Q3 2026)
 - [ ] **Shared Chats**: Generate public, shareable links for conversations.
 - [ ] **Plugin System**: Support for custom tools and external API integrations.
+- [ ] **Collaborative Editing**: Real-time multi-user artifact editing.
 - [ ] **Mobile App**: Dedicated mobile version for iOS and Android using React Native.
 
 ### 📅 Phase 4: Community & Growth (Q4 2026)
