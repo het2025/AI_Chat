@@ -209,6 +209,12 @@ If you encounter issues during setup, check the following:
 - **Fast Refresh**: Vite's HMR is incredibly fast; if it stops working, try clearing `node_modules/.vite`.
 - **Linting**: Run `npm run lint` before committing to ensure code quality and consistency.
 
+## 🤝 Contributors
+
+We welcome contributions from the community! Special thanks to our lead developer:
+
+- **Het Patel** ([@het2025](https://github.com/het2025)) - Lead Developer & Architect
+
 ## 🤝 Contributing
 
 Contributions are welcome! If you'd like to help improve EKKA AI, please follow these steps:
