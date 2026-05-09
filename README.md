@@ -2,6 +2,11 @@
 
 > **A high-performance, aesthetically pleasing AI chat platform built for the modern web.**
 
+## 🆕 Latest Updates
+- **2026-05-09**: Enhanced UI animations and improved markdown rendering performance.
+- **2026-05-01**: Integrated NVIDIA Nemotron-4 340B for superior reasoning.
+- **2026-04-15**: Added full LaTeX support with KaTeX.
+
 ## 🔗 Quick Links
 - [🌐 Live Demo](#-live-demo)
 - [🚀 Key Features](#-key-features)
@@ -15,6 +20,8 @@
 ![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)
 ![Last Commit](https://img.shields.io/github/last-commit/het2025/AI_Chat)
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
 
 EKKA AI is a sophisticated, full-stack AI chat application inspired by modern LLM interfaces like Claude. It bridges the gap between powerful AI models and an intuitive user experience, featuring a high-performance React frontend and a robust Node.js backend. Designed to provide a seamless and powerful interface for interacting with state-of-the-art language models. 
 
