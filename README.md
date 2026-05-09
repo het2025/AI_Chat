@@ -168,6 +168,26 @@ EKKA AI is more than just a chat interface; it's a testament to the belief that 
    npm run dev
    ```
 
+## 🚀 Deployment
+
+### Frontend (Vercel/Netlify)
+1. **Connect your repository**: Link your GitHub repo to Vercel or Netlify.
+2. **Environment Variables**: Add the following variables:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+   - `VITE_API_URL` (Your deployed backend URL)
+3. **Build Command**: `npm run build`
+4. **Output Directory**: `dist`
+
+### Backend (Render/Railway/Heroku)
+1. **Create a new Web Service**: Link your repository.
+2. **Root Directory**: Set to `backend/`.
+3. **Environment Variables**: Add:
+   - `NVIDIA_API_KEY`
+   - `FRONTEND_URL` (Your deployed frontend URL)
+   - `PORT` (e.g., `5000`)
+4. **Start Command**: `npm start`
+
 ## 🛠️ Troubleshooting
 
 If you encounter issues during setup, check the following:
