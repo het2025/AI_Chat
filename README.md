@@ -45,6 +45,16 @@ Check out the live version of EKKA AI here: [https://ekka-ai.vercel.app](https:/
 ![Framer Motion](https://img.shields.io/badge/Framer%20Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white)
 ![Lucide](https://img.shields.io/badge/Lucide-white?style=for-the-badge&logo=lucide&logoColor=black)
 
+## 🏗️ Technical Architecture
+
+EKKA AI follows a modern decoupled architecture:
+
+- **Frontend**: A React-based Single Page Application (SPA) that handles the UI, state management, and real-time streaming logic.
+- **Backend API**: A Node.js/Express server that acts as a secure bridge between the frontend and the AI inference models. It handles authentication verification, rate limiting, and request formatting.
+- **AI Inference**: Powered by **NVIDIA NIM**, providing OpenAI-compatible endpoints for high-performance model execution.
+- **Data Persistence**: **Supabase** (PostgreSQL) stores user profiles and chat histories, secured by Row-Level Security (RLS) policies.
+- **Authentication**: JWT-based auth managed via Supabase Auth, ensuring secure and seamless user sessions.
+
 ## 🌟 Why EKKA AI?
 
 EKKA AI was built with a single goal: **to create the fastest and most beautiful interface for interacting with Large Language Models.** While many interfaces focus solely on functionality, we believe that the *experience* of AI should be as fluid and inspiring as the technology itself.
