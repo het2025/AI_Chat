@@ -142,10 +142,18 @@ EKKA AI is more than just a chat interface; it's a testament to the belief that 
    ```
    Create a `.env` file in the `backend` folder:
    ```env
+   # The port the express server will listen on
    PORT=5000
+   
+   # Your NVIDIA NIM API Key (Required for model inference)
+   # Get it at: https://build.nvidia.com/
    NVIDIA_API_KEY=your_nvidia_api_key
+   
+   # The URL of your frontend application (used for CORS)
    FRONTEND_URL=http://localhost:5173
-   # Optional: API_KEY=your_openrouter_key
+   
+   # Optional: Secret key for additional API security layer
+   # API_KEY=your_custom_secret_key
    ```
    Start the server:
    ```bash
