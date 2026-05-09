@@ -75,14 +75,14 @@ EKKA AI is more than just a chat interface; it's a testament to the belief that 
 
 ## 🚀 Key Features
 
-- **Multi-Model Support**: Seamlessly switch between various LLMs, including Mistral Nemotron and NVIDIA Nemotron models.
-- **Claude-style Artifacts**: Dedicated side panel for rendering code, documents, and interactive previews.
-- **Real-time Streaming**: Fluid, low-latency message streaming with a custom visual typing effect for a natural feel.
-- **Conversation Management**: Full history tracking, renaming, deleting, and exporting of chats.
-- **Secure Authentication**: Robust user login and session management powered by Supabase.
-- **Rich Markdown Support**: Full support for GFM, LaTeX (via KaTeX), and syntax-highlighted code blocks.
-- **Responsive UI**: Beautifully designed with Tailwind CSS, featuring a collapsible sidebar, dark/light modes, and framer-motion animations.
-- **Keyboard Shortcuts**: Power-user friendly with integrated shortcuts for quick navigation and actions.
+- **🤖 Multi-Model Support**: Seamlessly switch between various state-of-the-art LLMs, including Mistral Nemotron, NVIDIA Nemotron, and Llama 3 models.
+- **📦 Claude-style Artifacts**: A dedicated interactive side panel for rendering code snippets, Markdown documents, and real-time interactive previews.
+- **🌊 Real-time Streaming**: Fluid, ultra-low-latency message streaming with a custom-designed visual typing effect for a more natural conversational feel.
+- **📂 Conversation Management**: Intuitive tools for tracking, renaming, deleting, and exporting your entire chat history.
+- **🔐 Secure Authentication**: Enterprise-grade user login and session management powered by Supabase with Row-Level Security.
+- **📝 Rich Markdown Support**: Comprehensive support for GitHub Flavored Markdown (GFM), complex LaTeX equations (via KaTeX), and beautiful syntax-highlighted code blocks.
+- **📱 Responsive & Elegant UI**: Built with Tailwind CSS and Framer Motion, featuring a collapsible sidebar, adaptive dark/light modes, and buttery-smooth animations.
+- **⌨️ Power-User Shortcuts**: Integrated keyboard shortcuts designed for speed and efficiency in navigation and chat control.
 
 ## 🛡️ Security Features
 - **Secure Authentication**: Leveraging Supabase Auth for JWT-based session management.
