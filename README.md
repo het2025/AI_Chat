@@ -289,8 +289,14 @@ Please ensure your code follows the existing style and includes appropriate test
 
 If you have any questions or find a bug, please open an issue in the GitHub repository or contact the project maintainers.
 
-**Give it a star! ⭐**
-If you like this project, please consider giving it a star on GitHub. It helps more people discover the project and keeps the maintainers motivated!
+## ❤️ Support the Project
+
+If you find EKKA AI useful, please consider:
+- **Giving it a star! ⭐** It helps more people discover the project.
+- **Sharing it on social media** to help grow our community.
+- **Contributing code or ideas** to help us build the future of AI interfaces.
+
+**Every bit of support is greatly appreciated!**
 
 ## 🌟 Acknowledgments
 
