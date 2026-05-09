@@ -231,14 +231,18 @@ If you encounter issues during setup, check the following:
 - [ ] **Web Search**: Integration with search APIs for real-time information retrieval.
 
 ### 📅 Phase 3: Collaboration & Ecosystem (Q3 2026)
-- [ ] **Shared Chats**: Generate public, shareable links for conversations.
-- [ ] **Plugin System**: Support for custom tools and external API integrations.
-- [ ] **Collaborative Editing**: Real-time multi-user artifact editing.
-- [ ] **Mobile App**: Dedicated mobile version for iOS and Android using React Native.
+- [ ] **Shared Chats**: Generate secure, public links for sharing specific conversations with others.
+- [ ] **Plugin System**: Modular architecture to support custom tools, calculators, and API extensions.
+- [ ] **Collaborative Editing**: Enable real-time multi-user editing of shared artifacts and documents.
+- [ ] **Mobile App (MVP)**: Initial release of a dedicated mobile app built with React Native or PWA support.
+- [ ] **Admin Dashboard**: A comprehensive interface for managing users, model usage, and system health.
 
 ### 📅 Phase 4: Community & Growth (Q4 2026)
-- [ ] **Community Feedback Loop**: Integrated feedback system for model response quality.
-- [ ] **Pro Tier**: Advanced features for power users and enterprise.
+- [ ] **Response Quality Feedback**: Integrated star-rating and feedback system for model responses.
+- [ ] **Pro Tier Features**: Advanced settings for power users, including priority access and custom rate limits.
+- [ ] **Open Source Model Hosting**: Support for self-hosted local models via Ollama or LocalAI.
+- [ ] **Global Search**: Search across all your past conversations with semantic indexing.
+- [ ] **Multi-Language Support**: Localizing the UI into major global languages for broader accessibility.
 
 ## 💡 Local Development Tips
 - **Node Version Management**: Use `nvm` to ensure you are on the correct Node.js version.
