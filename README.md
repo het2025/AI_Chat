@@ -281,11 +281,14 @@ Contributions are welcome! If you'd like to help improve EKKA AI, please follow 
 Please ensure your code follows the existing style and includes appropriate tests.
 
 ## 👥 Community & Support
-- **Discord**: Join our [Community Discord](https://discord.gg/placeholder) for real-time support and discussions.
-- **Twitter**: Follow [@EkkaAI](https://twitter.com/placeholder) for the latest updates and announcements.
-- **LinkedIn**: [Connect on LinkedIn](https://linkedin.com/in/het-patel-placeholder) for professional updates.
-- **GitHub Issues**: Report bugs or suggest features via the [Issue Tracker](https://github.com/het2025/AI_Chat/issues).
-- **Email**: For private inquiries, reach out to `support@ekka.ai`.
+
+We are building a vibrant community around EKKA AI! Connect with us through the following channels:
+
+- **💬 Discord**: Join our [Community Discord](https://discord.gg/placeholder) for real-time support, feature discussions, and to show off what you've built.
+- **🐦 Twitter**: Follow [@EkkaAI](https://twitter.com/placeholder) for the latest news, teasers, and AI industry insights.
+- **💼 LinkedIn**: [Connect with us on LinkedIn](https://linkedin.com/in/het-patel-placeholder) for professional updates and networking.
+- **🐛 GitHub Issues**: Found a bug or have a suggestion? Open an issue on our [Issue Tracker](https://github.com/het2025/AI_Chat/issues).
+- **✉️ Email Support**: For private inquiries or enterprise support, reach out to `support@ekka.ai`.
 
 ## 💬 Support
 
