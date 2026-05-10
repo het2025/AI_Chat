@@ -103,16 +103,17 @@ EKKA AI is more than just a chat interface; it's a testament to the belief that 
 
 ## ⌨️ Keyboard Shortcuts
 
-| Shortcut | Action |
-| :--- | :--- |
-| `Ctrl + /` | Toggle Sidebar |
-| `Ctrl + K` | Focus Search |
-| `Ctrl + N` | New Chat |
-| `Ctrl + Shift + C` | Copy Last Response |
-| `Enter` | Send Message |
-| `Shift + Enter` | New Line |
-| `Arrow Up` | Edit Last Message (when input is empty) |
-| `Esc` | Stop Streaming / Defocus |
+| Shortcut | Action | Description |
+| :--- | :--- | :--- |
+| `Ctrl + /` | Toggle Sidebar | Show/hide the navigation menu |
+| `Ctrl + K` | Focus Search | Quickly jump to the conversation search |
+| `Ctrl + N` | New Chat | Start a fresh conversation instantly |
+| `Ctrl + Shift + C` | Copy Last Response | Copy the latest AI message to clipboard |
+| `Enter` | Send Message | Dispatch your current message |
+| `Shift + Enter` | New Line | Insert a line break without sending |
+| `Arrow Up` | Edit Last Message | Edit your previous message (when input is empty) |
+| `Esc` | Stop / Defocus | Halt streaming or remove focus from input |
+| `Ctrl + ,` | Settings | Open the application settings panel |
 
 ## 🛠️ Tech Stack
 
