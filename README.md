@@ -235,10 +235,10 @@ If you encounter issues during setup, check the following:
 - [x] **Mobile-responsive Design**: Optimized for various screen sizes.
 
 ### 📅 Phase 2: Intelligence & Extension (Q2 2026)
+- [x] **Custom Personas**: Create and save custom system prompts for different use cases. (Completed)
 - [ ] **Voice Integration**: Add text-to-speech and speech-to-text capabilities (WIP).
 - [ ] **Multi-Modal Support**: Integration with vision-capable models (e.g., Llama 3.2 Vision).
 - [ ] **Advanced File Analysis**: Enhanced support for PDF, CSV, and complex document parsing.
-- [ ] **Custom Personas**: Create and save custom system prompts for different use cases.
 - [ ] **Web Search**: Integration with search APIs for real-time information retrieval.
 
 ### 📅 Phase 3: Collaboration & Ecosystem (Q3 2026)
