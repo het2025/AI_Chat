@@ -3,6 +3,7 @@
 > **A high-performance, aesthetically pleasing AI chat platform built for the modern web.**
 
 ## 🆕 Latest Updates
+- **2026-05-10**: Documentation overhaul and performance optimizations.
 - **2026-05-09**: Enhanced UI animations and improved markdown rendering performance.
 - **2026-05-01**: Integrated NVIDIA Nemotron-4 340B for superior reasoning.
 - **2026-04-15**: Added full LaTeX support with KaTeX.
