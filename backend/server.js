@@ -1,139 +1,45 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import axios from "axios";
 import morgan from "morgan";
-import rateLimit from "express-rate-limit";
-import OpenAI from "openai";
+import chatRoutes from "./src/routes/chatRoutes.js";
+import { errorHandler } from "./src/middleware/errorHandler.js";
 
 dotenv.config();
+
+// Basic validation for critical environment variables
+if (!process.env.NVIDIA_API_KEY && !process.env.API_KEY) {
+  console.warn("⚠️ WARNING: Neither NVIDIA_API_KEY nor API_KEY is set in the environment variables.");
+}
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-const nvidiaClient = new OpenAI({
-  apiKey: process.env.NVIDIA_API_KEY,
-  baseURL: "https://integrate.api.nvidia.com/v1",
-});
+// Security: In production, configure CORS origin to match your frontend domain
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || true, // Allow all in dev, restrict in prod if FRONTEND_URL is set
+  credentials: true,
+};
 
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors(corsOptions));
 app.use(express.json({ limit: "50kb" }));
 app.use(morgan("dev"));
 
-const chatLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 40,
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+// Routes
+app.use("/chat", chatRoutes);
 
-/* ─── OPTIMIZED MODEL LIST ─── */
-const MODELS = [
-  "mistralai/mistral-nemotron",
-  "nvidia/nemotron-nano-9b-v2:free",
-  "nvidia/nemotron-3-nano-30b-a3b:free",
-  "nvidia/nemotron-3-super-120b-a12b:free",
-  "liquid/lfm-2.5-1.2b-instruct:free"
-];
+// Global Error Handler
+app.use(errorHandler);
 
-const DEFAULT_SYSTEM_PROMPT = `You are EKKA AI, a helpful and sophisticated AI assistant. 
-Provide clear, accurate, and comprehensive responses. 
-When providing code, ensure it is complete and well-formatted. 
-Use Markdown for structure, including bullet points and headers where appropriate.`;
-
-function buildMessages(message, history = [], attachments = [], systemPrompt = null) {
-  const activeSystemPrompt = { role: "system", content: systemPrompt || DEFAULT_SYSTEM_PROMPT };
-  const trimmedHistory = history.slice(-10).map(msg => ({
-    role: msg.role,
-    content: Array.isArray(msg.content) ? msg.content : String(msg.content || "").slice(0, 3000)
-  }));
-  return [activeSystemPrompt, ...trimmedHistory, { role: "user", content: String(message) }];
-}
-
-async function tryModelsStream(messages, res, preferredModel = null) {
-  const priorityList = [...new Set([preferredModel, ...MODELS].filter(m => m && MODELS.includes(m)))];
-
-  for (const model of priorityList) {
-    try {
-      console.log(`🚀 [STREAM] Attempting model: ${model}`);
-      res.write(`data: ${JSON.stringify({ activeModel: model })}\n\n`);
-
-      if (model === "mistralai/mistral-nemotron") {
-        const stream = await nvidiaClient.chat.completions.create({
-          model: model,
-          messages: messages,
-          temperature: 0.7,
-          max_tokens: 4096, 
-          stream: true,
-        });
-        for await (const chunk of stream) {
-          const token = chunk.choices[0]?.delta?.content || "";
-          if (token) res.write(`data: ${JSON.stringify({ token })}\n\n`);
-        }
-        res.write("data: [DONE]\n\n");
-        return true;
-      }
-
-      const response = await axios.post(
-        "https://openrouter.ai/api/v1/chat/completions",
-        { model, messages, temperature: 0.7, max_tokens: 4096, stream: true },
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.API_KEY}`,
-            "Content-Type": "application/json",
-            "X-Title": "EKKA AI"
-          },
-          timeout: 20000,
-          responseType: "stream",
-        }
-      );
-
-      return new Promise((resolve, reject) => {
-        response.data.on("data", (chunk) => {
-          const lines = chunk.toString().split("\n");
-          for (const line of lines) {
-            if (line.startsWith("data: ")) {
-              const data = line.slice(6);
-              if (data === "[DONE]") { res.write("data: [DONE]\n\n"); continue; }
-              try {
-                const token = JSON.parse(data).choices?.[0]?.delta?.content;
-                if (token) res.write(`data: ${JSON.stringify({ token })}\n\n`);
-              } catch (e) {
-                // Silent catch for parse errors in stream
-              }
-            }
-          }
-        });
-        response.data.on("end", () => { res.write("data: [DONE]\n\n"); resolve(true); });
-        response.data.on("error", reject);
-      });
-    } catch (err) {
-      console.error(`❌ [ERROR] Model ${model} failed:`, err.message);
-    }
+// Handle server errors (like port already in use)
+app.listen(PORT, () => {
+  console.log(`🚀 Server on ${PORT}`);
+}).on("error", (err) => {
+  if (err.code === "EADDRINUSE") {
+    console.error(`❌ Error: Port ${PORT} is already in use.`);
+    console.error(`💡 Tip: Run 'npx kill-port ${PORT}' to free it up.`);
+  } else {
+    console.error("❌ Server Error:", err.message);
   }
-  throw new Error("Service Unavailable: All models failed to respond.");
-}
-
-app.post("/chat/stream", chatLimiter, async (req, res) => {
-  try {
-    const { message, history, attachments, systemPrompt, model } = req.body;
-    res.writeHead(200, { 
-      "Content-Type": "text/event-stream", 
-      "Cache-Control": "no-cache", 
-      "Connection": "keep-alive" 
-    });
-    const messages = buildMessages(message, history, attachments, systemPrompt);
-    await tryModelsStream(messages, res, model);
-    res.end();
-  } catch (error) {
-    console.error("Critical Stream Error:", error.message);
-    if (!res.headersSent) {
-      res.status(500).json({ error: "An unexpected error occurred during streaming." });
-    } else {
-      res.write(`data: ${JSON.stringify({ error: error.message })}\n\n`);
-      res.end();
-    }
-  }
+  process.exit(1);
 });
-
-app.listen(PORT, () => console.log(`🚀 Server on ${PORT}`));

@@ -83,6 +83,7 @@ EKKA AI is more than just a chat interface; it's a testament to the belief that 
 ### ⚡ Performance Highlights
 - **Sub-100ms UI Latency**: Optimized React components and efficient state management.
 - **Fast Token Generation**: Direct integration with NVIDIA's global inference network.
+- **Optimized Asset Delivery**: Leverages Vite's advanced code-splitting and asset compression for lightning-fast loads.
 - **Lazy Loading**: Dynamic imports for heavy UI components to keep the initial bundle small.
 
 #### 📊 Core Performance Metrics

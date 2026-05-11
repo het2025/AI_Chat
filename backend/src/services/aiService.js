@@ -1,0 +1,96 @@
+import axios from "axios";
+import OpenAI from "openai";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const nvidiaClient = new OpenAI({
+  apiKey: process.env.NVIDIA_API_KEY,
+  baseURL: "https://integrate.api.nvidia.com/v1",
+});
+
+const MODELS = [
+  "mistralai/mistral-nemotron",
+  "nvidia/nemotron-nano-9b-v2:free",
+  "nvidia/nemotron-3-nano-30b-a3b:free",
+  "nvidia/nemotron-3-super-120b-a12b:free",
+  "liquid/lfm-2.5-1.2b-instruct:free"
+];
+
+const DEFAULT_SYSTEM_PROMPT = `You are EKKA AI, a helpful and sophisticated AI assistant. 
+Provide clear, accurate, and comprehensive responses. 
+When providing code, ensure it is complete and well-formatted. 
+Use Markdown for structure, including bullet points and headers where appropriate.`;
+
+export function buildMessages(message, history = [], attachments = [], systemPrompt = null) {
+  const activeSystemPrompt = { role: "system", content: systemPrompt || DEFAULT_SYSTEM_PROMPT };
+  const trimmedHistory = history.slice(-10).map(msg => ({
+    role: msg.role,
+    content: Array.isArray(msg.content) ? msg.content : String(msg.content || "").slice(0, 3000)
+  }));
+  return [activeSystemPrompt, ...trimmedHistory, { role: "user", content: String(message) }];
+}
+
+export async function tryModelsStream(messages, res, preferredModel = null) {
+  const priorityList = [...new Set([preferredModel, ...MODELS].filter(m => m && MODELS.includes(m)))];
+
+  for (const model of priorityList) {
+    try {
+      console.log(`🚀 [STREAM] Attempting model: ${model}`);
+      res.write(`data: ${JSON.stringify({ activeModel: model })}\n\n`);
+
+      if (model === "mistralai/mistral-nemotron") {
+        const stream = await nvidiaClient.chat.completions.create({
+          model: model,
+          messages: messages,
+          temperature: 0.7,
+          max_tokens: 4096, 
+          stream: true,
+        });
+        for await (const chunk of stream) {
+          const token = chunk.choices[0]?.delta?.content || "";
+          if (token) res.write(`data: ${JSON.stringify({ token })}\n\n`);
+        }
+        res.write("data: [DONE]\n\n");
+        return true;
+      }
+
+      const response = await axios.post(
+        "https://openrouter.ai/api/v1/chat/completions",
+        { model, messages, temperature: 0.7, max_tokens: 4096, stream: true },
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.API_KEY}`,
+            "Content-Type": "application/json",
+            "X-Title": "EKKA AI"
+          },
+          timeout: 20000,
+          responseType: "stream",
+        }
+      );
+
+      return new Promise((resolve, reject) => {
+        response.data.on("data", (chunk) => {
+          const lines = chunk.toString().split("\n");
+          for (const line of lines) {
+            if (line.startsWith("data: ")) {
+              const data = line.slice(6);
+              if (data === "[DONE]") { res.write("data: [DONE]\n\n"); continue; }
+              try {
+                const token = JSON.parse(data).choices?.[0]?.delta?.content;
+                if (token) res.write(`data: ${JSON.stringify({ token })}\n\n`);
+              } catch (e) {
+                // Silent catch for parse errors in stream
+              }
+            }
+          }
+        });
+        response.data.on("end", () => { res.write("data: [DONE]\n\n"); resolve(true); });
+        response.data.on("error", reject);
+      });
+    } catch (err) {
+      console.error(`❌ [ERROR] Model ${model} failed:`, err.message);
+    }
+  }
+  throw new Error("Service Unavailable: All models failed to respond.");
+}

@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { useTheme } from "./hooks/useTheme.js";
 import { useConversations } from "./hooks/useConversations.js";
 import { useShortcuts } from "./hooks/useShortcuts.js";
+import { useTypingEffect } from "./hooks/useTypingEffect.js";
 import { streamMessage } from "./utils/api.js";
 import { PERSONAS } from "./utils/personas.js";
 import { supabase } from "./utils/supabase.js";
@@ -39,8 +40,17 @@ export default function App() {
     exportConversation,
   } = useConversations(user?.id);
 
+  const {
+    isStreaming,
+    setIsStreaming,
+    startTypingEffect,
+    stopTypingEffect,
+    appendToQueue,
+    getQueueLength,
+    getDisplayContent
+  } = useTypingEffect(updateLastAssistantMessage);
+
   const [isTyping, setIsTyping] = useState(false);
-  const [isStreaming, setIsStreaming] = useState(false);
   const [personaId, setPersonaId] = useState("patel");
   const [model, setModel] = useState("mistralai/mistral-nemotron");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -53,33 +63,6 @@ export default function App() {
   const searchInputRef = useRef(null);
   const abortRef = useRef(null);
   const nextIdRef = useRef(100);
-
-  // ─── Visual Typing Logic ──────────────────────────────
-  const typingQueueRef = useRef("");
-  const displayContentRef = useRef("");
-  const typingIntervalRef = useRef(null);
-
-  const startTypingEffect = useCallback((convId, initialModel) => {
-    if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
-    displayContentRef.current = "";
-    typingIntervalRef.current = setInterval(() => {
-      if (typingQueueRef.current.length > 0) {
-        const speed = Math.floor(Math.random() * 3) + 1; 
-        const chunk = typingQueueRef.current.substring(0, speed);
-        typingQueueRef.current = typingQueueRef.current.substring(speed);
-        displayContentRef.current += chunk;
-        updateLastAssistantMessage(convId, displayContentRef.current, initialModel);
-      }
-    }, 20);
-  }, [updateLastAssistantMessage]);
-
-  const stopTypingEffect = useCallback(() => {
-    if (typingIntervalRef.current) {
-      clearInterval(typingIntervalRef.current);
-      typingIntervalRef.current = null;
-    }
-    typingQueueRef.current = "";
-  }, []);
 
   // ─── Auth Listener ─────────────────────────────────────
   useEffect(() => {
@@ -116,7 +99,7 @@ export default function App() {
     }
     stopTypingEffect();
     setIsStreaming(false);
-  }, [stopTypingEffect]);
+  }, [stopTypingEffect, setIsStreaming]);
 
   const handleSend = useCallback(async (text, attachments = []) => {
     if (isStreaming) return;
@@ -143,16 +126,15 @@ export default function App() {
         systemPrompt: PERSONAS.find(p => p.id === personaId)?.prompt || PERSONAS[0].prompt,
         onModelSelect: (m) => { actualModelName = m; },
         onChunk: (token) => { 
-          if (isFirstChunk) { // Only set up the assistant message block once the AI has actually begun streaming text!
+          if (isFirstChunk) { 
             isFirstChunk = false;
             setIsTyping(false); // STOP LOADER
             const assistantId = nextIdRef.current++;
             addMessage(convId, { id: assistantId, role: "assistant", content: "", time: timeStr, model: actualModelName });
             setIsStreaming(true);
-            typingQueueRef.current = "";
             startTypingEffect(convId, actualModelName);
           }
-          typingQueueRef.current += token; 
+          appendToQueue(token);
         },
         onDone: () => {
           // Fallback if nothing was ever streamed
@@ -162,17 +144,16 @@ export default function App() {
             const assistantId = nextIdRef.current++;
             addMessage(convId, { id: assistantId, role: "assistant", content: "", time: timeStr, model: actualModelName });
             setIsStreaming(true);
-            typingQueueRef.current = "";
             startTypingEffect(convId, actualModelName);
           }
 
           const checkDone = setInterval(() => {
-            if (typingQueueRef.current.length === 0) {
+            if (getQueueLength() === 0) {
               clearInterval(checkDone);
               stopTypingEffect();
               setIsStreaming(false);
               abortRef.current = null;
-              saveFinalMessages(convId, [...activeMessages, userMsg, { id: nextIdRef.current - 1, role: "assistant", content: displayContentRef.current, time: timeStr, model: actualModelName }]);
+              saveFinalMessages(convId, [...activeMessages, userMsg, { id: nextIdRef.current - 1, role: "assistant", content: getDisplayContent(), time: timeStr, model: actualModelName }]);
             }
           }, 50);
         },
@@ -187,7 +168,7 @@ export default function App() {
       });
       abortRef.current = abort;
     }, 400);
-  }, [isStreaming, activeId, personaId, createConversation, addMessage, updateLastAssistantMessage, getHistory, model, saveFinalMessages, activeMessages, startTypingEffect, stopTypingEffect]);
+  }, [isStreaming, activeId, personaId, createConversation, addMessage, updateLastAssistantMessage, getHistory, model, saveFinalMessages, activeMessages, startTypingEffect, stopTypingEffect, appendToQueue, getQueueLength, getDisplayContent, setIsStreaming]);
 
   const displayMessages = useMemo(() => {
     const lastIdx = activeMessages.length - 1;
