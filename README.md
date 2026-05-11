@@ -130,6 +130,7 @@ EKKA AI is more than just a chat interface; it's a testament to the belief that 
 - **Build Tool**: **Vite** for ultra-fast development and optimized production bundles.
 - **Styling**: **Tailwind CSS** for a modern, utility-first design system.
 - **Animations**: **Framer Motion** for fluid, physics-based UI transitions and micro-interactions.
+- **Utilities**: **clsx** and **tailwind-merge** for dynamic and conflict-free class management.
 - **Backend-as-a-Service**: **Supabase** handling secure authentication and real-time data persistence.
 - **Icons**: **Lucide React** for a consistent and accessible icon set.
 - **Content**: **React Markdown** with GFM and **KaTeX** for high-quality mathematical rendering.
