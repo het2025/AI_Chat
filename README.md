@@ -109,6 +109,7 @@ EKKA AI is more than just a chat interface; it's a testament to the belief that 
 - **Secure Authentication**: Leveraging Supabase Auth for JWT-based session management.
 - **Row Level Security (RLS)**: Ensuring users can only access their own chat history.
 - **Environment Isolation**: Sensitive API keys are never exposed to the client-side.
+- **Automated Dependency Scanning**: Regular audits to identify and mitigate vulnerabilities in third-party libraries.
 - **Rate Limiting**: Backend protection against API abuse and brute-force attacks.
 
 ## ⌨️ Keyboard Shortcuts
