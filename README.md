@@ -132,6 +132,7 @@ EKKA AI is more than just a chat interface; it's a testament to the belief that 
 
 ### Frontend
 - **Framework**: **React 19** leveraging the latest concurrent features for a responsive UI.
+- **State Management**: **React Context API** for lightweight and efficient global state handling.
 - **Build Tool**: **Vite** for ultra-fast development and optimized production bundles.
 - **Styling**: **Tailwind CSS** for a modern, utility-first design system.
 - **Animations**: **Framer Motion** for fluid, physics-based UI transitions and micro-interactions.
