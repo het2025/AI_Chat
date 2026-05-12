@@ -337,6 +337,9 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 Copyright (c) 2026 Het. All rights reserved.
 
+## 📈 Star History
+[![Star History Chart](https://api.star-history.com/svg?repos=het2025/AI_Chat&type=Date)](https://star-history.com/#het2025/AI_Chat&Date)
+
 ---
 ## 📬 Stay Updated
 Follow the project on GitHub to stay updated with the latest features and improvements!
