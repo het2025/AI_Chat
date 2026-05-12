@@ -147,6 +147,9 @@ EKKA AI is more than just a chat interface; it's a testament to the belief that 
 
 ## 🏁 Getting Started
 
+### 🚀 Quick Start
+To get started quickly, you can clone and install all dependencies in one command: `git clone https://github.com/het2025/AI_Chat.git && cd AI_Chat && npm install`
+
 ### Prerequisites
 - **Node.js**: v18.x or v20.x (LTS recommended)
 - **Package Manager**: npm or yarn
