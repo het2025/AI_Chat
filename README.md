@@ -47,6 +47,7 @@ Check out the live version of EKKA AI here: [https://ekka-ai.vercel.app](https:/
 ![NVIDIA](https://img.shields.io/badge/NVIDIA-76B900?style=for-the-badge&logo=nvidia&logoColor=white)
 ![Framer Motion](https://img.shields.io/badge/Framer%20Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white)
 ![Lucide](https://img.shields.io/badge/Lucide-white?style=for-the-badge&logo=lucide&logoColor=black)
+![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
 
 ## 🏗️ Technical Architecture
 
