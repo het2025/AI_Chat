@@ -115,6 +115,12 @@ EKKA AI is more than just a chat interface; it's a testament to the belief that 
 - **Automated Dependency Scanning**: Regular audits to identify and mitigate vulnerabilities in third-party libraries.
 - **Rate Limiting**: Backend protection against API abuse and brute-force attacks.
 
+### 🔒 Privacy Commitment
+We take your privacy seriously. EKKA AI is designed to be a transparent and secure platform.
+- **No Data Selling**: Your chat history and personal information are never sold to third parties.
+- **Encrypted Storage**: All sensitive data is encrypted at rest within the Supabase infrastructure.
+- **User Control**: You have full control over your data, with the ability to delete your account and history at any time.
+
 ## ⌨️ Keyboard Shortcuts
 
 | Shortcut | Action | Description |
