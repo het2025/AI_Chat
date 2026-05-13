@@ -152,6 +152,11 @@ EKKA AI is more than just a chat interface; it's a testament to the belief that 
 ### 🚀 Quick Start
 To get started quickly, you can clone and install all dependencies in one command: `git clone https://github.com/het2025/AI_Chat.git && cd AI_Chat && npm install`
 
+### 💡 Quick Tips
+- **Environment Setup**: Don't forget to rename `.env.example` to `.env` in both `backend` and `claude-clone` directories.
+- **Model Choice**: Start with NVIDIA's Mistral Nemotron-4 340B for the best balance of speed and reasoning.
+- **Side Panel**: Use the 'Artifacts' panel to view and copy code snippets more easily.
+
 ### Prerequisites
 - **Node.js**: v18.x or v20.x (LTS recommended)
 - **Package Manager**: npm or yarn
