@@ -132,20 +132,20 @@ EKKA AI is more than just a chat interface; it's a testament to the belief that 
 ## 🛠️ Tech Stack
 
 ### Frontend
-- **Framework**: **React 19** leveraging the latest concurrent features for a responsive UI.
+- **Framework**: **React 19.x** leveraging the latest concurrent features for a responsive UI.
 - **State Management**: **React Context API** for lightweight and efficient global state handling.
-- **Build Tool**: **Vite** for ultra-fast development and optimized production bundles.
-- **Styling**: **Tailwind CSS** for a modern, utility-first design system.
-- **Animations**: **Framer Motion** for fluid, physics-based UI transitions and micro-interactions.
-- **Utilities**: **clsx** and **tailwind-merge** for dynamic and conflict-free class management.
-- **Backend-as-a-Service**: **Supabase** handling secure authentication and real-time data persistence.
-- **Icons**: **Lucide React** for a consistent and accessible icon set.
-- **Content**: **React Markdown** with GFM and **KaTeX** for high-quality mathematical rendering.
+- **Build Tool**: **Vite 6.x** for ultra-fast development and optimized production bundles.
+- **Styling**: **Tailwind CSS 3.4+** for a modern, utility-first design system.
+- **Animations**: **Framer Motion 11.x** for fluid, physics-based UI transitions.
+- **Utilities**: **clsx** and **tailwind-merge** for dynamic class management.
+- **Backend-as-a-Service**: **Supabase** (Postgres + Auth) for secure data persistence.
+- **Icons**: **Lucide React 0.400+** for a consistent icon set.
+- **Content**: **React Markdown** with GFM and **KaTeX** for mathematical rendering.
 
 ### Backend
-- **Runtime**: **Node.js** with **Express** for a lightweight and scalable API layer.
-- **AI Integration**: **NVIDIA NIM** (OpenAI-compatible) for state-of-the-art model inference.
-- **Middleware**: **Morgan** for logging, **CORS** for cross-origin security, and **Express Rate Limit** for API protection.
+- **Runtime**: **Node.js v20+** with **Express 4.x** for a scalable API layer.
+- **AI Integration**: **NVIDIA NIM SDK** (OpenAI-compatible) for model inference.
+- **Middleware**: **Morgan** for logging, **CORS** for security, and **Express Rate Limit**.
 
 ## 🏁 Getting Started
 
