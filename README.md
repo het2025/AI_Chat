@@ -163,7 +163,7 @@ To get started quickly, you can clone and install all dependencies in one comman
 1. **Clone the repository**:
    ```bash
    git clone <repository-url>
-   cd gemini-calude-ai
+   cd AI_Chat
    ```
 
 2. **Backend Setup**:
