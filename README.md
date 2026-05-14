@@ -101,7 +101,7 @@ EKKA AI is more than just a chat interface; it's a testament to the belief that 
 
 ## 🚀 Key Features
 
-- **🤖 Multi-Model Support**: Seamlessly switch between various state-of-the-art LLMs, including Mistral Nemotron, NVIDIA Nemotron, and Llama 3 models.
+- **🤖 Multi-Model Support**: Seamlessly switch between various state-of-the-art LLMs, including Mistral Nemotron, NVIDIA Nemotron, and Llama 3 models, with dynamic context management.
 - **📦 Claude-style Artifacts**: A dedicated interactive side panel for rendering code snippets, Markdown documents, and real-time interactive previews.
 - **🌊 Real-time Streaming**: Fluid, ultra-low-latency message streaming with a custom-designed visual typing effect for a more natural conversational feel.
 - **📂 Conversation Management**: Intuitive tools for tracking, renaming, deleting, and exporting your entire chat history.
