@@ -323,6 +323,7 @@ Please ensure your code follows the existing style and includes appropriate test
 
 We are building a vibrant community around EKKA AI! Connect with us through the following channels:
 
+- **📜 Community Guidelines**: Please review our [Code of Conduct](CODE_OF_CONDUCT.md) to ensure a welcoming environment for all.
 - **🖼️ Project Gallery**: Show off your custom EKKA AI deployments and themed interfaces in our [Gallery Discussions](https://github.com/het2025/AI_Chat/discussions/categories/show-and-tell).
 - **💬 Discord**: Join our [Community Discord](https://discord.gg/placeholder) for real-time support, feature discussions, and to show off what you've built.
 - **🐦 Twitter**: Follow [@EkkaAI](https://twitter.com/placeholder) for the latest news, teasers, and AI industry insights.
