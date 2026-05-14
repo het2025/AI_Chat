@@ -157,6 +157,11 @@ We take your privacy seriously. EKKA AI is designed to be a transparent and secu
 
 ## 🏁 Getting Started
 
+### 🖥️ System Requirements
+- **OS**: Windows 10+, macOS 12+, or Linux (Ubuntu 22.04+ recommended)
+- **Memory**: 8GB RAM minimum (16GB recommended for local development)
+- **Disk Space**: 500MB for project files and dependencies
+
 ### 🚀 Quick Start
 To get started quickly, you can clone and install all dependencies in one command: `git clone https://github.com/het2025/AI_Chat.git && cd AI_Chat && npm install`
 
