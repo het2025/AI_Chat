@@ -76,6 +76,7 @@ EKKA AI is more than just a chat interface; it's a testament to the belief that 
 
 - **Empowerment**: Giving users the best tools to interact with the world's most powerful models.
 - **Design as a Feature**: Aesthetics aren't just "polish"—they are fundamental to a productive user experience.
+- **Developer Experience (DX)**: Providing a clean, well-documented codebase that is easy to extend and maintain.
 - **Open Standards**: Building with modern, standard technologies like React, Node.js, and Supabase to ensure longevity and community growth.
 
 ## 🎨 Core Design Principles
