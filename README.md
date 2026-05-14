@@ -114,6 +114,7 @@ EKKA AI is more than just a chat interface; it's a testament to the belief that 
 - **Row Level Security (RLS)**: Ensuring users can only access their own chat history.
 - **Environment Isolation**: Sensitive API keys are never exposed to the client-side.
 - **Automated Dependency Scanning**: Regular audits to identify and mitigate vulnerabilities in third-party libraries.
+- **Security Best Practices**: Implementation of OWASP guidelines for web application security and data protection.
 - **Rate Limiting**: Backend protection against API abuse and brute-force attacks.
 
 ### 🔒 Privacy Commitment
