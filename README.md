@@ -372,8 +372,8 @@ Copyright (c) 2026 Het. All rights reserved.
 ## 📬 Stay Updated
 Follow the project on GitHub to stay updated with the latest features and improvements!
 
-**Current Version:** 1.1.1
-**Last Updated:** May 14, 2026 
+**Current Version:** 1.1.2
+**Last Updated:** May 15, 2026 
 
 
 
