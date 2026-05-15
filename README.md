@@ -346,6 +346,11 @@ If you find EKKA AI useful, please consider:
 
 **Every bit of support is greatly appreciated!**
 
+## 📚 Useful Resources
+- [React Documentation](https://react.dev/) - Official React documentation.
+- [NVIDIA NIM API Reference](https://build.nvidia.com/) - Explore available models and API usage.
+- [Supabase Documentation](https://supabase.com/docs) - Learn about database and auth integration.
+
 ## 🌟 Acknowledgments
 
 - [NVIDIA NIM](https://www.nvidia.com/en-us/ai/) for the powerful model inference.
