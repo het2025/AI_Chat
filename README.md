@@ -375,6 +375,9 @@ Follow the project on GitHub to stay updated with the latest features and improv
 **Current Version:** 1.1.2
 **Last Updated:** May 15, 2026 
 
+---
+Made with ❤️ by [Het Patel](https://github.com/het2025)
+
 
 
 
