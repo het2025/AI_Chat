@@ -74,7 +74,7 @@ EKKA AI was built with a single goal: **to create the fastest and most beautiful
 
 ## 🌌 Project Philosophy
 
-EKKA AI is more than just a chat interface; it's a testament to the belief that AI interaction should be **frictionless, beautiful, and accessible**. We prioritize:
+EKKA AI is more than just a chat interface; it's a testament to the belief that AI interaction should be **frictionless, inspiring, and accessible**. We prioritize:
 
 - **Empowerment**: Giving users the best tools to interact with the world's most powerful models.
 - **Design as a Feature**: Aesthetics aren't just "polish"—they are fundamental to a productive user experience.
