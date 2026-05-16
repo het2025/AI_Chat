@@ -302,6 +302,7 @@ If you encounter issues during setup, check the following:
 - **Node Version Management**: Use `nvm` to ensure you are on the correct Node.js version.
 - **Environment Variables**: Always use `.env.example` as a template for your local `.env` files.
 - **Fast Refresh**: Vite's HMR is incredibly fast; if it stops working, try clearing `node_modules/.vite`.
+- **Dependency Management**: Use `npm outdated` regularly to stay informed about the latest package updates.
 - **Linting**: Run `npm run lint` before committing to ensure code quality and consistency.
 
 ## 🤝 Contributors
