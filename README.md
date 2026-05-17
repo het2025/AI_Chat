@@ -380,7 +380,7 @@ Copyright (c) 2026 Het. All rights reserved.
 Follow the project on GitHub to stay updated with the latest features and improvements!
 
 **Current Version:** 1.1.4
-**Last Updated:** May 16, 2026 
+**Last Updated:** May 17, 2026 
 
 ---
 Made with ❤️ by [Het Patel](https://github.com/het2025)
