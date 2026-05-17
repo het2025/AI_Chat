@@ -172,6 +172,7 @@ To get started quickly, you can clone and install all dependencies in one comman
 ### 💡 Quick Tips
 - **Node Version Management**: Use `nvm` to ensure you are on the correct Node.js version (v18+ or v20+).
 - **Environment Setup**: Don't forget to rename `.env.example` to `.env` in both `backend` and `claude-clone` directories.
+- **Keyboard Shortcuts**: Master the `Ctrl + /` shortcut to quickly toggle the sidebar and maximize your workspace.
 - **Model Choice**: Start with NVIDIA's Mistral Nemotron-4 340B for the best balance of speed and reasoning.
 - **Side Panel**: Use the 'Artifacts' panel to view and copy code snippets more easily.
 
