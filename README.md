@@ -156,8 +156,10 @@ We take your privacy seriously. EKKA AI is designed to be a transparent and secu
 ### Frontend
 - **Framework**: **React 19.x** leveraging the latest concurrent features for a responsive UI.
 - **State Management**: **React Context API** for lightweight and efficient global state handling.
+- **Routing**: **React Router Dom 7.x** for seamless navigation and protected routes.
 - **Build Tool**: **Vite 6.x** for ultra-fast development and optimized production bundles.
-- **Styling**: **Tailwind CSS 3.4+** for a modern, utility-first design system.
+- **Styling**: **Tailwind CSS 3.4+** with **class-variance-authority** for scalable, type-safe component styling.
+- **Design System**: **lightswind** for specialized UI components and theme orchestration.
 - **Animations**: **Framer Motion 11.x** for fluid, physics-based UI transitions.
 - **Utilities**: **clsx** and **tailwind-merge** for dynamic class management.
 - **Backend-as-a-Service**: **Supabase** (Postgres + Auth) for secure data persistence.
