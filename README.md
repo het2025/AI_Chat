@@ -3,6 +3,7 @@
 > **A high-performance, aesthetically pleasing AI chat platform built for the modern web.**
 
 ## 🆕 Latest Updates
+- **2026-05-18**: Advanced documentation enhancement and repository optimization.
 - **2026-05-17**: Enhanced documentation clarity and repository maintenance.
 - **2026-05-16**: Documentation refinement and maintenance update.
 - **2026-05-15**: Continuous improvement and documentation refinement.
@@ -379,8 +380,8 @@ Copyright (c) 2026 Het. All rights reserved.
 ## 📬 Stay Updated
 Follow the project on GitHub to stay updated with the latest features and improvements!
 
-**Current Version:** 1.1.4
-**Last Updated:** May 17, 2026 
+**Current Version:** 1.1.5
+**Last Updated:** May 18, 2026 
 
 ---
 Made with ❤️ by [Het Patel](https://github.com/het2025)
