@@ -243,6 +243,15 @@ To get started quickly, you can clone and install all dependencies in one comman
    npm run dev
    ```
 
+### 🛠️ Development Workflow
+
+To maintain code quality and consistency, we follow a standard development workflow:
+
+1. **Linting**: Before committing, run `npm run lint` in the `claude-clone` directory to catch potential issues and ensure style compliance.
+2. **Build Verification**: Ensure the project builds successfully by running `npm run build`. This is especially important before deployment.
+3. **Environment Sync**: When adding new features that require configuration, remember to update `.env.example` to keep the team in sync.
+4. **Component Testing**: We recommend testing new UI components across different screen sizes using Vite's fast refresh and the responsive preview tools.
+
 ## 🚀 Deployment
 
 ### Frontend (Vercel/Netlify)
