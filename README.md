@@ -114,6 +114,15 @@ EKKA AI is more than just a chat interface; it's a testament to the belief that 
 - **📱 Responsive & Elegant UI**: Built with Tailwind CSS and Framer Motion, featuring a collapsible sidebar, adaptive dark/light modes, and buttery-smooth animations.
 - **⌨️ Power-User Shortcuts**: Integrated keyboard shortcuts designed for speed and efficiency in navigation and chat control.
 
+## 🔦 Feature Spotlight: Artifacts
+
+One of EKKA AI's most powerful features is the **Artifacts** system. Inspired by modern LLM interfaces, Artifacts provide a dedicated space for high-value content that you can view, edit, and iterate upon.
+
+- **Dynamic Rendering**: Code snippets, Markdown documents, and UI previews are rendered in a high-performance side panel.
+- **Improved Focus**: Keep the conversation flow clean by moving large blocks of code or long documents to the sidebar.
+- **Direct Interaction**: Copy code or download generated content directly from the Artifact panel with a single click.
+- **Version Awareness**: Future updates will include version history for artifacts, allowing you to track changes over time.
+
 ## 🛡️ Security Features
 - **Secure Authentication**: Leveraging Supabase Auth for JWT-based session management.
 - **Row Level Security (RLS)**: Ensuring users can only access their own chat history.
