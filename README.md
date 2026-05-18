@@ -301,12 +301,12 @@ If you encounter issues during setup, check the following:
 
 ### 📅 Phase 2: Intelligence & Extension (Q2 2026)
 - [x] **Custom Personas**: Create and save custom system prompts for different use cases. (Completed)
-- [ ] **Adaptive Theme**: Dark Mode auto-detection based on OS preferences and time of day.
-- [ ] **Voice Integration**: Add text-to-speech and speech-to-text capabilities (WIP - Phase 2).
-- [ ] **Enhanced Markdown Rendering**: Support for more complex table structures and extended syntax (WIP).
-- [ ] **Multi-Modal Support**: Integration with vision-capable models (e.g., Llama 3.2 Vision).
-- [ ] **Advanced File Analysis**: Enhanced support for PDF, CSV, and complex document parsing.
-- [ ] **Web Search**: Integration with search APIs for real-time information retrieval.
+- [x] **Adaptive Theme**: Dark Mode auto-detection based on OS preferences and seamless transition. (Completed)
+- [ ] **Voice Integration**: Add low-latency text-to-speech and speech-to-text capabilities via WebSockets.
+- [ ] **Enhanced Markdown Rendering**: Support for more complex table structures and Mermaid.js diagrams.
+- [ ] **Multi-Modal Support**: Integration with vision-capable models (e.g., Llama 3.2 Vision) for image analysis.
+- [ ] **Advanced File Analysis**: Enhanced RAG support for PDF, CSV, and complex document parsing.
+- [ ] **Web Search**: Integration with search APIs for real-time information retrieval and grounding.
 
 ### 📅 Phase 3: Collaboration & Ecosystem (Q3 2026)
 - [ ] **Shared Chats**: Generate secure, public links for sharing specific conversations with others.
