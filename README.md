@@ -329,6 +329,16 @@ If you encounter issues during setup, check the following:
 - **Dependency Management**: Use `npm outdated` regularly to stay informed about the latest package updates.
 - **Linting**: Run `npm run lint` before committing to ensure code quality and consistency.
 
+## 💡 Local Development Tips
+
+To ensure a smooth development experience, keep these tips in mind:
+
+- **Node Version Management**: We recommend using `nvm` (Node Version Manager) to stay on the LTS version of Node.js (v20+).
+- **Fast Refresh**: Vite's Hot Module Replacement (HMR) is extremely fast. If it ever seems to hang, a quick restart of the dev server usually resolves it.
+- **Dependency Updates**: Run `npm outdated` periodically to check for important updates to our core libraries like Framer Motion or Lucide.
+- **Console Logs**: While developing, keep the browser console open to catch any Supabase RLS policy violations or API errors early.
+- **Network Tab**: Use the browser's Network tab to monitor the streaming tokens and ensure the backend is responding as expected.
+
 ## 🤝 Contributors
 
 We welcome contributions from the community! Special thanks to our lead developer:
