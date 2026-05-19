@@ -304,7 +304,7 @@ If you encounter issues during setup, check the following:
 - [x] **Custom Personas**: Create and save custom system prompts for different use cases. (Completed)
 - [x] **Adaptive Theme**: Dark Mode auto-detection based on OS preferences and seamless transition. (Completed)
 - [ ] **Voice Integration**: Add low-latency text-to-speech and speech-to-text capabilities via WebSockets.
-- [ ] **Enhanced Markdown Rendering**: Support for more complex table structures and Mermaid.js diagrams.
+- [/] **Enhanced Markdown Rendering**: Support for more complex table structures and Mermaid.js diagrams. (In Progress)
 - [ ] **Multi-Modal Support**: Integration with vision-capable models (e.g., Llama 3.2 Vision) for image analysis.
 - [ ] **Advanced File Analysis**: Enhanced RAG support for PDF, CSV, and complex document parsing.
 - [ ] **Web Search**: Integration with search APIs for real-time information retrieval and grounding.
