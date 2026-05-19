@@ -27,7 +27,7 @@
 
 ## 📊 Project Status
 ![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)
-![Version](https://img.shields.io/badge/version-1.1.4-blue.svg)
+![Version](https://img.shields.io/badge/version-1.1.5-blue.svg)
 ![Last Commit](https://img.shields.io/github/last-commit/het2025/AI_Chat)
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
