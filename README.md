@@ -190,10 +190,10 @@ To get started quickly, you can clone and install all dependencies in one comman
 - **Side Panel**: Use the 'Artifacts' panel to view and copy code snippets more easily.
 
 ### Prerequisites
-- **Node.js**: v18.x or v20.x (LTS recommended)
-- **Package Manager**: npm or yarn
-- **Supabase Account**: For authentication and database
-- **NVIDIA Developer Account**: To access NVIDIA NIM APIs
+- **Node.js**: v18.x or v20.x (v20.11.1+ LTS strongly recommended)
+- **Package Manager**: npm v10+ or yarn v1.22+
+- **Supabase Account**: For authentication and database persistence
+- **NVIDIA Developer Account**: To access NVIDIA NIM APIs for model inference
 
 ### Installation
 
