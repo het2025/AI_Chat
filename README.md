@@ -104,6 +104,15 @@ EKKA AI is more than just a chat interface; it's a testament to the belief that 
 | **UI Response Time** | < 50ms | 30ms |
 | **Concurrent Sessions** | 1000+ | Verified |
 
+### 🌐 Browser Support
+- **Chrome**: 100+ (Recommended for best performance)
+- **Firefox**: 100+
+- **Edge**: 100+
+- **Safari**: 15+
+- **Mobile**: Recent versions of iOS Safari and Android Chrome
+
+---
+
 ## 🚀 Key Features
 
 - **🤖 Multi-Model Support**: Seamlessly switch between various state-of-the-art LLMs, including Mistral Nemotron, NVIDIA Nemotron, and Llama 3 models, with dynamic context management.
