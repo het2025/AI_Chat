@@ -63,7 +63,7 @@ EKKA AI follows a modern decoupled architecture designed for scale and performan
 
 - **Frontend**: A highly responsive React-based Single Page Application (SPA) utilizing modern state management (Context API) and SSE (Server-Sent Events) for fluid, real-time message streaming. It leverages Vite for optimized bundling, sub-second HMR, and efficient tree-shaking to minimize load times.
 - **Backend API**: A secure Node.js/Express gateway that orchestrates communication between the frontend and AI services, handling robust authentication, rate limiting, and request sanitization.
-- **AI Inference**: High-performance, real-time model execution powered by **NVIDIA NIM**, providing ultra-low-latency, OpenAI-compatible inference endpoints for a near-instantaneous chat experience across global edge locations.
+- **AI Inference**: High-performance, real-time model execution powered by **NVIDIA NIM**, providing ultra-low-latency, OpenAI-compatible inference endpoints with intelligent response optimization for a near-instantaneous chat experience across global edge locations.
 - **Data Persistence**: **Supabase** (PostgreSQL) stores user profiles and chat histories, secured by fine-grained Row-Level Security (RLS) policies to ensure data isolation.
 - **Authentication**: JWT-based authentication managed via Supabase Auth, supporting secure sessions and seamless user onboarding.
 
