@@ -90,6 +90,7 @@ EKKA AI is more than just a chat interface; it's a testament to the belief that 
 2. **Simplicity**: Minimalistic UI to focus on the conversation.
 3. **Intelligence**: Context-aware features that anticipate user needs.
 4. **Consistency**: A unified look and feel across all components.
+5. **Accessibility**: Ensuring a seamless experience for all users.
 
 ### ⚡ Performance Highlights
 - **Sub-100ms UI Latency**: Optimized React components and efficient state management.
