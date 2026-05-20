@@ -380,7 +380,7 @@ We are building a vibrant community around EKKA AI! Connect with us through the 
 - **💼 LinkedIn**: [Connect with us on LinkedIn](https://linkedin.com/in/het-patel-placeholder) for professional updates and networking.
 - **🐛 GitHub Issues**: Found a bug or have a suggestion? Open an issue on our [Issue Tracker](https://github.com/het2025/AI_Chat/issues).
 - **✉️ Email Support**: For private inquiries or enterprise support, reach out to `support@ekka.ai`.
-- **🚀 Proactive Support**: We aim to respond to all community issues within 24-48 hours.
+- **🚀 Proactive Support**: We aim to respond to all community issues within 24-48 hours and actively incorporate community feedback into our development cycle.
 
 ## 💬 Support
 
