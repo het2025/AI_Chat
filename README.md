@@ -422,7 +422,7 @@ Copyright (c) 2026 Het. All rights reserved.
 Follow the project on GitHub to stay updated with the latest features and improvements!
 
 **Current Version:** 1.1.5
-**Last Updated:** May 19, 2026 
+**Last Updated:** May 20, 2026 
 
 ---
 Made with ❤️ by [Het Patel](https://github.com/het2025)
