@@ -122,7 +122,7 @@ EKKA AI is more than just a chat interface; it's a testament to the belief that 
 - **📂 Conversation Management**: Intuitive tools for tracking, renaming, deleting, and exporting your entire chat history.
 - **🔐 Secure Authentication**: Enterprise-grade user login and session management powered by Supabase with Row-Level Security.
 - **📝 Rich Markdown Support**: Comprehensive support for GitHub Flavored Markdown (GFM), complex LaTeX equations (via KaTeX), and beautiful syntax-highlighted code blocks.
-- **📱 Responsive & Elegant UI**: Built with Tailwind CSS and Framer Motion, featuring a collapsible sidebar, adaptive dark/light modes, and buttery-smooth animations.
+- **📱 Responsive & Elegant UI**: Built with Tailwind CSS and Framer Motion, featuring a collapsible sidebar, adaptive dark/light modes, customizable themes, and buttery-smooth animations.
 - **⌨️ Power-User Shortcuts**: Integrated keyboard shortcuts designed for speed and efficiency in navigation and chat control.
 
 ## 🔦 Feature Spotlight: Artifacts
