@@ -188,6 +188,9 @@ We take your privacy seriously. EKKA AI is designed to be a transparent and secu
 
 ## 🏁 Getting Started
 
+> [!NOTE]
+> Ensure you have Git installed globally and have set up your local SSH keys or personal access tokens to seamlessly contribute to the repository.
+
 ### 🖥️ System Requirements
 - **OS**: Windows 10+, macOS 12+, or Linux (Ubuntu 22.04+ recommended)
 - **Memory**: 8GB RAM minimum (16GB recommended for local development)
