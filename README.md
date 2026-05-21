@@ -183,6 +183,7 @@ We take your privacy seriously. EKKA AI is designed to be a transparent and secu
 ### Backend
 - **Runtime**: **Node.js v20+** with **Express 4.x** for a scalable API layer.
 - **AI Integration**: **NVIDIA NIM SDK** (OpenAI-compatible) for model inference.
+- **Database Access**: Direct connection pool optimization for PostgreSQL via Supabase client.
 - **Middleware**: **Morgan** for logging, **CORS** for security, and **Express Rate Limit**.
 
 ## 🏁 Getting Started
