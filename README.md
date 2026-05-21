@@ -111,7 +111,7 @@ EKKA AI is more than just a chat interface; it's a testament to the belief that 
 - **Chrome**: 100+ (Recommended for best performance)
 - **Firefox**: 100+
 - **Edge**: 100+
-- **Safari**: 15+
+- **Safari**: 15+ (Supports experimental WASM features)
 - **Mobile**: Recent versions of iOS Safari and Android Chrome
 
 ---
