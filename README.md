@@ -140,6 +140,7 @@ One of EKKA AI's most powerful features is the **Artifacts** system. Inspired by
 - **Secure Authentication**: Leveraging Supabase Auth for JWT-based session management.
 - **Row Level Security (RLS)**: Ensuring users can only access their own chat history.
 - **Environment Isolation**: Sensitive API keys are never exposed to the client-side.
+- **Token Expiry**: Configured short-lived JWTs with automatic refresh to mitigate token-theft risks.
 - **Automated Dependency Scanning**: Regular audits to identify and mitigate vulnerabilities in third-party libraries.
 - **Security Best Practices**: Implementation of OWASP guidelines for web application security and data protection.
 - **Rate Limiting**: Backend protection against API abuse and brute-force attacks.
