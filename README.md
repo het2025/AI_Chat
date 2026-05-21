@@ -200,6 +200,7 @@ To get started quickly, you can clone and install all dependencies in one comman
 - **Keyboard Shortcuts**: Master the `Ctrl + /` shortcut to quickly toggle the sidebar and maximize your workspace.
 - **Model Choice**: Start with NVIDIA's Mistral Nemotron-4 340B for the best balance of speed and reasoning.
 - **Side Panel**: Use the 'Artifacts' panel to view and copy code snippets more easily.
+- **Hot Reloading**: If Vite development server stops reflecting changes, try starting with `npm run dev -- --force`.
 
 ### Prerequisites
 - **Node.js**: v18.x or v20.x (v20.11.1+ LTS strongly recommended)
