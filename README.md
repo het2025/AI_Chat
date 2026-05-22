@@ -78,6 +78,8 @@ EKKA AI was built with a single goal: **to create the fastest and most beautiful
 - **Speed First**: Leveraging NVIDIA NIM for sub-second response times.
 - **Aesthetic Excellence**: A UI that feels premium, utilizing subtle animations and modern design principles.
 - **Privacy & Security**: Built on Supabase to ensure your data and sessions are always protected.
+- **Open Source Friendly**: Transparent codebase encouraging community contributions and extensions.
+- **Cross-Platform**: Fully responsive design that works flawlessly on desktop, tablet, and mobile.
 
 ## 🌌 Project Philosophy
 
