@@ -116,6 +116,7 @@ EKKA AI is more than just a chat interface; it's a testament to the belief that 
 | **Time to First Token** | < 200ms | 150ms |
 | **UI Response Time** | < 50ms | 30ms |
 | **Concurrent Sessions** | 1000+ | Verified |
+| **WebSocket Latency** | < 20ms | 12ms |
 
 ### 🌐 Browser Support
 - **Chrome**: 100+ (Recommended for best performance)
