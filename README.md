@@ -170,6 +170,7 @@ We take your privacy seriously. EKKA AI is designed to be a transparent and secu
 | `Ctrl + K` | Focus Search | Quickly jump to the conversation search |
 | `Ctrl + N` | New Chat | Start a fresh conversation instantly |
 | `Ctrl + Shift + C` | Copy Last Response | Copy the latest AI message to clipboard |
+| `Ctrl + E` | Export Chat | Export the current conversation as Markdown or JSON |
 | `Enter` | Send Message | Dispatch your current message |
 | `Shift + Enter` | New Line | Insert a line break without sending |
 | `Arrow Up` | Edit Last Message | Edit your previous message (when input is empty) |
