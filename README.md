@@ -40,7 +40,9 @@
 
 EKKA AI is a sophisticated, full-stack AI chat application inspired by modern LLM interfaces like Claude. It bridges the gap between powerful AI models and an intuitive user experience, featuring a high-performance React frontend and a robust Node.js backend. Designed to provide a seamless and powerful interface for interacting with state-of-the-art language models, EKKA AI supports multi-model switching, real-time streaming, and a fully customizable developer experience.
 
-Key integrations include **NVIDIA NIM** for lightning-fast model inference and **Supabase** for secure, real-time data persistence and authentication. The platform is built with extensibility in mind, making it easy for developers to add new models, customize UI themes, and integrate third-party services.
+Key integrations include **NVIDIA NIM** for lightning-fast model inference and **Supabase** for secure, real-time data persistence and authentication. The platform is built with extensibility in mind, making it easy for developers to add new models, customize UI themes, and integrate third-party services. EKKA AI follows a modular architecture that ensures clean separation of concerns, enabling teams to scale individual components independently.
+
+> 💡 **Tip for developers**: EKKA AI's plugin-ready architecture lets you swap out model providers with minimal code changes — ideal for experimentation and A/B testing across different LLM backends.
 
 ## 🌐 Live Demo
 
