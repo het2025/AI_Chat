@@ -345,6 +345,7 @@ If you encounter issues during setup, check the following:
 - [ ] **Collaborative Editing**: Enable real-time multi-user editing of shared artifacts and documents.
 - [ ] **Mobile App (MVP)**: Initial release of a dedicated mobile app built with React Native or PWA support.
 - [ ] **Admin Dashboard**: A comprehensive interface for managing users, model usage, and system health.
+- [ ] **API Rate Limiting Dashboard**: Visual interface showing per-user API usage, quota status, and request history.
 
 ### 📅 Phase 4: Community & Growth (Q4 2026)
 - [ ] **Response Quality Feedback**: Integrated star-rating and feedback system for model responses.
