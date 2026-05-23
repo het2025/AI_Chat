@@ -389,6 +389,12 @@ Contributions are welcome! If you'd like to help improve EKKA AI, please follow 
 
 Please ensure your code follows the existing style and includes appropriate tests.
 
+### 📋 Contribution Guidelines
+- **Conventional Commits**: We follow the [Conventional Commits](https://www.conventionalcommits.org/) specification. Use prefixes like `feat:`, `fix:`, `docs:`, `chore:`, `refactor:` in your commit messages.
+- **Code Review**: All PRs require at least one approving review before merging. Please be responsive to feedback.
+- **Testing**: Add unit or integration tests for any new features or bug fixes where applicable.
+- **Documentation**: Update relevant sections of this README or inline code comments when adding or changing features.
+
 ## 👥 Community & Support
 
 We are building a vibrant community around EKKA AI! Connect with us through the following channels:
