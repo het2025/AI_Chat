@@ -1,6 +1,6 @@
 ﻿# EKKA AI - Advanced AI Chat Interface
 
-> **A high-performance, aesthetically pleasing AI chat platform built for the modern web.**
+> **A high-performance, aesthetically pleasing AI chat platform built for the modern web â€” featuring multi-model switching, real-time streaming, and enterprise-grade security.**
 
 ## ðŸ†• Latest Updates
 - **2026-05-24**: Added security hardening guide, documented OAuth2 flow improvements, and updated environment variable reference.
