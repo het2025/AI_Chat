@@ -494,3 +494,21 @@ Always rotate your API keys after each deployment. Use environment-specific key 
 - Integrated NVIDIA Nemotron-4 340B reasoning model
 - Full LaTeX rendering via KaTeX
 - 30% faster cold-start via edge function migration
+
+## Environment Variable Reference
+
+The table below documents every environment variable recognised by the application.
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| NVIDIA_API_KEY | Yes | -- | NVIDIA NIM API key for model inference |
+| SUPABASE_URL | Yes | -- | Your Supabase project URL |
+| SUPABASE_ANON_KEY | Yes | -- | Supabase anon/public key |
+| SUPABASE_SERVICE_KEY | Yes | -- | Supabase service role key (backend only) |
+| PORT | No | 3001 | Port the Express backend listens on |
+| CORS_ORIGIN | No | * | Allowed CORS origin(s), comma-separated |
+| RATE_LIMIT_RPM | No | 60 | Max requests per minute per user |
+| LOG_LEVEL | No | info | Logging verbosity: debug, info, warn, error |
+| NODE_ENV | No | development | Runtime environment |
+
+Never commit .env files to source control. Add .env* to your .gitignore and use a secrets manager in production.
