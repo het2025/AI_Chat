@@ -512,3 +512,37 @@ The table below documents every environment variable recognised by the applicati
 | NODE_ENV | No | development | Runtime environment |
 
 Never commit .env files to source control. Add .env* to your .gitignore and use a secrets manager in production.
+
+## Self-Hosting Guide
+
+EKKA AI is fully self-hostable on any Node.js-compatible server.
+
+### Prerequisites
+- Node.js >= 18.x
+- npm >= 9.x
+- A Supabase project (free tier works)
+- An NVIDIA NIM API key
+
+### Steps
+
+1. Clone the repository
+   git clone https://github.com/het2025/AI_Chat.git
+
+2. Install dependencies
+   cd AI_Chat && npm install
+   cd backend && npm install
+
+3. Configure environment variables
+   cp .env.example .env
+   # Fill in your API keys and Supabase credentials
+
+4. Start the backend
+   cd backend && npm start
+
+5. Start the frontend
+   cd .. && npm run dev
+
+6. Open http://localhost:5173 in your browser
+
+### Production Deployment
+For production, build the frontend and serve it via Nginx or Caddy. The backend can be deployed as a systemd service or inside a Docker container.
