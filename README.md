@@ -458,3 +458,19 @@ Made with â¤ï¸ by [Het Patel](https://github.com/het2025)
 
 
 
+
+
+## Security
+
+EKKA AI takes security seriously. The following measures are in place:
+
+| Area | Implementation |
+|------|---------------|
+| Authentication | Supabase JWT + Row Level Security (RLS) |
+| API Keys | Stored server-side only, never exposed to the client |
+| CORS | Strict origin whitelist configured per environment |
+| Rate Limiting | Per-user token bucket (60 req/min on free tier) |
+| Input Sanitisation | All user inputs are sanitised before being sent to the LLM |
+| HTTPS | Enforced in production via Vercel edge network |
+
+Always rotate your API keys after each deployment. Use environment-specific key sets (dev / staging / prod) to limit blast radius in case of a leak.
