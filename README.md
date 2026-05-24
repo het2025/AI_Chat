@@ -474,3 +474,23 @@ EKKA AI takes security seriously. The following measures are in place:
 | HTTPS | Enforced in production via Vercel edge network |
 
 Always rotate your API keys after each deployment. Use environment-specific key sets (dev / staging / prod) to limit blast radius in case of a leak.
+
+## Changelog
+
+### v1.2.0 -- 2026-05-24
+- Strengthened OAuth2 token refresh logic
+- Fixed race condition in streaming message handler
+- Expanded documentation: security guide, self-hosting FAQ, environment reference
+- Reduced initial bundle size by 12% via code-splitting improvements
+
+### v1.1.9 -- 2026-05-18
+- Added API rate limiting dashboard in admin panel
+- Improved model-switcher UX with keyboard navigation
+- Added WebSocket latency metric to performance dashboard
+- Refactored backend middleware for cleaner error propagation
+
+### v1.1.8 -- 2026-05-10
+- UI overhaul with new glassmorphism sidebar design
+- Integrated NVIDIA Nemotron-4 340B reasoning model
+- Full LaTeX rendering via KaTeX
+- 30% faster cold-start via edge function migration
