@@ -1,9 +1,10 @@
-# EKKA AI - Advanced AI Chat Interface
+﻿# EKKA AI - Advanced AI Chat Interface
 
 > **A high-performance, aesthetically pleasing AI chat platform built for the modern web.**
 
-## 🆕 Latest Updates
-- **2026-05-23**: Major documentation update — added API rate limiting guide, improved onboarding section, and refined the project roadmap with Q3 milestones.
+## ðŸ†• Latest Updates
+- **2026-05-24**: Added security hardening guide, documented OAuth2 flow improvements, and updated environment variable reference.
+- **2026-05-23**: Major documentation update â€” added API rate limiting guide, improved onboarding section, and refined the project roadmap with Q3 milestones.
 - **2026-05-22**: Added comprehensive performance benchmarks, updated contributing guidelines, and improved architecture documentation.
 - **2026-05-21**: Documentation refinement, enhanced developer guidelines, and environment setup tips.
 - **2026-05-20**: Initialized documentation for upcoming features and refined repository structure.
@@ -21,16 +22,16 @@
 - **2026-05-01**: Integrated NVIDIA Nemotron-4 340B for superior reasoning.
 - **2026-04-15**: Added full LaTeX support with KaTeX.
 
-## 🔗 Quick Links
-- [🌐 Live Demo](#-live-demo)
-- [🚀 Key Features](#-key-features)
-- [🏁 Getting Started](#-getting-started)
-- [🛠️ Troubleshooting](#️-troubleshooting)
-- [🗺️ Roadmap](#-roadmap)
-- [🤝 Contributing](#-contributing)
-- [❓ FAQ](#-faq)
+## ðŸ”— Quick Links
+- [ðŸŒ Live Demo](#-live-demo)
+- [ðŸš€ Key Features](#-key-features)
+- [ðŸ Getting Started](#-getting-started)
+- [ðŸ› ï¸ Troubleshooting](#ï¸-troubleshooting)
+- [ðŸ—ºï¸ Roadmap](#-roadmap)
+- [ðŸ¤ Contributing](#-contributing)
+- [â“ FAQ](#-faq)
 
-## 📊 Project Status
+## ðŸ“Š Project Status
 ![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)
 ![Version](https://img.shields.io/badge/version-1.1.9-blue.svg)
 ![Last Commit](https://img.shields.io/github/last-commit/het2025/AI_Chat)
@@ -42,16 +43,16 @@ EKKA AI is a sophisticated, full-stack AI chat application inspired by modern LL
 
 Key integrations include **NVIDIA NIM** for lightning-fast model inference and **Supabase** for secure, real-time data persistence and authentication. The platform is built with extensibility in mind, making it easy for developers to add new models, customize UI themes, and integrate third-party services. EKKA AI follows a modular architecture that ensures clean separation of concerns, enabling teams to scale individual components independently.
 
-> 💡 **Tip for developers**: EKKA AI's plugin-ready architecture lets you swap out model providers with minimal code changes — ideal for experimentation and A/B testing across different LLM backends.
+> ðŸ’¡ **Tip for developers**: EKKA AI's plugin-ready architecture lets you swap out model providers with minimal code changes â€” ideal for experimentation and A/B testing across different LLM backends.
 
-## 🌐 Live Demo
+## ðŸŒ Live Demo
 
 Check out the live version of EKKA AI here: [https://ekka-ai.vercel.app](https://ekka-ai.vercel.app) *(Placeholder)*
 
 ![EKKA AI Hero](claude-clone/src/assets/hero.png)
 *Desktop Interface Preview*
 
-## 🛠️ Built With
+## ðŸ› ï¸ Built With
 
 ![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
 ![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)
@@ -63,7 +64,7 @@ Check out the live version of EKKA AI here: [https://ekka-ai.vercel.app](https:/
 ![Lucide](https://img.shields.io/badge/Lucide-white?style=for-the-badge&logo=lucide&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
 
-## 🏗️ Technical Architecture
+## ðŸ—ï¸ Technical Architecture
 
 EKKA AI follows a modern decoupled architecture designed for scale and performance:
 
@@ -73,7 +74,7 @@ EKKA AI follows a modern decoupled architecture designed for scale and performan
 - **Data Persistence**: **Supabase** (PostgreSQL) stores user profiles and chat histories, secured by fine-grained Row-Level Security (RLS) policies to ensure data isolation.
 - **Authentication**: JWT-based authentication managed via Supabase Auth, supporting secure sessions and seamless user onboarding.
 
-## 🌟 Why EKKA AI?
+## ðŸŒŸ Why EKKA AI?
 
 EKKA AI was built with a single goal: **to create the fastest and most beautiful interface for interacting with Large Language Models.** While many interfaces focus solely on functionality, we believe that the *experience* of AI should be as fluid and inspiring as the technology itself.
 
@@ -84,17 +85,17 @@ EKKA AI was built with a single goal: **to create the fastest and most beautiful
 - **Open Source Friendly**: Transparent codebase encouraging community contributions and extensions.
 - **Cross-Platform**: Fully responsive design that works flawlessly on desktop, tablet, and mobile.
 
-## 🌌 Project Philosophy
+## ðŸŒŒ Project Philosophy
 
 EKKA AI is more than just a chat interface; it's a testament to the belief that AI interaction should be **frictionless, inspiring, and accessible**. We prioritize:
 
 - **Empowerment**: Providing users with elite tools to seamlessly interact with and leverage the world's most sophisticated AI models.
-- **Design as a Feature**: Aesthetics aren't just "polish"—they are fundamental to a productive user experience.
+- **Design as a Feature**: Aesthetics aren't just "polish"â€”they are fundamental to a productive user experience.
 - **Developer Experience (DX)**: Providing a clean, well-documented codebase that is easy to extend and maintain.
 - **Open Standards**: Building with modern, standard technologies like React, Node.js, and Supabase to ensure longevity and community growth.
-- **Community**: Welcoming contributions of all kinds—from bug fixes to feature proposals—to collectively shape the future of EKKA AI.
+- **Community**: Welcoming contributions of all kindsâ€”from bug fixes to feature proposalsâ€”to collectively shape the future of EKKA AI.
 
-## 🎨 Core Design Principles
+## ðŸŽ¨ Core Design Principles
 1. **Speed**: Every interaction must feel instantaneous.
 2. **Simplicity**: Minimalistic UI to focus on the conversation.
 3. **Intelligence**: Context-aware features that anticipate user needs.
@@ -103,13 +104,13 @@ EKKA AI is more than just a chat interface; it's a testament to the belief that 
 6. **Scalability**: Architecture designed to grow with increasing user demand.
 7. **Security**: Privacy-first design with end-to-end data protection.
 
-### ⚡ Performance Highlights
+### âš¡ Performance Highlights
 - **Sub-100ms UI Latency**: Optimized React components and efficient state management.
 - **Fast Token Generation**: Direct integration with NVIDIA's global inference network.
 - **Optimized Asset Delivery**: Leverages Vite's advanced code-splitting and asset compression for lightning-fast loads.
 - **Lazy Loading**: Dynamic imports for heavy UI components to keep the initial bundle small.
 
-#### 📊 Core Performance Metrics
+#### ðŸ“Š Core Performance Metrics
 | Metric | Target | Actual (Avg) |
 | :--- | :--- | :--- |
 | **Initial Page Load** | < 1.5s | 1.1s |
@@ -118,7 +119,7 @@ EKKA AI is more than just a chat interface; it's a testament to the belief that 
 | **Concurrent Sessions** | 1000+ | Verified |
 | **WebSocket Latency** | < 20ms | 12ms |
 
-### 🌐 Browser Support
+### ðŸŒ Browser Support
 - **Chrome**: 100+ (Recommended for best performance)
 - **Firefox**: 100+
 - **Edge**: 100+
@@ -127,18 +128,18 @@ EKKA AI is more than just a chat interface; it's a testament to the belief that 
 
 ---
 
-## 🚀 Key Features
+## ðŸš€ Key Features
 
-- **🤖 Multi-Model Support**: Seamlessly switch between various state-of-the-art LLMs, including Mistral Nemotron, NVIDIA Nemotron, and Llama 3 models, with dynamic context management.
-- **📦 Claude-style Artifacts**: A dedicated interactive side panel for rendering code snippets, Markdown documents, and real-time interactive previews.
-- **🌊 Real-time Streaming**: Fluid, ultra-low-latency message streaming with a custom-designed visual typing effect for a more natural conversational feel.
-- **📂 Conversation Management**: Intuitive tools for tracking, renaming, deleting, and exporting your entire chat history.
-- **🔐 Secure Authentication**: Enterprise-grade user login and session management powered by Supabase with Row-Level Security.
-- **📝 Rich Markdown Support**: Comprehensive support for GitHub Flavored Markdown (GFM), complex LaTeX equations (via KaTeX), and beautiful syntax-highlighted code blocks.
-- **📱 Responsive & Elegant UI**: Built with Tailwind CSS and Framer Motion, featuring a collapsible sidebar, adaptive dark/light modes, customizable themes, and buttery-smooth animations.
-- **⌨️ Power-User Shortcuts**: Integrated keyboard shortcuts designed for speed and efficiency in navigation and chat control.
+- **ðŸ¤– Multi-Model Support**: Seamlessly switch between various state-of-the-art LLMs, including Mistral Nemotron, NVIDIA Nemotron, and Llama 3 models, with dynamic context management.
+- **ðŸ“¦ Claude-style Artifacts**: A dedicated interactive side panel for rendering code snippets, Markdown documents, and real-time interactive previews.
+- **ðŸŒŠ Real-time Streaming**: Fluid, ultra-low-latency message streaming with a custom-designed visual typing effect for a more natural conversational feel.
+- **ðŸ“‚ Conversation Management**: Intuitive tools for tracking, renaming, deleting, and exporting your entire chat history.
+- **ðŸ” Secure Authentication**: Enterprise-grade user login and session management powered by Supabase with Row-Level Security.
+- **ðŸ“ Rich Markdown Support**: Comprehensive support for GitHub Flavored Markdown (GFM), complex LaTeX equations (via KaTeX), and beautiful syntax-highlighted code blocks.
+- **ðŸ“± Responsive & Elegant UI**: Built with Tailwind CSS and Framer Motion, featuring a collapsible sidebar, adaptive dark/light modes, customizable themes, and buttery-smooth animations.
+- **âŒ¨ï¸ Power-User Shortcuts**: Integrated keyboard shortcuts designed for speed and efficiency in navigation and chat control.
 
-## 🔦 Feature Spotlight: Artifacts
+## ðŸ”¦ Feature Spotlight: Artifacts
 
 One of EKKA AI's most powerful features is the **Artifacts** system. Inspired by modern LLM interfaces, Artifacts provide a dedicated space for high-value content that you can view, edit, and iterate upon.
 
@@ -147,7 +148,7 @@ One of EKKA AI's most powerful features is the **Artifacts** system. Inspired by
 - **Direct Interaction**: Copy code or download generated content directly from the Artifact panel with a single click.
 - **Version Awareness**: Future updates will include version history for artifacts, allowing you to track changes over time.
 
-## 🛡️ Security Features
+## ðŸ›¡ï¸ Security Features
 - **Secure Authentication**: Leveraging Supabase Auth for JWT-based session management.
 - **Row Level Security (RLS)**: Ensuring users can only access their own chat history.
 - **Environment Isolation**: Sensitive API keys are never exposed to the client-side.
@@ -156,13 +157,13 @@ One of EKKA AI's most powerful features is the **Artifacts** system. Inspired by
 - **Security Best Practices**: Implementation of OWASP guidelines for web application security and data protection.
 - **Rate Limiting**: Backend protection against API abuse and brute-force attacks.
 
-### 🔒 Privacy Commitment
+### ðŸ”’ Privacy Commitment
 We take your privacy seriously. EKKA AI is designed to be a transparent and secure platform.
 - **No Data Selling**: Your chat history and personal information are never sold to third parties.
 - **Encrypted Storage**: All sensitive data is encrypted at rest within the Supabase infrastructure.
 - **User Control**: You have full control over your data, with the ability to delete your account and history at any time.
 
-## ⌨️ Keyboard Shortcuts
+## âŒ¨ï¸ Keyboard Shortcuts
 
 | Shortcut | Action | Description |
 | :--- | :--- | :--- |
@@ -177,7 +178,7 @@ We take your privacy seriously. EKKA AI is designed to be a transparent and secu
 | `Esc` | Stop / Defocus | Halt streaming or remove focus from input |
 | `Ctrl + ,` | Settings | Open the application settings panel |
 
-## 🛠️ Tech Stack
+## ðŸ› ï¸ Tech Stack
 
 ### Frontend
 - **Framework**: **React 19.x** leveraging the latest concurrent features for a responsive UI.
@@ -198,20 +199,20 @@ We take your privacy seriously. EKKA AI is designed to be a transparent and secu
 - **Database Access**: Direct connection pool optimization for PostgreSQL via Supabase client.
 - **Middleware**: **Morgan** for logging, **CORS** for security, and **Express Rate Limit**.
 
-## 🏁 Getting Started
+## ðŸ Getting Started
 
 > [!NOTE]
 > Ensure you have Git installed globally and have set up your local SSH keys or personal access tokens to seamlessly contribute to the repository.
 
-### 🖥️ System Requirements
+### ðŸ–¥ï¸ System Requirements
 - **OS**: Windows 10+, macOS 12+, or Linux (Ubuntu 22.04+ recommended)
 - **Memory**: 8GB RAM minimum (16GB recommended for local development)
 - **Disk Space**: 500MB for project files and dependencies
 
-### 🚀 Quick Start
+### ðŸš€ Quick Start
 To get started quickly, you can clone and install all dependencies in one command: `git clone https://github.com/het2025/AI_Chat.git && cd AI_Chat && npm install`
 
-### 💡 Quick Tips
+### ðŸ’¡ Quick Tips
 - **Node Version Management**: Use `nvm` to ensure you are on the correct Node.js version (v18+ or v20+).
 - **Environment Setup**: Don't forget to rename `.env.example` to `.env` in both `backend` and `claude-clone` directories.
 - **Keyboard Shortcuts**: Master the `Ctrl + /` shortcut to quickly toggle the sidebar and maximize your workspace.
@@ -274,7 +275,7 @@ To get started quickly, you can clone and install all dependencies in one comman
    npm run dev
    ```
 
-### 🛠️ Development Workflow
+### ðŸ› ï¸ Development Workflow
 
 To maintain code quality and consistency, we follow a standard development workflow:
 
@@ -283,7 +284,7 @@ To maintain code quality and consistency, we follow a standard development workf
 3. **Environment Sync**: When adding new features that require configuration, remember to update `.env.example` to keep the team in sync.
 4. **Component Testing**: We recommend testing new UI components across different screen sizes using Vite's fast refresh and the responsive preview tools.
 
-## 🚀 Deployment
+## ðŸš€ Deployment
 
 ### Frontend (Vercel/Netlify)
 1. **Connect your repository**: Link your GitHub repo to Vercel or Netlify.
@@ -303,7 +304,7 @@ To maintain code quality and consistency, we follow a standard development workf
    - `PORT` (e.g., `5000`)
 4. **Start Command**: `npm start`
 
-## 🛠️ Troubleshooting
+## ðŸ› ï¸ Troubleshooting
 
 If you encounter issues during setup, check the following:
 
@@ -312,7 +313,7 @@ If you encounter issues during setup, check the following:
 - **CORS Issues**: If the frontend cannot communicate with the backend, check that `FRONTEND_URL` in the backend `.env` matches your Vite dev server address (usually `http://localhost:5173`).
 - **Node Version**: Make sure you are using Node.js v18 or later (`node -v`).
 
-## 📁 Project Structure
+## ðŸ“ Project Structure
 
 - `backend/`: Express server handling LLM API requests and rate limiting.
   - [`server.js`](backend/server.js): Entry point for the Node.js backend.
@@ -322,15 +323,15 @@ If you encounter issues during setup, check the following:
   - `src/components/ui/`: Reusable, animated UI components.
   - `src/hooks/`: Custom React hooks for theme, shortcuts, and data fetching.
 
-## 🗺️ Roadmap
+## ðŸ—ºï¸ Roadmap
 
-### 📅 Phase 1: Foundation (Completed)
+### ðŸ“… Phase 1: Foundation (Completed)
 - [x] **Core Chat Functionality**: Real-time streaming and history management.
 - [x] **Claude-style Artifacts**: Side panel for code and document previews.
 - [x] **Secure Auth**: Supabase integration for user accounts.
 - [x] **Mobile-responsive Design**: Optimized for various screen sizes.
 
-### 📅 Phase 2: Intelligence & Extension (Q2 2026)
+### ðŸ“… Phase 2: Intelligence & Extension (Q2 2026)
 - [x] **Custom Personas**: Create and save custom system prompts for different use cases. (Completed)
 - [x] **Adaptive Theme**: Dark Mode auto-detection based on OS preferences and seamless transition. (Completed)
 - [ ] **Voice Integration**: Add low-latency text-to-speech and speech-to-text capabilities via WebSockets.
@@ -339,7 +340,7 @@ If you encounter issues during setup, check the following:
 - [ ] **Advanced File Analysis**: Enhanced RAG support for PDF, CSV, and complex document parsing.
 - [ ] **Web Search**: Integration with search APIs for real-time information retrieval and grounding.
 
-### 📅 Phase 3: Collaboration & Ecosystem (Q3 2026)
+### ðŸ“… Phase 3: Collaboration & Ecosystem (Q3 2026)
 - [ ] **Shared Chats**: Generate secure, public links for sharing specific conversations with others.
 - [ ] **Plugin System**: Modular architecture to support custom tools, calculators, and API extensions.
 - [ ] **Collaborative Editing**: Enable real-time multi-user editing of shared artifacts and documents.
@@ -347,21 +348,21 @@ If you encounter issues during setup, check the following:
 - [ ] **Admin Dashboard**: A comprehensive interface for managing users, model usage, and system health.
 - [ ] **API Rate Limiting Dashboard**: Visual interface showing per-user API usage, quota status, and request history.
 
-### 📅 Phase 4: Community & Growth (Q4 2026)
+### ðŸ“… Phase 4: Community & Growth (Q4 2026)
 - [ ] **Response Quality Feedback**: Integrated star-rating and feedback system for model responses.
 - [ ] **Pro Tier Features**: Advanced settings for power users, including priority access and custom rate limits.
 - [ ] **Open Source Model Hosting**: Support for self-hosted local models via Ollama or LocalAI.
 - [ ] **Global Search**: Search across all your past conversations with semantic indexing.
 - [ ] **Multi-Language Support**: Localizing the UI into major global languages for broader accessibility.
 
-## 💡 Local Development Tips
+## ðŸ’¡ Local Development Tips
 - **Node Version Management**: Use `nvm` to ensure you are on the correct Node.js version.
 - **Environment Variables**: Always use `.env.example` as a template for your local `.env` files.
 - **Fast Refresh**: Vite's HMR is incredibly fast; if it stops working, try clearing `node_modules/.vite`.
 - **Dependency Management**: Use `npm outdated` regularly to stay informed about the latest package updates.
 - **Linting**: Run `npm run lint` before committing to ensure code quality and consistency.
 
-## 💡 Local Development Tips
+## ðŸ’¡ Local Development Tips
 
 To ensure a smooth development experience, keep these tips in mind:
 
@@ -371,13 +372,13 @@ To ensure a smooth development experience, keep these tips in mind:
 - **Console Logs**: While developing, keep the browser console open to catch any Supabase RLS policy violations or API errors early.
 - **Network Tab**: Use the browser's Network tab to monitor the streaming tokens and ensure the backend is responding as expected.
 
-## 🤝 Contributors
+## ðŸ¤ Contributors
 
 We welcome contributions from the community! Special thanks to our lead developer:
 
 - **Het Patel** ([@het2025](https://github.com/het2025)) - Lead Developer & Architect
 
-## 🤝 Contributing
+## ðŸ¤ Contributing
 
 Contributions are welcome! If you'd like to help improve EKKA AI, please follow these steps:
 
@@ -389,45 +390,45 @@ Contributions are welcome! If you'd like to help improve EKKA AI, please follow 
 
 Please ensure your code follows the existing style and includes appropriate tests.
 
-### 📋 Contribution Guidelines
+### ðŸ“‹ Contribution Guidelines
 - **Conventional Commits**: We follow the [Conventional Commits](https://www.conventionalcommits.org/) specification. Use prefixes like `feat:`, `fix:`, `docs:`, `chore:`, `refactor:` in your commit messages.
 - **Code Review**: All PRs require at least one approving review before merging. Please be responsive to feedback.
 - **Testing**: Add unit or integration tests for any new features or bug fixes where applicable.
 - **Documentation**: Update relevant sections of this README or inline code comments when adding or changing features.
 
-## 👥 Community & Support
+## ðŸ‘¥ Community & Support
 
 We are building a vibrant community around EKKA AI! Connect with us through the following channels:
 
-- **📜 Community Guidelines**: Please review our [Code of Conduct](CODE_OF_CONDUCT.md) to ensure a welcoming environment for all.
-- **✨ Community Showcase**: We love seeing how you use EKKA AI! Share your screenshots and custom themes in the [Showcase Gallery](https://github.com/het2025/AI_Chat/discussions).
-- **🖼️ Project Gallery**: Show off your custom EKKA AI deployments and themed interfaces in our [Gallery Discussions](https://github.com/het2025/AI_Chat/discussions/categories/show-and-tell).
-- **💬 Discord**: Join our [Community Discord](https://discord.gg/placeholder) for real-time support, feature discussions, and to show off what you've built.
-- **🐦 Twitter**: Follow [@EkkaAI](https://twitter.com/placeholder) for the latest news, teasers, and AI industry insights.
-- **💼 LinkedIn**: [Connect with us on LinkedIn](https://linkedin.com/in/het-patel-placeholder) for professional updates and networking.
-- **🐛 GitHub Issues**: Found a bug or have a suggestion? Open an issue on our [Issue Tracker](https://github.com/het2025/AI_Chat/issues).
-- **✉️ Email Support**: For private inquiries or enterprise support, reach out to `support@ekka.ai`.
-- **🚀 Proactive Support**: We aim to respond to all community issues within 24-48 hours and actively incorporate community feedback into our development cycle.
+- **ðŸ“œ Community Guidelines**: Please review our [Code of Conduct](CODE_OF_CONDUCT.md) to ensure a welcoming environment for all.
+- **âœ¨ Community Showcase**: We love seeing how you use EKKA AI! Share your screenshots and custom themes in the [Showcase Gallery](https://github.com/het2025/AI_Chat/discussions).
+- **ðŸ–¼ï¸ Project Gallery**: Show off your custom EKKA AI deployments and themed interfaces in our [Gallery Discussions](https://github.com/het2025/AI_Chat/discussions/categories/show-and-tell).
+- **ðŸ’¬ Discord**: Join our [Community Discord](https://discord.gg/placeholder) for real-time support, feature discussions, and to show off what you've built.
+- **ðŸ¦ Twitter**: Follow [@EkkaAI](https://twitter.com/placeholder) for the latest news, teasers, and AI industry insights.
+- **ðŸ’¼ LinkedIn**: [Connect with us on LinkedIn](https://linkedin.com/in/het-patel-placeholder) for professional updates and networking.
+- **ðŸ› GitHub Issues**: Found a bug or have a suggestion? Open an issue on our [Issue Tracker](https://github.com/het2025/AI_Chat/issues).
+- **âœ‰ï¸ Email Support**: For private inquiries or enterprise support, reach out to `support@ekka.ai`.
+- **ðŸš€ Proactive Support**: We aim to respond to all community issues within 24-48 hours and actively incorporate community feedback into our development cycle.
 
-## 💬 Support
+## ðŸ’¬ Support
 
 If you have any questions or find a bug, please open an issue in the GitHub repository or contact the project maintainers.
 
-## ❤️ Support the Project
+## â¤ï¸ Support the Project
 
 If you find EKKA AI useful, please consider:
-- **Giving it a star! ⭐** It helps more people discover the project.
+- **Giving it a star! â­** It helps more people discover the project.
 - **Sharing it on social media** to help grow our community.
 - **Contributing code or ideas** to help us build the future of AI interfaces.
 
 **Every bit of support is greatly appreciated!**
 
-## 📚 Useful Resources
+## ðŸ“š Useful Resources
 - [React Documentation](https://react.dev/) - Official React documentation.
 - [NVIDIA NIM API Reference](https://build.nvidia.com/) - Explore available models and API usage.
 - [Supabase Documentation](https://supabase.com/docs) - Learn about database and auth integration.
 
-## 🌟 Acknowledgments
+## ðŸŒŸ Acknowledgments
 
 - [NVIDIA NIM](https://www.nvidia.com/en-us/ai/) for the powerful model inference.
 - [Supabase](https://supabase.com/) for the excellent backend-as-a-service, enabling real-time chat persistence and secure auth.
@@ -435,24 +436,24 @@ If you find EKKA AI useful, please consider:
 - [Vite](https://vitejs.dev/) for the ultra-fast development experience.
 - The open-source AI community for continuous inspiration.
 
-## 📄 License
+## ðŸ“„ License
 
 Distributed under the MIT License. See `LICENSE` for more information.
 
 Copyright (c) 2026 Het. All rights reserved.
 
-## 📈 Star History
+## ðŸ“ˆ Star History
 [![Star History Chart](https://api.star-history.com/svg?repos=het2025/AI_Chat&type=Date)](https://star-history.com/#het2025/AI_Chat&Date)
 
 ---
-## 📬 Stay Updated
+## ðŸ“¬ Stay Updated
 Follow the project on GitHub to stay updated with the latest features and improvements!
 
 **Current Version:** 1.1.6
 **Last Updated:** May 20, 2026 
 
 ---
-Made with ❤️ by [Het Patel](https://github.com/het2025)
+Made with â¤ï¸ by [Het Patel](https://github.com/het2025)
 
 
 
