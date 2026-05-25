@@ -579,3 +579,19 @@ A collection of time-saving tips for working with the EKKA AI codebase:
 | **Lint on Save** | Enable ESLint auto-fix on save in your editor for consistent code style across the team. |
 
 > 💡 Use `CTRL+SHIFT+D` inside the running app to open the built-in debug panel (development builds only).
+
+---
+
+## 🐛 Known Issues & Workarounds
+
+The following issues are currently tracked. Contributions and fixes are welcome!
+
+| Issue | Severity | Workaround |
+|-------|----------|-----------|
+| Stream cuts off on very long responses (>8K tokens) | Medium | Set `MAX_TOKENS=4096` in backend `.env` as a temporary cap |
+| Mobile keyboard pushes chat input off-screen on iOS Safari | Low | Use `env(safe-area-inset-bottom)` CSS variable — fix in progress |
+| Supabase session expires silently after 1 hour with no refresh | Medium | Manually call `supabase.auth.refreshSession()` or reload the page |
+| LaTeX inline math occasionally conflicts with markdown bold syntax | Low | Wrap math in `$...$` and avoid `**` immediately adjacent |
+| Model picker dropdown doesn't close on outside click in Firefox | Low | Click the picker button again to close it manually |
+
+> Issues are tracked on the [GitHub Issues page](https://github.com/het2025/AI_Chat/issues). Please search before opening a duplicate.
