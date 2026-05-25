@@ -44,9 +44,24 @@ EKKA AI is a sophisticated, full-stack AI chat application inspired by modern LL
 
 Key integrations include **NVIDIA NIM** for lightning-fast model inference and **Supabase** for secure, real-time data persistence and authentication. The platform is built with extensibility in mind, making it easy for developers to add new models, customize UI themes, and integrate third-party services. EKKA AI follows a modular architecture that ensures clean separation of concerns, enabling teams to scale individual components independently.
 
-> ðŸ’¡ **Tip for developers**: EKKA AI's plugin-ready architecture lets you swap out model providers with minimal code changes â€” ideal for experimentation and A/B testing across different LLM backends.
+> 💡 **Tip for developers**: EKKA AI's plugin-ready architecture lets you swap out model providers with minimal code changes — ideal for experimentation and A/B testing across different LLM backends.
 
-## ðŸŒ Live Demo
+## 🤖 Supported AI Models
+
+EKKA AI currently supports the following language models via NVIDIA NIM and compatible APIs:
+
+| Model | Provider | Context Window | Best For |
+|-------|----------|---------------|----------|
+| `meta/llama-3.1-70b-instruct` | NVIDIA NIM | 128K tokens | General chat, coding, analysis |
+| `nvidia/nemotron-4-340b-instruct` | NVIDIA NIM | 4K tokens | Advanced reasoning, research |
+| `mistralai/mistral-7b-instruct-v0.3` | NVIDIA NIM | 32K tokens | Fast responses, lightweight tasks |
+| `google/gemma-2-27b-it` | NVIDIA NIM | 8K tokens | Instruction following, summarization |
+| `microsoft/phi-3-medium-128k-instruct` | NVIDIA NIM | 128K tokens | Long document processing |
+
+> Models are selected via the model picker in the UI top-bar. Custom models can be added by extending `src/config/models.js`.
+
+
+## 🌐 Live Demo
 
 Check out the live version of EKKA AI here: [https://ekka-ai.vercel.app](https://ekka-ai.vercel.app) *(Placeholder)*
 
