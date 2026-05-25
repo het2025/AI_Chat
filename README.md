@@ -547,3 +547,20 @@ EKKA AI is fully self-hostable on any Node.js-compatible server.
 
 ### Production Deployment
 For production, build the frontend and serve it via Nginx or Caddy. The backend can be deployed as a systemd service or inside a Docker container.
+
+---
+
+## 💡 Developer Tips & Tricks
+
+A collection of time-saving tips for working with the EKKA AI codebase:
+
+| Tip | Details |
+|-----|---------|
+| **Hot Module Replacement** | Vite's HMR keeps state between edits — no full page reload needed during development. |
+| **Model Switching** | Use the `VITE_DEFAULT_MODEL` env var to set your preferred model without touching the UI. |
+| **Mock Mode** | Set `MOCK_AI=true` in `.env` to run the app with fake AI responses — no API key needed. |
+| **Debug Logs** | Set `LOG_LEVEL=debug` in the backend `.env` to get verbose request/response tracing. |
+| **Type Checking** | Run `npm run type-check` to validate TypeScript types without a full build. |
+| **Lint on Save** | Enable ESLint auto-fix on save in your editor for consistent code style across the team. |
+
+> 💡 Use `CTRL+SHIFT+D` inside the running app to open the built-in debug panel (development builds only).
