@@ -595,3 +595,28 @@ The following issues are currently tracked. Contributions and fixes are welcome!
 | Model picker dropdown doesn't close on outside click in Firefox | Low | Click the picker button again to close it manually |
 
 > Issues are tracked on the [GitHub Issues page](https://github.com/het2025/AI_Chat/issues). Please search before opening a duplicate.
+
+---
+
+## 🤝 Community & Support
+
+EKKA AI is an open-source project and welcomes contributions from the community. Here's how you can get involved:
+
+- 🐛 **Found a bug?** [Open an issue](https://github.com/het2025/AI_Chat/issues/new?template=bug_report.md) with reproduction steps.
+- 💡 **Have a feature idea?** [Start a discussion](https://github.com/het2025/AI_Chat/discussions) or open a feature request issue.
+- 🔧 **Want to contribute code?** Read the [Contributing Guide](#-contributing) and submit a PR.
+- ⭐ **Like the project?** Give it a star on GitHub — it really helps with visibility!
+
+### Hall of Fame
+
+A heartfelt thank you to all contributors who have helped shape EKKA AI:
+
+| Contributor | Area |
+|-------------|------|
+| [@het2025](https://github.com/het2025) | Core architecture, UI/UX, backend |
+
+> Want to see your name here? Open a meaningful PR and it will be added!
+
+---
+
+*Made with ❤️ by the EKKA AI team · [MIT License](LICENSE) · Last updated: 2026-05-25*
