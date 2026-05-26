@@ -742,3 +742,40 @@ Authorization: Bearer <token>
 ```
 
 > Full OpenAPI spec available at `http://localhost:3001/api/docs` when running in development mode.
+
+---
+
+## ⌨️ Keyboard Shortcuts
+
+EKKA AI is designed for power users. Here's a complete reference of all keyboard shortcuts:
+
+### Chat Interface
+
+| Shortcut | Action |
+|----------|--------|
+| `Enter` | Send message |
+| `Shift + Enter` | Add a new line without sending |
+| `↑` (in empty input) | Load previous message for editing |
+| `Ctrl + K` | Open model picker |
+| `Ctrl + /` | Focus the chat input from anywhere |
+| `Ctrl + L` | Clear current conversation |
+| `Ctrl + Shift + C` | Copy last AI response to clipboard |
+| `Escape` | Cancel streaming / close modal |
+
+### Navigation
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl + N` | Start a new conversation |
+| `Ctrl + H` | Toggle conversation history sidebar |
+| `Ctrl + 1–9` | Switch to conversation #1–9 in history |
+| `Ctrl + ,` | Open settings panel |
+
+### Markdown & Code
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl + Shift + M` | Toggle markdown preview for your input |
+| `Ctrl + Shift + D` | Open the developer debug panel |
+
+> 💡 Shortcuts can be remapped in **Settings → Keyboard** (coming in v1.3.0).
