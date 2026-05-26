@@ -678,3 +678,67 @@ When the conversation history approaches `MAX_CONTEXT_TOKENS`, EKKA AI automatic
 | Mistral 7B | ~$0.00002 | ~$0.00002 |
 
 > 💡 Use the built-in **Token Counter** (bottom of the chat input) to see live token estimates before sending a message.
+
+---
+
+## 🔌 API Integration Guide
+
+EKKA AI's backend exposes a simple REST API that you can use to integrate AI chat functionality into your own applications.
+
+### Base URL
+```
+http://localhost:3001/api
+```
+
+### Authentication
+Include your session token in every request header:
+```http
+Authorization: Bearer <your-supabase-session-token>
+```
+
+### Endpoints
+
+#### `POST /chat` — Send a message
+```json
+// Request
+{
+  "model": "meta/llama-3.1-70b-instruct",
+  "messages": [
+    { "role": "user", "content": "Explain quantum computing in simple terms." }
+  ],
+  "stream": false,
+  "max_tokens": 1024
+}
+
+// Response
+{
+  "id": "chat-abc123",
+  "model": "meta/llama-3.1-70b-instruct",
+  "choices": [
+    {
+      "message": { "role": "assistant", "content": "Quantum computing uses..." },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": { "prompt_tokens": 18, "completion_tokens": 312, "total_tokens": 330 }
+}
+```
+
+#### `GET /models` — List available models
+```json
+// Response
+{
+  "models": [
+    { "id": "meta/llama-3.1-70b-instruct", "context_window": 131072 },
+    { "id": "nvidia/nemotron-4-340b-instruct", "context_window": 4096 }
+  ]
+}
+```
+
+#### `DELETE /chat/:id` — Delete a conversation
+```http
+DELETE /api/chat/chat-abc123
+Authorization: Bearer <token>
+```
+
+> Full OpenAPI spec available at `http://localhost:3001/api/docs` when running in development mode.
