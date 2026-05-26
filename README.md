@@ -640,3 +640,41 @@ New to EKKA AI? Complete these steps to be fully set up and ready to contribute:
 - [ ] **Open your PR** — fill in the PR template and request a review from a maintainer
 
 > 🎉 Once your first PR is merged, you'll be added to the Contributors list!
+
+---
+
+## 💰 Token Budget Management
+
+Managing token usage is critical to keeping your API costs under control. EKKA AI provides several mechanisms to help:
+
+### Environment Variables for Token Control
+
+```env
+# Maximum tokens per single model response
+MAX_TOKENS=2048
+
+# Maximum tokens allowed in conversation history context
+MAX_CONTEXT_TOKENS=16000
+
+# Warn in console when a single request exceeds this many tokens
+TOKEN_WARN_THRESHOLD=1500
+```
+
+### How Context Trimming Works
+
+When the conversation history approaches `MAX_CONTEXT_TOKENS`, EKKA AI automatically trims older messages using a **sliding window** strategy:
+
+1. System prompt is always preserved (never trimmed)
+2. The most recent N messages are kept intact
+3. Older messages are removed oldest-first
+4. A `[Context trimmed]` notice is injected into the UI
+
+### Cost Estimation Table
+
+| Model | Input (per 1K tokens) | Output (per 1K tokens) |
+|-------|-----------------------|------------------------|
+| LLaMA 3.1 70B | ~$0.00059 | ~$0.00059 |
+| Nemotron 4 340B | ~$0.0035 | ~$0.0035 |
+| Mistral 7B | ~$0.00002 | ~$0.00002 |
+
+> 💡 Use the built-in **Token Counter** (bottom of the chat input) to see live token estimates before sending a message.
