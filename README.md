@@ -779,3 +779,38 @@ EKKA AI is designed for power users. Here's a complete reference of all keyboard
 | `Ctrl + Shift + D` | Open the developer debug panel |
 
 > 💡 Shortcuts can be remapped in **Settings → Keyboard** (coming in v1.3.0).
+
+---
+
+## 🚀 Upcoming Release: v1.3.0
+
+> **Target Date:** Q3 2026 — contributions welcome!
+
+EKKA AI v1.3.0 is currently in active development. Here's what's coming:
+
+### 🌟 New Features
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| **Custom System Prompts** | 🟡 In Progress | Per-conversation system prompt editor in the UI |
+| **Remappable Keyboard Shortcuts** | 🟡 In Progress | Full keybinding editor in Settings |
+| **Image Upload & Vision Support** | 🔵 Planned | Drag-and-drop images into the chat (requires vision-capable model) |
+| **Conversation Folders** | 🔵 Planned | Organize chats into named folders in the sidebar |
+| **Plugin System v1** | 🔵 Planned | Install community plugins to extend EKKA AI functionality |
+| **Export to PDF / Markdown** | 🔵 Planned | One-click export of any conversation |
+| **Voice Input** | 🔵 Planned | Browser-native speech-to-text for hands-free chatting |
+
+### 🛠️ Under the Hood
+
+- Migrate from CJS to ESM across the entire backend
+- Upgrade to React 19 and leverage the new compiler
+- Replace `axios` with native `fetch` + retry logic
+- Add OpenTelemetry tracing for backend observability
+
+### 🐛 Bugs Targeted for v1.3.0
+
+- Fix Firefox dropdown close-on-outside-click (#41)
+- Resolve iOS Safari keyboard layout issue (#37)
+- Patch Supabase silent session expiry (#29)
+
+> 👀 **Track progress** on the [v1.3.0 Milestone](https://github.com/het2025/AI_Chat/milestone/3) page.
