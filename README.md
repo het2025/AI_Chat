@@ -620,4 +620,23 @@ A heartfelt thank you to all contributors who have helped shape EKKA AI:
 
 ---
 
-*Made with ❤️ by the EKKA AI team · [MIT License](LICENSE) · Last updated: 2026-05-25*
+*Made with ❤️ by the EKKA AI team · [MIT License](LICENSE) · Last updated: 2026-05-26*
+
+---
+
+## 🧭 Contributor Onboarding Checklist
+
+New to EKKA AI? Complete these steps to be fully set up and ready to contribute:
+
+- [ ] **Fork & clone** the repository to your local machine
+- [ ] **Install dependencies** — run `npm install` in both root and `backend/` directories
+- [ ] **Copy environment files** — `cp .env.example .env` and fill in your API keys
+- [ ] **Run the dev server** — `npm run dev` (frontend) + `cd backend && npm start` (backend)
+- [ ] **Read the architecture docs** — understand the folder structure and data flow
+- [ ] **Pick a good first issue** — filter by `label:good-first-issue` on GitHub Issues
+- [ ] **Join the discussion** — introduce yourself in GitHub Discussions
+- [ ] **Write tests** for any new feature or bug fix before opening a PR
+- [ ] **Follow commit conventions** — we use [Conventional Commits](https://www.conventionalcommits.org/)
+- [ ] **Open your PR** — fill in the PR template and request a review from a maintainer
+
+> 🎉 Once your first PR is merged, you'll be added to the Contributors list!
