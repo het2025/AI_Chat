@@ -976,3 +976,84 @@ Tests run automatically on every push and pull request via **GitHub Actions**:
 4. Run Vitest unit tests
 5. Run Playwright E2E tests (headless)
 6. Upload coverage to Codecov
+
+---
+
+## 🐳 Docker Deployment
+
+EKKA AI can be fully containerised for reproducible production deployments.
+
+### Quick Start with Docker Compose
+
+```yaml
+# docker-compose.yml
+version: '3.9'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "80:80"
+    environment:
+      - VITE_API_URL=http://backend:3001
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    env_file:
+      - ./backend/.env
+    restart: unless-stopped
+```
+
+Run with:
+```bash
+docker compose up --build -d
+```
+
+### Frontend Dockerfile
+
+```dockerfile
+# Dockerfile.frontend
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM nginx:alpine
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+```
+
+### Backend Dockerfile
+
+```dockerfile
+# backend/Dockerfile
+FROM node:20-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+EXPOSE 3001
+CMD ["node", "server.js"]
+```
+
+### Health Checks
+
+Both services expose health endpoints:
+
+| Service | Endpoint | Expected Response |
+|---------|----------|-------------------|
+| Backend | `GET /health` | `{"status":"ok","uptime":123}` |
+| Frontend | `GET /` | HTTP 200 |
+
+> Use `docker compose logs -f` to tail logs from all running services.
