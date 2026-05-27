@@ -858,3 +858,46 @@ If the SSE connection drops mid-stream, EKKA AI automatically reconnects:
 ### Disabling Streaming
 
 Set `VITE_DISABLE_STREAMING=true` in your `.env` to switch to standard JSON responses (useful for debugging or low-bandwidth environments).
+
+---
+
+## 🗄️ Database Schema (Supabase)
+
+EKKA AI uses **Supabase (PostgreSQL)** for persistent storage. Below are the core tables:
+
+### `profiles`
+Stores extended user profile data linked to Supabase Auth.
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | `uuid` | PK, FK → auth.users | Matches Supabase Auth user ID |
+| `username` | `text` | UNIQUE, NOT NULL | Display name |
+| `avatar_url` | `text` | NULLABLE | URL to profile picture |
+| `theme` | `text` | DEFAULT `'dark'` | UI theme preference |
+| `created_at` | `timestamptz` | DEFAULT now() | Account creation time |
+
+### `conversations`
+One row per chat conversation thread.
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | `uuid` | PK, DEFAULT gen_random_uuid() | Unique conversation ID |
+| `user_id` | `uuid` | FK → profiles.id | Owner |
+| `title` | `text` | NOT NULL | Auto-generated from first message |
+| `model` | `text` | NOT NULL | Model used (e.g. `meta/llama-3.1-70b`) |
+| `created_at` | `timestamptz` | DEFAULT now() | |
+| `updated_at` | `timestamptz` | DEFAULT now() | Updated on each new message |
+
+### `messages`
+Individual messages within a conversation.
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | `uuid` | PK | Unique message ID |
+| `conversation_id` | `uuid` | FK → conversations.id, CASCADE | Parent conversation |
+| `role` | `text` | CHECK IN ('user','assistant','system') | Message sender |
+| `content` | `text` | NOT NULL | Raw message text |
+| `token_count` | `int4` | NULLABLE | Token count for the message |
+| `created_at` | `timestamptz` | DEFAULT now() | |
+
+> Row Level Security (RLS) is enabled on all tables. Users can only read/write their own data.
