@@ -3,6 +3,7 @@
 > **A high-performance, aesthetically pleasing AI chat platform built for the modern web â€” featuring multi-model switching, real-time streaming, and enterprise-grade security.**
 
 ## 🆕 Latest Updates
+- **2026-05-27**: Added WebRTC voice chat architecture notes, documented streaming SSE reconnection strategy, and expanded the v1.3.0 roadmap with new milestones.
 - **2026-05-26**: Expanded API integration guide, added detailed token budget management docs, and introduced new contributor onboarding checklist.
 - **2026-05-25**: Documented WebSocket architecture improvements, added streaming performance tips, and refined the getting-started guide for new contributors.
 - **2026-05-24**: Added security hardening guide, documented OAuth2 flow improvements, and updated environment variable reference.
