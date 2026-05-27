@@ -901,3 +901,78 @@ Individual messages within a conversation.
 | `created_at` | `timestamptz` | DEFAULT now() | |
 
 > Row Level Security (RLS) is enabled on all tables. Users can only read/write their own data.
+
+---
+
+## 🧪 Testing Guide
+
+EKKA AI uses a layered testing strategy to ensure reliability across the frontend and backend.
+
+### Test Stack
+
+| Layer | Tool | Coverage Target |
+|-------|------|----------------|
+| Unit tests (frontend) | Vitest + React Testing Library | 80%+ |
+| Unit tests (backend) | Jest | 80%+ |
+| Integration tests | Supertest | API routes |
+| End-to-End tests | Playwright | Critical user flows |
+
+### Running Tests
+
+```bash
+# Run all frontend unit tests
+npm run test
+
+# Run tests in watch mode (re-runs on file change)
+npm run test:watch
+
+# Run with coverage report
+npm run test:coverage
+
+# Run backend unit tests
+cd backend && npm test
+
+# Run E2E tests (requires dev server running)
+npx playwright test
+
+# Run E2E tests with UI mode
+npx playwright test --ui
+```
+
+### Writing a New Test
+
+Place unit test files alongside the source file using the `.test.tsx` convention:
+
+```
+src/
+  components/
+    ChatInput.tsx
+    ChatInput.test.tsx   ← unit test lives here
+```
+
+Example test:
+
+```tsx
+import { render, screen, fireEvent } from '@testing-library/react'
+import ChatInput from './ChatInput'
+
+test('sends message on Enter key press', () => {
+  const onSend = vi.fn()
+  render(<ChatInput onSend={onSend} />)
+  const input = screen.getByRole('textbox')
+  fireEvent.change(input, { target: { value: 'Hello AI' } })
+  fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
+  expect(onSend).toHaveBeenCalledWith('Hello AI')
+})
+```
+
+### CI Pipeline
+
+Tests run automatically on every push and pull request via **GitHub Actions**:
+
+1. Install dependencies
+2. Run ESLint
+3. Run TypeScript type-check
+4. Run Vitest unit tests
+5. Run Playwright E2E tests (headless)
+6. Upload coverage to Codecov
