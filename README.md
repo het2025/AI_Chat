@@ -815,3 +815,46 @@ EKKA AI v1.3.0 is currently in active development. Here's what's coming:
 - Patch Supabase silent session expiry (#29)
 
 > 👀 **Track progress** on the [v1.3.0 Milestone](https://github.com/het2025/AI_Chat/milestone/3) page.
+
+---
+
+## 📡 SSE Streaming Architecture
+
+EKKA AI uses **Server-Sent Events (SSE)** to stream AI tokens to the browser in real time. Here's how the full pipeline works:
+
+```
+Browser (React)
+    │  GET /api/chat/stream
+    │  Accept: text/event-stream
+    ▼
+Node.js Backend
+    │  Proxies request to NVIDIA NIM API
+    │  Reads chunked response body
+    ▼
+NVIDIA NIM API
+    │  Returns streaming JSON chunks:
+    │  data: {"choices":[{"delta":{"content":"Hello"}}]}
+    ▼
+Backend SSE Transformer
+    │  Parses each chunk, extracts token
+    │  Writes: data: {"token":"Hello"}\n\n
+    ▼
+Browser EventSource
+    │  Receives token events
+    │  Appends to React state character-by-character
+    ▼
+Rendered Markdown (live)
+```
+
+### Reconnection Strategy
+
+If the SSE connection drops mid-stream, EKKA AI automatically reconnects:
+
+1. Browser detects `error` event on `EventSource`
+2. Exponential back-off retry: 500ms → 1s → 2s → 4s (max 4 retries)
+3. On reconnect, the `Last-Event-ID` header is sent so the backend can resume from the last delivered token
+4. If all retries fail, an inline error toast is shown with a **Retry** button
+
+### Disabling Streaming
+
+Set `VITE_DISABLE_STREAMING=true` in your `.env` to switch to standard JSON responses (useful for debugging or low-bandwidth environments).
