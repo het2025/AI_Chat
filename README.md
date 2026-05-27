@@ -1057,3 +1057,50 @@ Both services expose health endpoints:
 | Frontend | `GET /` | HTTP 200 |
 
 > Use `docker compose logs -f` to tail logs from all running services.
+
+---
+
+## 🛡️ Rate Limiting & Abuse Prevention
+
+EKKA AI includes built-in rate limiting on the backend to protect against API abuse and runaway costs.
+
+### Default Rate Limits
+
+| Endpoint | Limit | Window | Behaviour on Exceed |
+|----------|-------|--------|---------------------|
+| `POST /api/chat` | 20 requests | 1 minute | HTTP 429 + Retry-After header |
+| `POST /api/chat` (streaming) | 10 requests | 1 minute | HTTP 429 |
+| `GET /api/models` | 60 requests | 1 minute | HTTP 429 |
+| `POST /auth/*` | 5 requests | 15 minutes | HTTP 429 + account lockout warning |
+
+### Configuration
+
+Adjust limits via environment variables in `backend/.env`:
+
+```env
+# Requests per window for the /chat endpoint
+RATE_LIMIT_CHAT=20
+RATE_LIMIT_CHAT_STREAM=10
+
+# Time window in seconds
+RATE_LIMIT_WINDOW_SECONDS=60
+
+# Enable IP-based rate limiting (true/false)
+RATE_LIMIT_BY_IP=true
+
+# Whitelist specific IPs from rate limiting (comma-separated)
+RATE_LIMIT_WHITELIST=127.0.0.1,::1
+```
+
+### Response Headers
+
+When rate limiting is active, the following headers are included in every response:
+
+```http
+X-RateLimit-Limit: 20
+X-RateLimit-Remaining: 14
+X-RateLimit-Reset: 1748307600
+Retry-After: 42
+```
+
+> For production deployments behind a reverse proxy (Nginx/Caddy), set `TRUST_PROXY=true` so IP detection works correctly with `X-Forwarded-For` headers.
