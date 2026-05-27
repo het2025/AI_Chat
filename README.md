@@ -1104,3 +1104,43 @@ Retry-After: 42
 ```
 
 > For production deployments behind a reverse proxy (Nginx/Caddy), set `TRUST_PROXY=true` so IP detection works correctly with `X-Forwarded-For` headers.
+
+---
+
+## ♿ Accessibility Statement
+
+EKKA AI is committed to making the application usable by everyone, including people who use assistive technologies.
+
+### Current Compliance Level
+
+| Standard | Status |
+|----------|--------|
+| WCAG 2.1 Level A | ✅ Compliant |
+| WCAG 2.1 Level AA | 🟡 Partial (in progress) |
+| WCAG 2.1 Level AAA | 🔵 Planned for v2.0 |
+
+### What We Support
+
+- ✅ Full **keyboard navigation** — every interactive element is reachable without a mouse
+- ✅ **Screen reader** compatible — ARIA roles and labels are set throughout the UI
+- ✅ **High contrast mode** — respects `prefers-contrast: more` media query
+- ✅ **Reduced motion** — animations are disabled when `prefers-reduced-motion: reduce` is active
+- ✅ **Focus indicators** — all focusable elements have visible focus rings
+- ✅ **Semantic HTML** — headings, landmarks, and lists are used correctly
+- 🟡 **Colour contrast** — all AA ratios met, AAA for body text in progress
+- 🟡 **Live regions** — streaming AI responses use `aria-live="polite"` (improvement planned)
+
+### Reporting an Accessibility Issue
+
+If you encounter a barrier while using EKKA AI, please open an issue on GitHub with the label `accessibility`. Include:
+
+1. The page / component where the issue occurs
+2. The assistive technology you are using (e.g. NVDA, VoiceOver, JAWS)
+3. Steps to reproduce the issue
+4. Expected vs. actual behaviour
+
+We aim to respond to accessibility issues within **72 hours** and prioritise them alongside critical bug fixes.
+
+---
+
+*EKKA AI — Built for everyone · Last updated: 2026-05-27*
