@@ -1236,3 +1236,78 @@ Set these in your repository's **Settings → Secrets and variables → Actions*
 | `VERCEL_PROJECT_ID` | Your Vercel project ID |
 
 > The pipeline runs on every push to `master` and every PR. PRs only run lint + tests; deployment is skipped.
+
+---
+
+## 🌐 Nginx Reverse Proxy Configuration
+
+For self-hosted deployments, use this Nginx config to serve both the frontend and backend behind a single domain with SSL.
+
+```nginx
+# /etc/nginx/sites-available/ekka-ai
+server {
+    listen 80;
+    server_name yourdomain.com;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name yourdomain.com;
+
+    ssl_certificate     /etc/letsencrypt/live/yourdomain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/yourdomain.com/privkey.pem;
+    ssl_protocols       TLSv1.2 TLSv1.3;
+    ssl_ciphers         HIGH:!aNULL:!MD5;
+
+    # Security headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src fonts.gstatic.com;" always;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+    # Serve React frontend
+    location / {
+        root /var/www/ekka-ai/dist;
+        index index.html;
+        try_files $uri $uri/ /index.html;
+
+        # Cache static assets aggressively
+        location ~* \.(js|css|png|jpg|svg|woff2)$ {
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+        }
+    }
+
+    # Proxy API requests to Node.js backend
+    location /api/ {
+        proxy_pass http://127.0.0.1:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Required for SSE streaming — disable buffering
+        proxy_buffering off;
+        proxy_cache off;
+        proxy_set_header Connection '';
+        chunked_transfer_encoding on;
+    }
+}
+```
+
+### Enable the site
+
+```bash
+sudo ln -s /etc/nginx/sites-available/ekka-ai /etc/nginx/sites-enabled/
+sudo nginx -t          # validate config
+sudo systemctl reload nginx
+
+# Get a free SSL certificate with Certbot
+sudo certbot --nginx -d yourdomain.com
+```
+
+> ⚠️ The `proxy_buffering off` directive on the `/api/` block is **critical** for SSE streaming to work correctly through Nginx.
