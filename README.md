@@ -1144,4 +1144,95 @@ We aim to respond to accessibility issues within **72 hours** and prioritise the
 
 ---
 
-*EKKA AI — Built for everyone · Last updated: 2026-05-27*
+*EKKA AI — Built for everyone · Last updated: 2026-05-28*
+
+---
+
+## ⚙️ GitHub Actions CI/CD Workflow
+
+EKKA AI ships with a ready-to-use GitHub Actions pipeline. Here's the complete workflow file:
+
+```yaml
+# .github/workflows/ci.yml
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  lint-and-type-check:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run type-check
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: lint-and-type-check
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run test:coverage
+      - uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run dev &
+      - run: npx playwright test
+
+  deploy:
+    name: Deploy to Vercel
+    runs-on: ubuntu-latest
+    needs: e2e-tests
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci
+      - run: npm run build
+      - uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+```
+
+### Required Secrets
+
+Set these in your repository's **Settings → Secrets and variables → Actions**:
+
+| Secret | Description |
+|--------|-------------|
+| `CODECOV_TOKEN` | Token from codecov.io for coverage uploads |
+| `VERCEL_TOKEN` | Personal access token from Vercel dashboard |
+| `VERCEL_ORG_ID` | Your Vercel team/org ID |
+| `VERCEL_PROJECT_ID` | Your Vercel project ID |
+
+> The pipeline runs on every push to `master` and every PR. PRs only run lint + tests; deployment is skipped.
