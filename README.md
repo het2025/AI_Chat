@@ -1375,3 +1375,55 @@ ekka_response_duration_ms_bucket{le="500"} 891
 ekka_response_duration_ms_bucket{le="2000"} 1038
 ekka_response_duration_ms_bucket{le="+Inf"} 1042
 ```
+
+---
+
+## 🏗️ Frontend Architecture
+
+EKKA AI's frontend is built with **React 18 + Vite** and follows a feature-based folder structure for scalability.
+
+### Folder Structure
+
+```
+claude-clone/src/
+├── assets/              # Static images, fonts, icons
+├── components/          # Shared, reusable UI components
+│   ├── ChatInput/       # Message composer with auto-resize
+│   ├── ChatMessage/     # Renders a single message (user or AI)
+│   ├── CodeBlock/       # Syntax-highlighted code with copy button
+│   ├── ModelPicker/     # Dropdown to switch AI models
+│   ├── Sidebar/         # Conversation history list
+│   └── Spinner/         # Loading indicators
+├── features/            # Feature modules (each owns its own state)
+│   ├── auth/            # Login, register, session management
+│   ├── chat/            # Core chat logic and streaming
+│   └── settings/        # User preferences and theme
+├── hooks/               # Custom React hooks
+│   ├── useChat.ts       # Main chat hook (send, stream, history)
+│   ├── useTheme.ts      # Dark/light mode toggle
+│   └── useTokenCount.ts # Live token estimation
+├── lib/                 # Utility functions and API clients
+│   ├── supabase.ts      # Supabase client singleton
+│   ├── api.ts           # Backend API request helpers
+│   └── markdown.ts      # Markdown + LaTeX rendering utilities
+├── pages/               # Top-level route components
+│   ├── Chat.tsx          # Main chat page
+│   ├── Login.tsx         # Auth page
+│   └── Settings.tsx      # Settings page
+├── store/               # Zustand global state stores
+│   ├── chatStore.ts     # Conversations, messages, streaming state
+│   └── userStore.ts     # Authenticated user profile
+├── App.tsx              # Root component with router
+└── main.tsx             # Entry point
+```
+
+### State Management
+
+| Store | Library | Persisted? |
+|-------|---------|-----------|
+| Chat state (conversations, messages) | Zustand | ✅ LocalStorage |
+| User profile & auth | Zustand + Supabase | ✅ Supabase |
+| UI state (modals, sidebar open) | Zustand | ❌ Memory only |
+| Theme preference | Zustand | ✅ LocalStorage |
+
+> Each feature module only imports from `lib/` and `store/` — never from sibling features — to keep dependencies clean.
