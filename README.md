@@ -1496,3 +1496,66 @@ DB_IDLE_TIMEOUT_MS=30000
 ```
 
 > 💡 Run `npm run perf` to execute the Lighthouse CI audit locally and see a full performance report.
+
+---
+
+## 🌍 Internationalization (i18n)
+
+EKKA AI supports multiple languages via **react-i18next**. Here's how to add a new language.
+
+### Currently Supported Languages
+
+| Language | Locale Code | Status |
+|----------|------------|--------|
+| English | `en` | ✅ Complete |
+| Hindi | `hi` | 🟡 Partial |
+| Spanish | `es` | 🔵 Planned |
+| French | `fr` | 🔵 Planned |
+| German | `de` | 🔵 Planned |
+| Japanese | `ja` | 🔵 Planned |
+
+### Adding a New Language
+
+1. **Create a translation file** at `src/locales/<locale>/translation.json`:
+
+```json
+// src/locales/fr/translation.json
+{
+  "chat": {
+    "placeholder": "Envoyer un message à EKKA AI...",
+    "send": "Envoyer",
+    "newChat": "Nouvelle conversation",
+    "clearHistory": "Effacer l'historique"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "theme": "Thème",
+    "language": "Langue",
+    "model": "Modèle par défaut"
+  },
+  "errors": {
+    "networkError": "Erreur réseau. Veuillez réessayer.",
+    "rateLimited": "Limite de débit atteinte. Attendez {{seconds}} secondes."
+  }
+}
+```
+
+2. **Register the locale** in `src/lib/i18n.ts`:
+
+```ts
+import fr from '../locales/fr/translation.json'
+
+i18n.addResourceBundle('fr', 'translation', fr)
+```
+
+3. **Test the translation** by switching the language in Settings → Language.
+
+### RTL Language Support
+
+For right-to-left languages (Arabic, Hebrew, Urdu), set `dir="rtl"` on the `<html>` element. EKKA AI's CSS uses logical properties (`margin-inline-start` instead of `margin-left`) to support RTL layouts automatically.
+
+> 🤝 Want to contribute a translation? Open a PR with your translation file — all contributions are welcome!
+
+---
+
+*EKKA AI — Built for the world · Last updated: 2026-05-28*
