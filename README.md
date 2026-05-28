@@ -1311,3 +1311,67 @@ sudo certbot --nginx -d yourdomain.com
 ```
 
 > ⚠️ The `proxy_buffering off` directive on the `/api/` block is **critical** for SSE streaming to work correctly through Nginx.
+
+---
+
+## 📊 Logging & Monitoring
+
+EKKA AI uses structured JSON logging on the backend for easy ingestion into any observability platform.
+
+### Log Levels
+
+| Level | When Used |
+|-------|-----------|
+| `error` | Unhandled exceptions, failed API calls, database errors |
+| `warn` | Rate limit approaching, deprecated API usage, retried requests |
+| `info` | Incoming requests, model responses, auth events |
+| `debug` | Full request/response bodies, token counts, query plans |
+| `trace` | Fine-grained SSE chunk-by-chunk output (development only) |
+
+Set the level via `LOG_LEVEL=debug` in `backend/.env`.
+
+### Structured Log Format
+
+Every log line is valid JSON:
+
+```json
+{
+  "timestamp": "2026-05-28T03:12:45.123Z",
+  "level": "info",
+  "requestId": "req-a1b2c3",
+  "userId": "uuid-here",
+  "method": "POST",
+  "path": "/api/chat",
+  "model": "meta/llama-3.1-70b-instruct",
+  "promptTokens": 128,
+  "completionTokens": 512,
+  "durationMs": 1847,
+  "status": 200
+}
+```
+
+### Recommended Observability Stack
+
+| Tool | Purpose | Free Tier |
+|------|---------|-----------|
+| **Grafana Cloud** | Dashboards and alerting | ✅ 50 GB logs/month |
+| **Loki** | Log aggregation | ✅ Included with Grafana Cloud |
+| **Prometheus** | Metrics collection | ✅ Self-hosted |
+| **Sentry** | Error tracking and performance | ✅ 5K errors/month |
+| **Uptime Kuma** | Uptime monitoring | ✅ Self-hosted |
+
+### Exposing Prometheus Metrics
+
+Set `ENABLE_METRICS=true` in `backend/.env` to expose a `/metrics` endpoint compatible with Prometheus scraping.
+
+```
+# HELP ekka_requests_total Total number of API requests
+# TYPE ekka_requests_total counter
+ekka_requests_total{method="POST",path="/api/chat",status="200"} 1042
+
+# HELP ekka_response_duration_ms Response duration in milliseconds
+# TYPE ekka_response_duration_ms histogram
+ekka_response_duration_ms_bucket{le="500"} 891
+ekka_response_duration_ms_bucket{le="2000"} 1038
+ekka_response_duration_ms_bucket{le="+Inf"} 1042
+```
