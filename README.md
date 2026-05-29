@@ -1559,4 +1559,93 @@ For right-to-left languages (Arabic, Hebrew, Urdu), set `dir="rtl"` on the `<htm
 
 ---
 
-*EKKA AI — Built for the world · Last updated: 2026-05-28*
+*EKKA AI — Built for the world · Last updated: 2026-05-29*
+
+---
+
+## 🔧 Plugin System Architecture
+
+EKKA AI v1.3.0 introduces a first-party plugin system that lets developers extend functionality without modifying core source files.
+
+### How Plugins Work
+
+Each plugin is a self-contained JavaScript module that exports a standard manifest and a set of lifecycle hooks:
+
+```ts
+// my-plugin/index.ts
+import type { EkkaPlugin } from 'ekka-ai/plugin-sdk'
+
+const myPlugin: EkkaPlugin = {
+  manifest: {
+    id: 'my-plugin',
+    name: 'My Custom Plugin',
+    version: '1.0.0',
+    description: 'Adds custom functionality to EKKA AI',
+    author: 'Your Name',
+    permissions: ['read:messages', 'write:ui'],
+  },
+
+  // Called once when the plugin is loaded
+  onMount({ registerCommand, addToolbarButton, onMessage }) {
+    // Register a slash command
+    registerCommand({
+      name: '/summarize',
+      description: 'Summarize the current conversation',
+      handler: async (context) => {
+        const summary = await context.callModel('Summarize this: ' + context.history)
+        context.insertMessage({ role: 'assistant', content: summary })
+      },
+    })
+
+    // Add a button to the chat toolbar
+    addToolbarButton({
+      icon: '📋',
+      label: 'Copy All',
+      onClick: () => navigator.clipboard.writeText(context.getFullConversationText()),
+    })
+  },
+
+  // Called on every incoming AI message
+  onMessage(message) {
+    console.log('[my-plugin] received message:', message.content.slice(0, 50))
+  },
+
+  // Called when plugin is unloaded
+  onUnmount() {
+    console.log('[my-plugin] cleaned up')
+  },
+}
+
+export default myPlugin
+```
+
+### Installing a Plugin
+
+```bash
+# From npm
+npm install ekka-plugin-summarizer
+
+# Local plugin (drop into plugins/ folder)
+cp -r ./my-plugin ./plugins/
+```
+
+Then register it in `src/plugins/index.ts`:
+
+```ts
+import summarizerPlugin from 'ekka-plugin-summarizer'
+import myPlugin from './my-plugin'
+
+export const plugins = [summarizerPlugin, myPlugin]
+```
+
+### Plugin Permission Model
+
+| Permission | What it allows |
+|-----------|---------------|
+| `read:messages` | Read conversation history |
+| `write:messages` | Inject messages into the conversation |
+| `write:ui` | Add toolbar buttons, sidebar panels |
+| `call:model` | Invoke AI model calls directly |
+| `access:storage` | Read/write to plugin-scoped localStorage |
+
+> Plugins run in a sandboxed context and cannot access auth tokens or raw Supabase credentials.
