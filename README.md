@@ -1649,3 +1649,92 @@ export const plugins = [summarizerPlugin, myPlugin]
 | `access:storage` | Read/write to plugin-scoped localStorage |
 
 > Plugins run in a sandboxed context and cannot access auth tokens or raw Supabase credentials.
+
+---
+
+## 🎨 Theme Customization API
+
+EKKA AI uses a CSS custom properties (variables) system for theming. You can create and share your own themes without touching any JavaScript.
+
+### Built-in Themes
+
+| Theme ID | Name | Description |
+|----------|------|-------------|
+| `dark` | Dark (Default) | Deep charcoal background with purple accents |
+| `light` | Light | Clean white background with blue accents |
+| `midnight` | Midnight | True black OLED-friendly with cyan highlights |
+| `forest` | Forest | Muted greens and earth tones |
+| `rose` | Rose | Soft pink and warm neutrals |
+
+### Creating a Custom Theme
+
+Add a new theme object to `src/themes/index.ts`:
+
+```ts
+import type { Theme } from '../types/theme'
+
+export const myTheme: Theme = {
+  id: 'ocean',
+  name: 'Ocean',
+  colors: {
+    // Background layers
+    '--bg-base':       '#0a1628',
+    '--bg-surface':    '#0d1f3c',
+    '--bg-elevated':   '#112244',
+
+    // Text
+    '--text-primary':  '#e8f4fd',
+    '--text-secondary':'#7fb3d3',
+    '--text-muted':    '#4a7fa0',
+
+    // Accents
+    '--accent-primary':'#00b4d8',
+    '--accent-hover':  '#0096c7',
+    '--accent-subtle': '#023e8a22',
+
+    // Borders
+    '--border-default':'#1e3a5f',
+    '--border-subtle': '#112244',
+
+    // Status
+    '--success':       '#2ecc71',
+    '--warning':       '#f39c12',
+    '--error':         '#e74c3c',
+
+    // Code blocks
+    '--code-bg':       '#061220',
+    '--code-text':     '#caf0f8',
+  },
+}
+```
+
+Then register it:
+
+```ts
+// src/themes/index.ts
+import { myTheme } from './ocean'
+
+export const themes = [darkTheme, lightTheme, midnightTheme, myTheme]
+```
+
+The theme will automatically appear in **Settings → Theme** for the user to select.
+
+### Using Theme Variables in Components
+
+All components use CSS variables so they adapt automatically to any theme:
+
+```css
+.chat-bubble {
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+
+.chat-bubble:hover {
+  background-color: var(--bg-elevated);
+}
+```
+
+> 💡 Share your theme as an npm package prefixed with `ekka-theme-` to make it discoverable by the community.
