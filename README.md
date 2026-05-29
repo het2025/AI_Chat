@@ -1808,3 +1808,67 @@ pg_restore \
 ```
 
 > ⚠️ Always test your restore process in a staging environment before relying on it for production recovery.
+
+---
+
+## 🚨 Error Handling Reference
+
+### API Error Response Format
+
+All errors from the EKKA AI backend follow a consistent JSON shape:
+
+```json
+{
+  "error": {
+    "code": "RATE_LIMIT_EXCEEDED",
+    "message": "Too many requests. Please wait 42 seconds before retrying.",
+    "retryAfter": 42,
+    "requestId": "req-a1b2c3d4"
+  }
+}
+```
+
+### Error Code Reference
+
+| HTTP Status | Error Code | Meaning | Recommended Action |
+|-------------|-----------|---------|-------------------|
+| `400` | `INVALID_REQUEST` | Malformed JSON or missing required fields | Fix the request payload |
+| `400` | `MODEL_NOT_FOUND` | The requested model ID doesn't exist | Check `GET /api/models` for valid IDs |
+| `401` | `UNAUTHORIZED` | Missing or invalid auth token | Refresh session and retry |
+| `403` | `FORBIDDEN` | Valid token but insufficient permissions | Check user role and RLS policies |
+| `404` | `CONVERSATION_NOT_FOUND` | Conversation ID doesn't exist | Verify the ID or create a new one |
+| `409` | `CONFLICT` | Concurrent modification detected | Re-fetch resource and retry |
+| `413` | `PAYLOAD_TOO_LARGE` | Message or context exceeds token limit | Reduce input length or trim history |
+| `429` | `RATE_LIMIT_EXCEEDED` | Too many requests | Back off and retry after `retryAfter` seconds |
+| `500` | `INTERNAL_ERROR` | Unexpected server error | Retry once; if persistent, open a bug report |
+| `502` | `MODEL_UNAVAILABLE` | Upstream NVIDIA NIM API is down | Switch to a fallback model or retry later |
+| `503` | `SERVICE_UNAVAILABLE` | Backend is starting up or overloaded | Retry with exponential back-off |
+
+### Frontend Error Boundaries
+
+EKKA AI wraps all major UI sections in React Error Boundaries to prevent full-page crashes:
+
+```tsx
+import { ErrorBoundary } from 'react-error-boundary'
+
+function ErrorFallback({ error, resetErrorBoundary }) {
+  return (
+    <div className="error-card">
+      <h2>Something went wrong</h2>
+      <p>{error.message}</p>
+      <button onClick={resetErrorBoundary}>Try Again</button>
+    </div>
+  )
+}
+
+// Wrapping the chat panel
+<ErrorBoundary FallbackComponent={ErrorFallback} onReset={clearChatState}>
+  <ChatPanel />
+</ErrorBoundary>
+```
+
+> All errors are automatically reported to Sentry (if configured) with the full stack trace and `requestId` for cross-referencing with backend logs.
+
+---
+
+*EKKA AI — Reliable by design · Last updated: 2026-05-29*
