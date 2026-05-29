@@ -3,6 +3,7 @@
 > **A high-performance, aesthetically pleasing AI chat platform built for the modern web â€” featuring multi-model switching, real-time streaming, and enterprise-grade security.**
 
 ## 🆕 Latest Updates
+- **2026-05-29**: Added plugin system architecture notes, documented theme customization API, and expanded the i18n contribution guide with new locale examples.
 - **2026-05-28**: Documented CI/CD pipeline setup, added GitHub Actions workflow guide, expanded Docker networking notes, and refined the accessibility reporting process.
 - **2026-05-27**: Added WebRTC voice chat architecture notes, documented streaming SSE reconnection strategy, and expanded the v1.3.0 roadmap with new milestones.
 - **2026-05-26**: Expanded API integration guide, added detailed token budget management docs, and introduced new contributor onboarding checklist.
