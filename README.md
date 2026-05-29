@@ -1738,3 +1738,73 @@ All components use CSS variables so they adapt automatically to any theme:
 ```
 
 > 💡 Share your theme as an npm package prefixed with `ekka-theme-` to make it discoverable by the community.
+
+---
+
+## 💾 Backup & Data Export
+
+EKKA AI provides several ways to back up and export your data.
+
+### User-Facing Export
+
+Users can export their full conversation history from **Settings → Data → Export**. The export is a ZIP archive containing:
+
+```
+ekka-export-2026-05-29.zip
+├── conversations/
+│   ├── conversation-abc123.json    # Full message history
+│   ├── conversation-def456.json
+│   └── ...
+├── profile.json                    # User profile data
+└── export-metadata.json            # Export timestamp, version info
+```
+
+Each conversation JSON follows this schema:
+
+```json
+{
+  "id": "abc123",
+  "title": "How does React Suspense work?",
+  "model": "meta/llama-3.1-70b-instruct",
+  "createdAt": "2026-05-10T14:32:00Z",
+  "messages": [
+    { "role": "user", "content": "How does React Suspense work?", "timestamp": "..." },
+    { "role": "assistant", "content": "React Suspense is a...", "timestamp": "..." }
+  ]
+}
+```
+
+### Admin Database Backup (Supabase)
+
+For self-hosted deployments, schedule a daily PostgreSQL dump:
+
+```bash
+#!/bin/bash
+# backup.sh — run daily via cron: 0 2 * * * /opt/ekka-ai/backup.sh
+
+DATE=$(date +%Y-%m-%d)
+BACKUP_DIR="/backups/ekka-ai"
+mkdir -p "$BACKUP_DIR"
+
+pg_dump "$DATABASE_URL" \
+  --format=custom \
+  --compress=9 \
+  --file="$BACKUP_DIR/ekka-$DATE.dump"
+
+# Keep only last 30 days of backups
+find "$BACKUP_DIR" -name "*.dump" -mtime +30 -delete
+
+echo "Backup completed: ekka-$DATE.dump"
+```
+
+### Restore from Backup
+
+```bash
+pg_restore \
+  --dbname="$DATABASE_URL" \
+  --clean \
+  --if-exists \
+  "$BACKUP_DIR/ekka-2026-05-29.dump"
+```
+
+> ⚠️ Always test your restore process in a staging environment before relying on it for production recovery.
