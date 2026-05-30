@@ -2098,3 +2098,72 @@ presenceChannel.subscribe()
 ```
 
 > Real-time sync is only active for the currently open conversation. Background conversations use polling every 30 seconds to reduce server load.
+
+---
+
+## 🛡️ Content Moderation
+
+EKKA AI includes a multi-layer content moderation pipeline to prevent misuse and protect users.
+
+### Moderation Layers
+
+```
+User Input
+    │
+    ▼
+┌─────────────────────────────────────────────┐
+│ Layer 1: Client-side input validation        │
+│  - Max length check (10,000 chars)           │
+│  - Empty/whitespace-only rejection           │
+│  - Basic XSS sanitization before display    │
+└─────────────────────────────────────────────┘
+    │
+    ▼
+┌─────────────────────────────────────────────┐
+│ Layer 2: Backend input screening             │
+│  - Prompt injection pattern detection        │
+│  - System prompt override attempt blocking  │
+│  - Profanity filter (configurable)          │
+└─────────────────────────────────────────────┘
+    │
+    ▼
+┌─────────────────────────────────────────────┐
+│ Layer 3: NVIDIA NIM safety filters           │
+│  - Built-in content safety classifiers      │
+│  - Hate speech, violence, CSAM detection    │
+│  - Returns refusal for policy violations    │
+└─────────────────────────────────────────────┘
+    │
+    ▼
+┌─────────────────────────────────────────────┐
+│ Layer 4: Output post-processing              │
+│  - Strips any leaked system prompt content  │
+│  - Sanitizes HTML in AI responses           │
+│  - Flags potentially harmful advice         │
+└─────────────────────────────────────────────┘
+    │
+    ▼
+Rendered to User
+```
+
+### Configuration
+
+```env
+# Enable/disable backend profanity filter
+ENABLE_PROFANITY_FILTER=true
+
+# Profanity filter action: 'block' | 'replace' | 'warn'
+PROFANITY_ACTION=replace
+
+# Enable prompt injection detection
+ENABLE_INJECTION_DETECTION=true
+
+# Log flagged requests (without storing content)
+LOG_FLAGGED_REQUESTS=true
+```
+
+### Reporting Harmful Content
+
+Users can flag any AI response using the **👎 Report** button beneath each message. Reports are stored in the `flagged_messages` table and reviewed by admins.
+
+> EKKA AI does not store or log the content of flagged messages — only the message ID and flag reason are retained for privacy.
