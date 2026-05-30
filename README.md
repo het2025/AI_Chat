@@ -2302,3 +2302,52 @@ EKKA AI can be installed as a PWA on mobile devices:
 The service worker caches the app shell and the last 20 conversations for offline reading.
 
 > iOS Safari has some PWA limitations — push notifications and background sync are not supported on iOS < 16.4.
+
+---
+
+## 🗺️ Project Roadmap — Q3 2026
+
+Here's what the EKKA AI team is focused on for the rest of 2026.
+
+### July 2026 — v1.3.0
+
+| Feature | Priority | Status |
+|---------|----------|--------|
+| Custom System Prompts UI | 🔴 High | 🟡 In Development |
+| Remappable Keyboard Shortcuts | 🔴 High | 🟡 In Development |
+| Plugin System v1 (npm-based) | 🔴 High | 🔵 Design Phase |
+| Image Upload + Vision Support | 🟡 Medium | 🔵 Design Phase |
+| Conversation Folders/Tags | 🟡 Medium | 🔵 Planned |
+| iOS Safari keyboard fix (#37) | 🔴 High | 🟡 In Review |
+
+### August 2026 — v1.4.0
+
+| Feature | Priority | Status |
+|---------|----------|--------|
+| Voice Input (Speech-to-Text) | 🟡 Medium | 🔵 Planned |
+| PDF & Markdown Export | 🟡 Medium | 🔵 Planned |
+| Shared Conversations (read-only link) | 🟡 Medium | 🔵 Planned |
+| Bring Your Own API Key (BYOK) | 🟡 Medium | 🔵 Planned |
+| Admin Dashboard | 🟢 Low | 🔵 Planned |
+
+### September 2026 — v2.0.0
+
+| Feature | Priority | Status |
+|---------|----------|--------|
+| Multi-user Workspaces | 🔴 High | 🔵 Research |
+| Real-time Collaborative Chat | 🔴 High | 🔵 Research |
+| Fine-tuned Model Support | 🟡 Medium | 🔵 Research |
+| Mobile App (React Native) | 🟡 Medium | 🔵 Research |
+| WCAG AAA Compliance | 🟢 Low | 🔵 Planned |
+
+### How to Influence the Roadmap
+
+1. 👍 **Upvote** existing feature requests on the [Discussions page](https://github.com/het2025/AI_Chat/discussions)
+2. 💡 **Propose** a new feature by opening a Discussion with the `feature-request` label
+3. 🔧 **Contribute** — high-priority items are always open for external PRs
+
+> Roadmap items are subject to change based on community feedback and technical constraints. Follow the repo for release announcements.
+
+---
+
+*EKKA AI — Shaping the future of AI interfaces · Last updated: 2026-05-30*
