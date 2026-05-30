@@ -2235,3 +2235,70 @@ Press `Ctrl + F` anywhere in the app to open the global search overlay. Results 
 - Sorted by relevance score
 
 > Full-text search indexes are automatically maintained by PostgreSQL. No additional setup is required for Supabase-hosted deployments.
+
+---
+
+## 📱 Mobile Responsiveness
+
+EKKA AI is fully responsive and works great on phones, tablets, and desktops.
+
+### Breakpoints
+
+| Breakpoint | Name | Min Width | Layout |
+|------------|------|-----------|--------|
+| `xs` | Mobile (portrait) | 0px | Single-column, hidden sidebar |
+| `sm` | Mobile (landscape) | 640px | Single-column, swipe sidebar |
+| `md` | Tablet | 768px | Two-column, collapsible sidebar |
+| `lg` | Desktop | 1024px | Two-column, persistent sidebar |
+| `xl` | Wide desktop | 1280px | Three-column with detail pane |
+
+### CSS Approach
+
+Responsive layouts use CSS Grid with named template areas:
+
+```css
+/* Mobile: sidebar hidden by default */
+.app-layout {
+  display: grid;
+  grid-template-areas: 'main';
+  grid-template-columns: 1fr;
+}
+
+/* Tablet+: sidebar visible */
+@media (min-width: 768px) {
+  .app-layout {
+    grid-template-areas: 'sidebar main';
+    grid-template-columns: 280px 1fr;
+  }
+}
+
+/* Wide desktop: add detail pane */
+@media (min-width: 1280px) {
+  .app-layout {
+    grid-template-areas: 'sidebar main detail';
+    grid-template-columns: 280px 1fr 320px;
+  }
+}
+```
+
+### Touch Interactions
+
+| Gesture | Action |
+|---------|--------|
+| Swipe right (from edge) | Open conversation sidebar |
+| Swipe left (on sidebar) | Close sidebar |
+| Long press on message | Open message action menu |
+| Pinch on code block | Zoom in/out |
+| Double-tap on message | Copy to clipboard |
+
+### Progressive Web App (PWA)
+
+EKKA AI can be installed as a PWA on mobile devices:
+
+1. Open the site in Chrome or Safari
+2. Tap **Add to Home Screen**
+3. The app launches in full-screen mode with offline support for cached conversations
+
+The service worker caches the app shell and the last 20 conversations for offline reading.
+
+> iOS Safari has some PWA limitations — push notifications and background sync are not supported on iOS < 16.4.
