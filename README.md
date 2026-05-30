@@ -2027,3 +2027,74 @@ document.addEventListener('visibilitychange', () => {
 ```
 
 > The BroadcastChannel API is supported in all modern browsers. For older browsers, EKKA AI falls back to `localStorage` events for cross-tab communication.
+
+---
+
+## ⚡ WebSocket Real-Time Sync
+
+EKKA AI uses **Supabase Realtime** (built on Phoenix Channels / WebSockets) to instantly reflect conversation changes across devices — ideal for users switching between phone and desktop.
+
+### Subscribing to Conversation Changes
+
+```ts
+// src/lib/realtime.ts
+import { supabase } from './supabase'
+
+export function subscribeToConversation(
+  conversationId: string,
+  onNewMessage: (message: Message) => void
+) {
+  const channel = supabase
+    .channel(`conversation:${conversationId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `conversation_id=eq.${conversationId}`,
+      },
+      (payload) => {
+        onNewMessage(payload.new as Message)
+      }
+    )
+    .subscribe()
+
+  // Return cleanup function
+  return () => supabase.removeChannel(channel)
+}
+```
+
+### Connection Lifecycle
+
+| State | Description | UI Indicator |
+|-------|-------------|-------------|
+| `CONNECTING` | Initial WebSocket handshake | 🟡 Connecting... |
+| `SUBSCRIBED` | Actively receiving events | 🟢 Live |
+| `CHANNEL_ERROR` | Auth or network error | 🔴 Reconnecting |
+| `TIMED_OUT` | No heartbeat received | 🟡 Reconnecting |
+| `CLOSED` | Channel manually closed | ⚫ Offline |
+
+### Presence — Who's Typing?
+
+Track which users are currently typing in a shared conversation:
+
+```ts
+const presenceChannel = supabase.channel('typing-indicators')
+
+// Announce that this user is typing
+presenceChannel.track({ userId, isTyping: true, username })
+
+// Listen for other users' typing state
+presenceChannel.on('presence', { event: 'sync' }, () => {
+  const state = presenceChannel.presenceState()
+  const typingUsers = Object.values(state)
+    .flat()
+    .filter((u: any) => u.isTyping && u.userId !== myUserId)
+  setTypingIndicators(typingUsers)
+})
+
+presenceChannel.subscribe()
+```
+
+> Real-time sync is only active for the currently open conversation. Background conversations use polling every 30 seconds to reduce server load.
