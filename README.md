@@ -1872,4 +1872,79 @@ function ErrorFallback({ error, resetErrorBoundary }) {
 
 ---
 
-*EKKA AI — Reliable by design · Last updated: 2026-05-29*
+*EKKA AI — Reliable by design · Last updated: 2026-05-30*
+
+---
+
+## 🔗 Backend Middleware Stack
+
+EKKA AI's Express backend processes every request through a carefully ordered middleware chain. Here's the full stack:
+
+```
+Incoming Request
+       │
+       ▼
+┌─────────────────────────────────────────┐
+│  1. helmet()          — Security headers │
+│     Sets X-Frame-Options, CSP, HSTS     │
+├─────────────────────────────────────────┤
+│  2. cors()            — CORS policy      │
+│     Allows only whitelisted origins      │
+├─────────────────────────────────────────┤
+│  3. compression()     — Gzip/Brotli      │
+│     Compresses JSON and HTML responses  │
+├─────────────────────────────────────────┤
+│  4. requestId()       — Trace IDs        │
+│     Attaches unique ID to every request │
+├─────────────────────────────────────────┤
+│  5. logger()          — Structured logs  │
+│     JSON logs with timing and metadata  │
+├─────────────────────────────────────────┤
+│  6. rateLimiter()     — Throttling       │
+│     Per-IP and per-user rate limits     │
+├─────────────────────────────────────────┤
+│  7. express.json()    — Body parsing     │
+│     Parses JSON with 10MB size limit    │
+├─────────────────────────────────────────┤
+│  8. authenticate()    — Auth guard       │
+│     Validates Supabase JWT token        │
+├─────────────────────────────────────────┤
+│  9. router            — Route handlers   │
+│     /api/chat, /api/models, /health     │
+├─────────────────────────────────────────┤
+│ 10. errorHandler()    — Error shaping    │
+│     Formats all errors as JSON          │
+└─────────────────────────────────────────┘
+       │
+       ▼
+   Response Sent
+```
+
+### Adding Custom Middleware
+
+Insert your custom middleware at the appropriate position in `backend/server.js`:
+
+```js
+import { myMiddleware } from './middleware/myMiddleware.js'
+
+// Insert after authentication, before routes
+app.use(authenticate)
+app.use(myMiddleware)   // ← your custom middleware here
+app.use(router)
+```
+
+### Bypassing Auth for Public Routes
+
+Certain endpoints are intentionally public (no auth required):
+
+```js
+// backend/middleware/authenticate.js
+const PUBLIC_PATHS = ['/health', '/api/models', '/api/auth/login', '/api/auth/register']
+
+export function authenticate(req, res, next) {
+  if (PUBLIC_PATHS.includes(req.path)) return next()
+  // ... validate JWT
+}
+```
+
+> Middleware order matters — helmet and CORS must always come first to ensure security headers are set before any other code runs.
