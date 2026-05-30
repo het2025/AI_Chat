@@ -1948,3 +1948,82 @@ export function authenticate(req, res, next) {
 ```
 
 > Middleware order matters — helmet and CORS must always come first to ensure security headers are set before any other code runs.
+
+---
+
+## 🗂️ Multi-Tab Session Handling
+
+When a user opens EKKA AI in multiple browser tabs, the app uses the **BroadcastChannel API** to keep all tabs in sync without duplicating network requests.
+
+### How It Works
+
+```
+Tab A (active)          Tab B (background)       Tab C (background)
+     │                        │                        │
+     │ User sends message      │                        │
+     │ ──────────────────────►│  BroadcastChannel      │
+     │                        │  "new_message" event   │
+     │                        │ ──────────────────────►│
+     │                        │                        │
+     │ Stream response arrives │                        │
+     │ ──────────────────────►│  "stream_chunk" event  │
+     │                        │ ──────────────────────►│
+     │                        │                        │
+     │ Stream complete         │                        │
+     │ ──────────────────────►│  "stream_done" event   │
+     │                        │ ──────────────────────►│
+```
+
+### Implementation
+
+```ts
+// src/lib/tabSync.ts
+const channel = new BroadcastChannel('ekka-ai-sync')
+
+// Broadcast a new message to all other tabs
+export function broadcastMessage(message: Message) {
+  channel.postMessage({ type: 'new_message', payload: message })
+}
+
+// Broadcast streaming token chunks
+export function broadcastStreamChunk(chunk: string, conversationId: string) {
+  channel.postMessage({ type: 'stream_chunk', payload: { chunk, conversationId } })
+}
+
+// Listen for updates from other tabs
+export function listenForTabUpdates(onUpdate: (event: TabSyncEvent) => void) {
+  channel.addEventListener('message', (e) => onUpdate(e.data))
+}
+```
+
+### Auth Session Sync
+
+When a user logs out in one tab, all other tabs detect the session change via Supabase's `onAuthStateChange` and automatically redirect to the login page:
+
+```ts
+supabase.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_OUT') {
+    // Clear local store and redirect in ALL tabs
+    useChatStore.getState().reset()
+    useUserStore.getState().clearUser()
+    window.location.href = '/login'
+  }
+})
+```
+
+### Tab Visibility Optimisation
+
+Background tabs pause non-critical polling to save CPU and battery:
+
+```ts
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    pauseNonCriticalPolling()
+  } else {
+    resumePolling()
+    syncLatestConversations() // Catch up on missed updates
+  }
+})
+```
+
+> The BroadcastChannel API is supported in all modern browsers. For older browsers, EKKA AI falls back to `localStorage` events for cross-tab communication.
