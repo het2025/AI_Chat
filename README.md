@@ -2167,3 +2167,71 @@ LOG_FLAGGED_REQUESTS=true
 Users can flag any AI response using the **👎 Report** button beneath each message. Reports are stored in the `flagged_messages` table and reviewed by admins.
 
 > EKKA AI does not store or log the content of flagged messages — only the message ID and flag reason are retained for privacy.
+
+---
+
+## 🔍 Search & Conversation History
+
+EKKA AI supports two tiers of search to help users quickly find past conversations.
+
+### Tier 1 — Client-Side Fuzzy Search
+
+For instant results without a round-trip, the sidebar search uses **Fuse.js** to fuzzy-match against locally cached conversation titles:
+
+```ts
+import Fuse from 'fuse.js'
+
+const fuse = new Fuse(conversations, {
+  keys: ['title'],
+  threshold: 0.35,        // 0 = exact, 1 = match anything
+  includeScore: true,
+  minMatchCharLength: 2,
+})
+
+function searchConversations(query: string) {
+  if (!query.trim()) return conversations
+  return fuse.search(query).map((result) => result.item)
+}
+```
+
+### Tier 2 — Full-Text Search (Supabase)
+
+For searching inside message content, EKKA AI uses PostgreSQL's built-in full-text search via a Supabase RPC:
+
+```sql
+-- Supabase SQL: create a search function
+CREATE OR REPLACE FUNCTION search_messages(query TEXT, user_uuid UUID)
+RETURNS TABLE(conversation_id UUID, message_id UUID, snippet TEXT, rank REAL)
+LANGUAGE SQL AS $$
+  SELECT
+    m.conversation_id,
+    m.id AS message_id,
+    ts_headline('english', m.content, plainto_tsquery('english', query),
+      'MaxWords=15, MinWords=5, StartSel=**, StopSel=**') AS snippet,
+    ts_rank(to_tsvector('english', m.content), plainto_tsquery('english', query)) AS rank
+  FROM messages m
+  JOIN conversations c ON c.id = m.conversation_id
+  WHERE c.user_id = user_uuid
+    AND to_tsvector('english', m.content) @@ plainto_tsquery('english', query)
+  ORDER BY rank DESC
+  LIMIT 20;
+$$;
+```
+
+Call it from the frontend:
+
+```ts
+const { data } = await supabase.rpc('search_messages', {
+  query: 'react suspense',
+  user_uuid: currentUser.id,
+})
+```
+
+### Search Keyboard Shortcut
+
+Press `Ctrl + F` anywhere in the app to open the global search overlay. Results include:
+- Matching conversation titles (fuzzy, instant)
+- Matching message snippets (full-text, ~200ms)
+- Sorted by relevance score
+
+> Full-text search indexes are automatically maintained by PostgreSQL. No additional setup is required for Supabase-hosted deployments.
