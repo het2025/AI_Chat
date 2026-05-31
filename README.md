@@ -2594,3 +2594,62 @@ When a dependency releases a breaking major version:
 5. Update the version in the table above
 
 > Run `npm audit` at any time to check for known vulnerabilities in installed packages. Aim for zero high/critical severity issues.
+
+---
+
+## 🏷️ Versioning & Release Process
+
+EKKA AI follows **Semantic Versioning** (`MAJOR.MINOR.PATCH`).
+
+### Version Number Rules
+
+| Change Type | Version Bump | Example |
+|-------------|-------------|---------|
+| Breaking API or UI change | MAJOR | `1.2.0` → `2.0.0` |
+| New feature, backward-compatible | MINOR | `1.2.0` → `1.3.0` |
+| Bug fix or performance improvement | PATCH | `1.2.0` → `1.2.1` |
+| Docs-only change | None | Version unchanged |
+
+### Release Checklist
+
+Before tagging a release:
+
+- [ ] All milestone issues are closed or moved to next milestone
+- [ ] Full test suite passes on CI
+- [ ] `CHANGELOG.md` is updated with all notable changes
+- [ ] Version bumped in `package.json` (root and `backend/`)
+- [ ] `README.md` version badge updated
+- [ ] Docker image builds successfully
+- [ ] Deploy to staging and smoke-test critical flows
+- [ ] Create and push the Git tag
+
+### Tagging a Release
+
+```bash
+# Bump version (choose one)
+npm version patch    # 1.2.0 → 1.2.1
+npm version minor    # 1.2.0 → 1.3.0
+npm version major    # 1.2.0 → 2.0.0
+
+# This automatically commits package.json and creates a tag
+# Push the commit and the tag
+git push origin master --tags
+```
+
+GitHub Actions will detect the new tag and automatically:
+1. Build and push the Docker image to GitHub Container Registry
+2. Create a GitHub Release with auto-generated release notes
+3. Deploy to production on Vercel
+
+### Pre-releases
+
+For beta versions, use the `-beta.N` suffix:
+
+```bash
+npm version 1.3.0-beta.1
+git push origin master --tags
+```
+
+Pre-release builds deploy to the staging environment only — never to production.
+
+> All releases are signed with GPG. Users can verify the authenticity of any release using the public key published in the repository's `KEYS` file.
