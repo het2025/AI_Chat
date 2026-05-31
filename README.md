@@ -2477,3 +2477,56 @@ const isOptedOut = localStorage.getItem('ekka-analytics-opt-out') === 'true'
 For self-hosted deployments, remove the Plausible script tag entirely or set `VITE_DISABLE_ANALYTICS=true` in your `.env`.
 
 > EKKA AI is fully compliant with GDPR, CCPA, and PECR. No cookie consent banner is needed because no cookies are used for tracking.
+
+---
+
+## 👀 Code Review Guidelines
+
+These guidelines help contributors understand what reviewers look for in a pull request and make the review process faster for everyone.
+
+### For PR Authors
+
+**Before opening a PR, make sure:**
+
+- [ ] The branch is up-to-date with `master` — `git pull origin master`
+- [ ] All existing tests pass — `npm test`
+- [ ] New code has test coverage (aim for 80%+)
+- [ ] ESLint reports zero errors — `npm run lint`
+- [ ] TypeScript has no errors — `npm run type-check`
+- [ ] The PR description explains **what**, **why**, and **how**
+- [ ] Screenshots or screen recordings are attached for UI changes
+- [ ] Breaking changes are clearly called out with migration instructions
+
+**Good commit messages follow this format:**
+```
+type(scope): short description in present tense
+
+- More detail about what changed
+- Why this change was needed
+- Any caveats or edge cases to be aware of
+```
+
+Types: `feat` · `fix` · `docs` · `refactor` · `test` · `chore` · `perf` · `style`
+
+### For Reviewers
+
+**Review checklist:**
+
+| Check | What to Look For |
+|-------|----------------|
+| **Correctness** | Does the code do what the PR says it does? |
+| **Tests** | Are edge cases covered? Do tests actually assert meaningful things? |
+| **Performance** | Any unnecessary re-renders, N+1 queries, or blocking operations? |
+| **Security** | Input validation, no exposed secrets, correct auth checks? |
+| **Readability** | Can a new contributor understand this in 6 months? |
+| **Scope** | Is the PR focused? Large PRs should be split into smaller ones |
+
+### SLA
+
+| PR Size | Expected Review Time |
+|---------|---------------------|
+| Small (<100 lines) | Within 24 hours |
+| Medium (100–500 lines) | Within 48 hours |
+| Large (500+ lines) | Within 72 hours — consider splitting |
+
+> Be kind and constructive in reviews. Critique code, not the person. Prefix non-blocking suggestions with "nit:" to distinguish them from required changes.
