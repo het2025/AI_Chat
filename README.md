@@ -2351,4 +2351,75 @@ Here's what the EKKA AI team is focused on for the rest of 2026.
 
 ---
 
-*EKKA AI — Shaping the future of AI interfaces · Last updated: 2026-05-30*
+*EKKA AI — Shaping the future of AI interfaces · Last updated: 2026-05-31*
+
+---
+
+## 📶 Offline Mode & PWA Caching Strategy
+
+EKKA AI's service worker implements a multi-layer caching strategy so the app remains usable even without an internet connection.
+
+### Cache Layers
+
+| Cache Name | Strategy | Contents | TTL |
+|-----------|---------|---------|-----|
+| `ekka-shell-v2` | Cache-first | HTML shell, app icons, manifest | Indefinite (version-busted) |
+| `ekka-assets-v2` | Cache-first | JS bundles, CSS, fonts, images | 30 days |
+| `ekka-api-v2` | Network-first | `/api/models` response | 1 hour |
+| `ekka-conversations-v2` | Stale-while-revalidate | Last 25 conversation JSON payloads | 24 hours |
+
+### Caching Strategy Implementation
+
+```js
+// service-worker.js (Workbox-based)
+import { registerRoute } from 'workbox-routing'
+import { CacheFirst, NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies'
+import { ExpirationPlugin } from 'workbox-expiration'
+
+// App shell — cache first, never stale
+registerRoute(
+  ({ request }) => request.mode === 'navigate',
+  new CacheFirst({ cacheName: 'ekka-shell-v2' })
+)
+
+// Static assets — cache first with 30-day expiry
+registerRoute(
+  ({ request }) => ['script', 'style', 'font', 'image'].includes(request.destination),
+  new CacheFirst({
+    cacheName: 'ekka-assets-v2',
+    plugins: [new ExpirationPlugin({ maxAgeSeconds: 30 * 24 * 60 * 60 })],
+  })
+)
+
+// API calls — network first, fall back to cache
+registerRoute(
+  ({ url }) => url.pathname.startsWith('/api/'),
+  new NetworkFirst({
+    cacheName: 'ekka-api-v2',
+    networkTimeoutSeconds: 5,
+    plugins: [new ExpirationPlugin({ maxAgeSeconds: 60 * 60 })],
+  })
+)
+```
+
+### Offline UX Behaviour
+
+| Scenario | Behaviour |
+|----------|-----------|
+| User opens app offline | Loads from cache, shows "Offline" banner |
+| User sends a message offline | Request queued in IndexedDB, retried on reconnect |
+| Conversation not in cache | Shows "This conversation isn't available offline" |
+| Connection restored | Banner dismissed, queued messages sent automatically |
+
+### Cache Management
+
+```ts
+// Clear all caches (useful for debugging or forced refresh)
+async function clearAllCaches() {
+  const cacheNames = await caches.keys()
+  await Promise.all(cacheNames.map((name) => caches.delete(name)))
+  window.location.reload()
+}
+```
+
+> Cache invalidation happens automatically when a new version is deployed — the service worker detects the version bump and clears stale caches on next load.
