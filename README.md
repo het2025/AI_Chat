@@ -2653,3 +2653,41 @@ git push origin master --tags
 Pre-release builds deploy to the staging environment only — never to production.
 
 > All releases are signed with GPG. Users can verify the authenticity of any release using the public key published in the repository's `KEYS` file.
+
+---
+
+## 📖 Glossary
+
+A quick reference for technical terms used throughout this documentation.
+
+| Term | Definition |
+|------|-----------|
+| **BroadcastChannel** | A browser API that allows scripts from different tabs/windows on the same origin to communicate in real time |
+| **Context Window** | The maximum number of tokens a language model can process in a single request (input + output combined) |
+| **CSP** | Content Security Policy — an HTTP header that restricts which scripts, styles and resources a page may load |
+| **GDPR** | General Data Protection Regulation — EU data privacy law governing how personal data is collected and used |
+| **HMR** | Hot Module Replacement — Vite feature that updates changed modules in the browser without a full page reload |
+| **IndexedDB** | A browser-native NoSQL database for storing structured data offline |
+| **JWT** | JSON Web Token — a signed, self-contained token used to verify identity without a database lookup |
+| **LLM** | Large Language Model — an AI model trained on vast text data to generate and understand natural language |
+| **NIM** | NVIDIA Inference Microservices — NVIDIA's cloud API platform for running optimised AI model inference |
+| **OLED** | Organic Light-Emitting Diode — a screen technology where true black pixels are powered off, saving battery |
+| **OpenTelemetry** | A vendor-neutral observability framework for collecting traces, metrics and logs |
+| **Plausible** | A privacy-first, cookie-free analytics platform compliant with GDPR, CCPA and PECR |
+| **Prompt Injection** | An attack where a user embeds instructions in their input to override the AI's system prompt |
+| **PWA** | Progressive Web App — a web app that can be installed and used offline like a native app |
+| **RLS** | Row Level Security — a Supabase/PostgreSQL feature that restricts which rows a user can read or write |
+| **RPC** | Remote Procedure Call — calling a server-side function from the client, used here for Supabase SQL functions |
+| **RTL** | Right-to-Left — text direction used by languages such as Arabic, Hebrew and Urdu |
+| **SemVer** | Semantic Versioning — a version numbering scheme in the format `MAJOR.MINOR.PATCH` |
+| **Service Worker** | A background script that intercepts network requests and powers PWA offline capabilities |
+| **SSE** | Server-Sent Events — a one-way HTTP streaming protocol where the server pushes data to the browser |
+| **Supabase** | An open-source Firebase alternative providing PostgreSQL, auth, real-time and storage |
+| **Token** | The basic unit of text that an LLM processes — roughly 0.75 words or 4 characters on average |
+| **WCAG** | Web Content Accessibility Guidelines — international standards for making web content accessible |
+| **Workbox** | A Google library for adding service worker caching strategies to web apps |
+| **Zustand** | A lightweight React state management library using a hook-based API |
+
+---
+
+*EKKA AI — Built with 💜 · [MIT License](LICENSE) · Last updated: 2026-05-31*
