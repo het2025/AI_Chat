@@ -2423,3 +2423,57 @@ async function clearAllCaches() {
 ```
 
 > Cache invalidation happens automatically when a new version is deployed — the service worker detects the version bump and clears stale caches on next load.
+
+---
+
+## 📊 Analytics & Privacy
+
+EKKA AI collects minimal, privacy-respecting analytics to improve the product. No personal data or conversation content is ever collected.
+
+### What We Track (Anonymous)
+
+| Event | Data Collected | Purpose |
+|-------|---------------|---------|
+| App load | Browser engine, OS family, screen size bucket | Performance benchmarking |
+| Model selected | Model ID only | Understand which models are popular |
+| Session duration | Minutes (bucketed: <5, 5–15, 15–60, 60+) | Engagement metrics |
+| Error occurred | Error code + component name | Bug prioritisation |
+| Feature used | Feature name (e.g. `keyboard_shortcut_used`) | Feature adoption tracking |
+
+### What We Never Track
+
+- ❌ Conversation content or message text
+- ❌ Personally identifiable information (name, email, IP)
+- ❌ Auth tokens or session credentials
+- ❌ Any data from minors
+- ❌ Browsing history outside the app
+- ❌ Device fingerprints
+
+### Analytics Stack
+
+EKKA AI uses **Plausible Analytics** — a GDPR-compliant, cookie-free, open-source analytics platform:
+
+```html
+<!-- Added to index.html — no cookies, no personal data -->
+<script
+  defer
+  data-domain="ekka-ai.vercel.app"
+  src="https://plausible.io/js/script.js"
+></script>
+```
+
+### Opting Out
+
+Users can disable all analytics from **Settings → Privacy → Analytics**. This sets a flag in localStorage:
+
+```ts
+// Disable analytics
+localStorage.setItem('ekka-analytics-opt-out', 'true')
+
+// Check opt-out status
+const isOptedOut = localStorage.getItem('ekka-analytics-opt-out') === 'true'
+```
+
+For self-hosted deployments, remove the Plausible script tag entirely or set `VITE_DISABLE_ANALYTICS=true` in your `.env`.
+
+> EKKA AI is fully compliant with GDPR, CCPA, and PECR. No cookie consent banner is needed because no cookies are used for tracking.
