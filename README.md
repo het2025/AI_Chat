@@ -1,8 +1,9 @@
 # EKKA AI - Advanced AI Chat Interface
 
-> **A high-performance, aesthetically pleasing AI chat platform built for the modern web â€” featuring multi-model switching, real-time streaming, and enterprise-grade security.**
+> **A high-performance, aesthetically pleasing AI chat platform built for the modern web — featuring multi-model switching, real-time streaming, and enterprise-grade security.**
 
 ## 🆕 Latest Updates
+- **2026-05-31**: Added offline mode documentation, expanded PWA caching strategy, introduced user analytics privacy guide, and documented code review best practices.
 - **2026-05-30**: Added WebSocket real-time sync guide, documented multi-tab session handling, introduced backend middleware stack overview, and expanded error recovery patterns.
 - **2026-05-29**: Added plugin system architecture notes, documented theme customization API, and expanded the i18n contribution guide with new locale examples.
 - **2026-05-28**: Documented CI/CD pipeline setup, added GitHub Actions workflow guide, expanded Docker networking notes, and refined the accessibility reporting process.
