@@ -2530,3 +2530,67 @@ Types: `feat` · `fix` · `docs` · `refactor` · `test` · `chore` · `perf` ·
 | Large (500+ lines) | Within 72 hours — consider splitting |
 
 > Be kind and constructive in reviews. Critique code, not the person. Prefix non-blocking suggestions with "nit:" to distinguish them from required changes.
+
+---
+
+## 📦 Dependency Management
+
+### Core Dependencies
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `react` | `^18.3` | UI framework |
+| `vite` | `^5.4` | Build tool and dev server |
+| `typescript` | `^5.5` | Type safety |
+| `zustand` | `^4.5` | State management |
+| `@supabase/supabase-js` | `^2.45` | Database and auth client |
+| `react-router-dom` | `^6.26` | Client-side routing |
+| `react-markdown` | `^9.0` | Markdown rendering |
+| `katex` | `^0.16` | LaTeX math rendering |
+| `highlight.js` | `^11.10` | Code syntax highlighting |
+| `fuse.js` | `^7.0` | Fuzzy search |
+| `express` | `^4.21` | Backend HTTP server |
+| `workbox-*` | `^7.1` | PWA / service worker |
+
+### Update Policy
+
+| Category | Update Frequency | Strategy |
+|----------|----------------|---------|
+| Security patches | Immediately | Auto-merged by Dependabot |
+| Patch releases | Weekly | Reviewed and merged manually |
+| Minor releases | Monthly | Tested on a staging branch first |
+| Major releases | Quarterly | Full compatibility review required |
+
+### Automated Security Scanning
+
+Dependabot is configured to scan for vulnerabilities daily:
+
+```yaml
+# .github/dependabot.yml
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 10
+    labels: ["dependencies", "automated"]
+
+  - package-ecosystem: "npm"
+    directory: "/backend"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 10
+```
+
+### Handling a Breaking Upgrade
+
+When a dependency releases a breaking major version:
+
+1. Create a dedicated branch: `chore/upgrade-<package>-v<major>`
+2. Read the migration guide and update all affected code
+3. Run the full test suite to catch regressions
+4. Document breaking changes in the PR description
+5. Update the version in the table above
+
+> Run `npm audit` at any time to check for known vulnerabilities in installed packages. Aim for zero high/critical severity issues.
