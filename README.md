@@ -3,6 +3,7 @@
 > **A high-performance, aesthetically pleasing AI chat platform built for the modern web — featuring multi-model switching, real-time streaming, and enterprise-grade security.**
 
 ## 🆕 Latest Updates
+- **2026-06-01**: Added environment setup wizard guide, documented local HTTPS development workflow, introduced mock server configuration docs, and refined the glossary with new terms.
 - **2026-05-31**: Added offline mode documentation, expanded PWA caching strategy, introduced user analytics privacy guide, and documented code review best practices.
 - **2026-05-30**: Added WebSocket real-time sync guide, documented multi-tab session handling, introduced backend middleware stack overview, and expanded error recovery patterns.
 - **2026-05-29**: Added plugin system architecture notes, documented theme customization API, and expanded the i18n contribution guide with new locale examples.
