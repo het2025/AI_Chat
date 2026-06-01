@@ -2759,3 +2759,80 @@ BACKEND_PORT=3001
 Now both `https://localhost:5173` (frontend) and `https://localhost:3001` (backend) run over HTTPS with a trusted local certificate — no browser warnings.
 
 > Add `localhost+2.pem` and `localhost+2-key.pem` to your `.gitignore`. Never commit private keys to version control.
+
+---
+
+## 🧪 Mock Server Configuration
+
+Don't have API keys yet? Run EKKA AI completely offline using the built-in mock mode — no NVIDIA NIM account or Supabase project required.
+
+### Enabling Mock Mode
+
+```env
+# .env (root)
+VITE_MOCK_AI=true          # Intercept AI requests with fake responses
+VITE_MOCK_AUTH=true        # Use a fake local auth session
+VITE_MOCK_DB=true          # Store conversations in memory (lost on reload)
+```
+
+Start the dev server normally — mock handlers activate automatically:
+
+```bash
+npm run dev
+```
+
+### How Mocking Works (MSW)
+
+EKKA AI uses **Mock Service Worker (MSW)** to intercept fetch requests in the browser:
+
+```ts
+// src/mocks/handlers.ts
+import { http, HttpResponse } from 'msw'
+
+export const handlers = [
+  // Mock the chat streaming endpoint
+  http.post('/api/chat/stream', async ({ request }) => {
+    const { messages } = await request.json()
+    const lastUserMessage = messages.at(-1)?.content ?? ''
+
+    // Simulate a streaming response token by token
+    const mockReply = `This is a mock response to: "${lastUserMessage}". In real mode this would call NVIDIA NIM.`
+    const encoder = new TextEncoder()
+
+    const stream = new ReadableStream({
+      start(controller) {
+        for (const token of mockReply.split(' ')) {
+          controller.enqueue(encoder.encode(`data: {"token":"${token} "}\n\n`))
+        }
+        controller.enqueue(encoder.encode('data: [DONE]\n\n'))
+        controller.close()
+      },
+    })
+
+    return new HttpResponse(stream, {
+      headers: { 'Content-Type': 'text/event-stream' },
+    })
+  }),
+
+  // Mock the models list
+  http.get('/api/models', () => {
+    return HttpResponse.json({
+      models: [
+        { id: 'mock/fast-model', context_window: 8192 },
+        { id: 'mock/smart-model', context_window: 32768 },
+      ],
+    })
+  }),
+]
+```
+
+### Mock Latency Simulation
+
+Add realistic delays to test loading states:
+
+```env
+VITE_MOCK_LATENCY_MS=800       # Simulated response start delay
+VITE_MOCK_TOKEN_DELAY_MS=30    # Delay between each streamed token
+```
+
+> Mock mode is automatically disabled in production builds. You can never accidentally ship with fake data.
