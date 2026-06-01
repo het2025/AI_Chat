@@ -2836,3 +2836,63 @@ VITE_MOCK_TOKEN_DELAY_MS=30    # Delay between each streamed token
 ```
 
 > Mock mode is automatically disabled in production builds. You can never accidentally ship with fake data.
+
+---
+
+## 🧙 Environment Setup Wizard
+
+EKKA AI ships with an interactive setup wizard that validates your environment, checks for missing dependencies, and generates `.env` files automatically.
+
+### Running the Wizard
+
+```bash
+npm run setup
+```
+
+Sample output:
+
+```
+╔══════════════════════════════════════════════╗
+║        EKKA AI — Environment Setup          ║
+╚══════════════════════════════════════════════╝
+
+Checking prerequisites...
+  ✅  Node.js v20.15.0  (required: >=18)
+  ✅  npm v10.7.0
+  ✅  Git v2.45.1
+
+Checking environment files...
+  ⚠️  .env not found — creating from template...
+  ⚠️  backend/.env not found — creating from template...
+
+Configuring API keys...
+  ? Enter your NVIDIA NIM API key: ████████████████
+  ? Enter your Supabase project URL: https://xxx.supabase.co
+  ? Enter your Supabase anon key: ████████████████
+
+Running validations...
+  ✅  NVIDIA NIM key is valid (tested /models endpoint)
+  ✅  Supabase connection successful
+  ✅  Database tables exist (conversations, messages, profiles)
+
+Installing dependencies...
+  ✅  Root dependencies installed
+  ✅  Backend dependencies installed
+
+Setup complete! 🎉
+Run 'npm run dev' to start the development server.
+```
+
+### What the Wizard Checks
+
+| Check | Pass Condition |
+|-------|---------------|
+| Node.js version | `>= 18.0.0` |
+| npm version | `>= 9.0.0` |
+| `.env` files | Created from `.env.example` if missing |
+| NVIDIA NIM key | Live HTTP test to `/v1/models` |
+| Supabase URL | Valid URL format + reachable |
+| Supabase tables | All required tables exist |
+| Port availability | Ports 5173 and 3001 are free |
+
+> Run `npm run setup -- --reset` to delete existing `.env` files and start fresh.
