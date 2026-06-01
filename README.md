@@ -2691,4 +2691,71 @@ A quick reference for technical terms used throughout this documentation.
 
 ---
 
-*EKKA AI — Built with 💜 · [MIT License](LICENSE) · Last updated: 2026-05-31*
+*EKKA AI — Built with 💜 · [MIT License](LICENSE) · Last updated: 2026-06-01*
+
+---
+
+## 🔒 Local HTTPS Development
+
+Some features (PWA install, secure cookies, camera/microphone APIs) require HTTPS even in development. Here's how to set it up in under 5 minutes.
+
+### Step 1 — Install mkcert
+
+```bash
+# macOS
+brew install mkcert
+
+# Windows (via Chocolatey)
+choco install mkcert
+
+# Linux
+sudo apt install libnss3-tools
+curl -JLO https://dl.filippo.io/mkcert/latest?for=linux/amd64
+chmod +x mkcert-v*-linux-amd64
+sudo mv mkcert-v*-linux-amd64 /usr/local/bin/mkcert
+```
+
+### Step 2 — Create a Local CA and Certificate
+
+```bash
+# Install the local CA into your system trust store
+mkcert -install
+
+# Generate a certificate for localhost
+mkcert localhost 127.0.0.1 ::1
+```
+
+This creates two files in the current directory:
+- `localhost+2.pem` — the certificate
+- `localhost+2-key.pem` — the private key
+
+### Step 3 — Configure Vite to Use HTTPS
+
+```ts
+// vite.config.ts
+import { defineConfig } from 'vite'
+import fs from 'fs'
+
+export default defineConfig({
+  server: {
+    https: {
+      key: fs.readFileSync('./localhost+2-key.pem'),
+      cert: fs.readFileSync('./localhost+2.pem'),
+    },
+    port: 5173,
+  },
+})
+```
+
+### Step 4 — Configure the Backend
+
+```env
+# backend/.env
+HTTPS_KEY_PATH=../localhost+2-key.pem
+HTTPS_CERT_PATH=../localhost+2.pem
+BACKEND_PORT=3001
+```
+
+Now both `https://localhost:5173` (frontend) and `https://localhost:3001` (backend) run over HTTPS with a trusted local certificate — no browser warnings.
+
+> Add `localhost+2.pem` and `localhost+2-key.pem` to your `.gitignore`. Never commit private keys to version control.
