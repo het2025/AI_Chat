@@ -2896,3 +2896,60 @@ Run 'npm run dev' to start the development server.
 | Port availability | Ports 5173 and 3001 are free |
 
 > Run `npm run setup -- --reset` to delete existing `.env` files and start fresh.
+
+---
+
+## ⌨️ Keyboard Shortcuts Reference
+
+EKKA AI is designed to be fully usable without a mouse. All shortcuts are remappable in **Settings → Keyboard Shortcuts**.
+
+### Global Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl + K` | Open command palette |
+| `Ctrl + F` | Open global search |
+| `Ctrl + N` | New conversation |
+| `Ctrl + ,` | Open settings |
+| `Ctrl + B` | Toggle sidebar |
+| `Ctrl + Shift + D` | Toggle dark / light mode |
+| `Ctrl + /` | Show keyboard shortcuts overlay |
+| `Esc` | Close any open modal or overlay |
+
+### Chat Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Enter` | Send message |
+| `Shift + Enter` | Insert newline in message |
+| `↑` (in empty input) | Edit previous message |
+| `Ctrl + Enter` | Send message (alternative) |
+| `Ctrl + L` | Clear and reset current conversation |
+| `Ctrl + C` (on message) | Copy message text |
+| `Ctrl + R` | Regenerate last AI response |
+| `Alt + M` | Switch AI model (opens picker) |
+
+### Code Block Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl + C` (in code block) | Copy code to clipboard |
+| `Ctrl + Shift + C` | Copy code with line numbers |
+| `Ctrl + +` / `Ctrl + -` | Zoom code font size in/out |
+| `F11` (on focused code block) | Expand code block fullscreen |
+
+### Sidebar Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl + 1` … `Ctrl + 9` | Jump to conversation by position |
+| `Ctrl + Tab` | Next conversation |
+| `Ctrl + Shift + Tab` | Previous conversation |
+| `Delete` (on selected conversation) | Delete conversation |
+| `F2` (on selected conversation) | Rename conversation |
+
+> All shortcuts use `Cmd` instead of `Ctrl` on macOS.
+
+---
+
+*EKKA AI — Built with 💜 · [MIT License](LICENSE) · Last updated: 2026-06-01*
