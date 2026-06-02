@@ -3052,3 +3052,123 @@ type DeepPartial<T> = { [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]>
 ```
 
 > Run `npm run type-check` at any time to get a full TypeScript error report without compiling.
+
+---
+
+## 🪝 Custom React Hooks Patterns
+
+EKKA AI centralises all side-effect logic into custom hooks. Here are the key patterns.
+
+### useLocalStorage — Persistent State
+
+```ts
+// src/hooks/useLocalStorage.ts
+import { useState, useEffect } from 'react'
+
+export function useLocalStorage<T>(key: string, initialValue: T) {
+  const [value, setValue] = useState<T>(() => {
+    try {
+      const stored = localStorage.getItem(key)
+      return stored ? (JSON.parse(stored) as T) : initialValue
+    } catch {
+      return initialValue
+    }
+  })
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(key, JSON.stringify(value))
+    } catch {
+      // Quota exceeded — fail silently
+    }
+  }, [key, value])
+
+  return [value, setValue] as const
+}
+
+// Usage
+const [theme, setTheme] = useLocalStorage<'dark' | 'light'>('theme', 'dark')
+```
+
+### useDebounce — Delayed Search Queries
+
+```ts
+// src/hooks/useDebounce.ts
+import { useState, useEffect } from 'react'
+
+export function useDebounce<T>(value: T, delayMs: number): T {
+  const [debounced, setDebounced] = useState(value)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delayMs)
+    return () => clearTimeout(timer)
+  }, [value, delayMs])
+
+  return debounced
+}
+
+// Usage — only fires search after user stops typing for 300ms
+const debouncedQuery = useDebounce(searchQuery, 300)
+useEffect(() => { fetchResults(debouncedQuery) }, [debouncedQuery])
+```
+
+### useStreamingResponse — SSE Chat Hook
+
+```ts
+// src/hooks/useStreamingResponse.ts
+export function useStreamingResponse() {
+  const [tokens, setTokens] = useState('')
+  const [isStreaming, setIsStreaming] = useState(false)
+  const abortRef = useRef<AbortController | null>(null)
+
+  const stream = useCallback(async (messages: Message[], model: string) => {
+    abortRef.current?.abort()
+    abortRef.current = new AbortController()
+    setTokens('')
+    setIsStreaming(true)
+
+    const res = await fetch('/api/chat/stream', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages, model }),
+      signal: abortRef.current.signal,
+    })
+
+    const reader = res.body!.getReader()
+    const decoder = new TextDecoder()
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      const chunk = decoder.decode(value)
+      // Parse SSE lines: "data: {"token":"Hello "}"
+      for (const line of chunk.split('\n')) {
+        if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+          const { token } = JSON.parse(line.slice(6))
+          setTokens((prev) => prev + token)
+        }
+      }
+    }
+    setIsStreaming(false)
+  }, [])
+
+  const cancel = useCallback(() => {
+    abortRef.current?.abort()
+    setIsStreaming(false)
+  }, [])
+
+  return { tokens, isStreaming, stream, cancel }
+}
+```
+
+### Hook Rules Enforced by ESLint
+
+```json
+// .eslintrc rules
+{
+  "react-hooks/rules-of-hooks": "error",
+  "react-hooks/exhaustive-deps": "warn"
+}
+```
+
+> Never put a hook inside a condition, loop, or nested function. Hooks must always be called in the same order on every render.
