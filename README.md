@@ -3444,3 +3444,56 @@ async function fetchWithRetry(url: string, options: RequestInit, maxRetries = 3)
 ```
 
 > The `Retry-After` response header always tells the client exactly how many seconds to wait — always respect it instead of polling aggressively.
+
+---
+
+## ❓ Contributing FAQ
+
+**Q: I'm new to open source. Where do I start?**
+> Look for issues labelled `good-first-issue` on the [Issues page](https://github.com/het2025/AI_Chat/issues). These are small, self-contained tasks with clear acceptance criteria.
+
+**Q: Do I need NVIDIA API keys to run the project locally?**
+> No! Enable mock mode with `VITE_MOCK_AI=true` in your `.env` and the app will simulate AI responses without any API keys.
+
+**Q: My PR has a merge conflict. What should I do?**
+> Rebase your branch on top of the latest `master`:
+> ```bash
+> git fetch origin
+> git rebase origin/master
+> # Resolve any conflicts, then:
+> git rebase --continue
+> git push --force-with-lease
+> ```
+
+**Q: How do I run only the tests related to my change?**
+> ```bash
+> # Run tests matching a pattern
+> npm test -- --testPathPattern=chat
+> # Or for a single file
+> npm test -- src/hooks/useChat.test.ts
+> ```
+
+**Q: Can I use a different package manager (yarn/pnpm)?**
+> The project uses `npm`. PRs that add `yarn.lock` or `pnpm-lock.yaml` files will be asked to revert those changes. Stick with `npm`.
+
+**Q: The linter is failing on my code. How do I fix it automatically?**
+> ```bash
+> npm run lint:fix      # Auto-fix ESLint errors
+> npm run format        # Auto-format with Prettier
+> ```
+
+**Q: How long will my PR sit in the review queue?**
+> See the [Review SLA](#-code-review-guidelines) table. Small PRs are usually reviewed within 24 hours.
+
+**Q: I found a security vulnerability. How do I report it?**
+> **Do not open a public issue.** Email `security@ekka-ai.dev` with full details. We follow responsible disclosure and will credit you in the release notes.
+
+**Q: Can I work on the mobile app?**
+> The React Native mobile app is on the roadmap for v2.0 (September 2026). Watch the repository for when that milestone opens for contributions.
+
+**Q: Is there a Discord or community chat?**
+> Yes! Join the [EKKA AI Discord](https://discord.gg/ekka-ai) for real-time discussion with contributors and the core team.
+
+---
+
+*EKKA AI — Built with 💜 by the community · [MIT License](LICENSE) · Last updated: 2026-06-02*
