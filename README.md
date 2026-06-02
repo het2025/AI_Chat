@@ -3261,3 +3261,99 @@ supabase db push
 ```
 
 > Always test migrations locally with `supabase db reset` before running `supabase db push` against production.
+
+---
+
+## 🎭 End-to-End Testing Guide
+
+EKKA AI uses **Playwright** for E2E tests that simulate real user journeys in a real browser.
+
+### Running E2E Tests
+
+```bash
+# Install browsers on first run
+npx playwright install chromium
+
+# Run all E2E tests (headless)
+npm run test:e2e
+
+# Run in headed mode (see the browser)
+npm run test:e2e -- --headed
+
+# Run a single test file
+npx playwright test tests/e2e/chat.spec.ts
+
+# Debug interactively
+npx playwright test --debug
+```
+
+### Example: Full Chat Flow Test
+
+```ts
+// tests/e2e/chat.spec.ts
+import { test, expect } from '@playwright/test'
+
+test.describe('Chat Flow', () => {
+  test.beforeEach(async ({ page }) => {
+    // Log in with test credentials
+    await page.goto('/login')
+    await page.getByLabel('Email').fill(process.env.TEST_USER_EMAIL!)
+    await page.getByLabel('Password').fill(process.env.TEST_USER_PASSWORD!)
+    await page.getByRole('button', { name: 'Sign In' }).click()
+    await expect(page).toHaveURL('/')
+  })
+
+  test('sends a message and receives a streaming response', async ({ page }) => {
+    // Type a message
+    const input = page.getByRole('textbox', { name: 'Message EKKA AI' })
+    await input.fill('What is 2 + 2?')
+    await input.press('Enter')
+
+    // The user message should appear immediately
+    await expect(page.getByText('What is 2 + 2?')).toBeVisible()
+
+    // A streaming response should start appearing
+    const response = page.locator('[data-testid="assistant-message"]').last()
+    await expect(response).toBeVisible({ timeout: 10_000 })
+    await expect(response).not.toBeEmpty()
+  })
+
+  test('creates a new conversation', async ({ page }) => {
+    await page.getByRole('button', { name: 'New Conversation' }).click()
+    await expect(page.getByText('New Conversation')).toBeVisible()
+    await expect(page.getByRole('textbox')).toBeFocused()
+  })
+
+  test('switches AI model', async ({ page }) => {
+    await page.getByRole('button', { name: /model/i }).click()
+    await page.getByRole('option', { name: /llama/i }).click()
+    await expect(page.getByText(/llama/i)).toBeVisible()
+  })
+})
+```
+
+### Playwright Configuration
+
+```ts
+// playwright.config.ts
+import { defineConfig } from '@playwright/test'
+
+export default defineConfig({
+  testDir: './tests/e2e',
+  timeout: 30_000,
+  retries: process.env.CI ? 2 : 0,
+  use: {
+    baseURL: 'http://localhost:5173',
+    trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
+  },
+  webServer: {
+    command: 'npm run dev',
+    port: 5173,
+    reuseExistingServer: !process.env.CI,
+  },
+})
+```
+
+> E2E tests run against mock mode in CI. Set `VITE_MOCK_AI=true` in your `.env.test` to avoid real API calls during tests.
