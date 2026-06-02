@@ -2953,4 +2953,102 @@ EKKA AI is designed to be fully usable without a mouse. All shortcuts are remapp
 
 ---
 
-*EKKA AI — Built with 💜 · [MIT License](LICENSE) · Last updated: 2026-06-01*
+*EKKA AI — Built with 💜 · [MIT License](LICENSE) · Last updated: 2026-06-02*
+
+---
+
+## 🔷 TypeScript Strict Mode Guide
+
+EKKA AI runs with TypeScript's strictest settings. Here's what's enabled and how to handle common patterns.
+
+### tsconfig.json
+
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "exactOptionalPropertyTypes": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "bundler",
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"]
+  }
+}
+```
+
+### Common Strict Patterns
+
+#### Handling potentially undefined array items (`noUncheckedIndexedAccess`)
+
+```ts
+// ❌ Fails in strict mode
+const messages: Message[] = []
+const first = messages[0]
+console.log(first.content) // Error: 'first' is possibly 'undefined'
+
+// ✅ Correct
+const first = messages[0]
+if (first) {
+  console.log(first.content)
+}
+
+// ✅ Or with optional chaining
+console.log(messages[0]?.content)
+```
+
+#### Typing API responses
+
+```ts
+// ❌ Avoid 'any'
+async function fetchModels(): Promise<any> { ... }
+
+// ✅ Use explicit types
+interface Model {
+  id: string
+  context_window: number
+  description?: string
+}
+
+async function fetchModels(): Promise<Model[]> {
+  const res = await fetch('/api/models')
+  const data = await res.json() as { models: Model[] }
+  return data.models
+}
+```
+
+#### Discriminated unions for message roles
+
+```ts
+type UserMessage = { role: 'user'; content: string }
+type AssistantMessage = { role: 'assistant'; content: string; model: string }
+type SystemMessage = { role: 'system'; content: string }
+
+type Message = UserMessage | AssistantMessage | SystemMessage
+
+function renderMessage(msg: Message) {
+  switch (msg.role) {
+    case 'user': return <UserBubble text={msg.content} />
+    case 'assistant': return <AIBubble text={msg.content} model={msg.model} />
+    case 'system': return null
+    // TypeScript will error here if a case is unhandled — exhaustiveness check
+  }
+}
+```
+
+### Useful Type Utilities
+
+```ts
+// Extract only the keys of an object that have a specific value type
+type StringKeys<T> = { [K in keyof T]: T[K] extends string ? K : never }[keyof T]
+
+// Make specific fields required
+type RequireFields<T, K extends keyof T> = T & Required<Pick<T, K>>
+
+// Deep partial (useful for update payloads)
+type DeepPartial<T> = { [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P] }
+```
+
+> Run `npm run type-check` at any time to get a full TypeScript error report without compiling.
