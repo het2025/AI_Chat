@@ -3357,3 +3357,90 @@ export default defineConfig({
 ```
 
 > E2E tests run against mock mode in CI. Set `VITE_MOCK_AI=true` in your `.env.test` to avoid real API calls during tests.
+
+---
+
+## ⏱️ API Rate Limiting — Deep Dive
+
+EKKA AI uses a **sliding window** rate limiter to prevent abuse while giving users a smooth experience.
+
+### How the Sliding Window Works
+
+```
+Time: ──────────────────────────────────►
+      T-60s           T-30s           now
+       │               │               │
+       ▼               ▼               ▼
+      [req][req]    [req][req][req]    [req] ← 6 requests in last 60s
+                                              Limit = 10/min → ✅ OK
+
+      [req][req][req][req][req][req][req][req][req][req][req]
+      ← 11 requests in last 60s → ❌ RATE LIMITED
+```
+
+### Rate Limit Tiers
+
+| Plan | Requests / min | Tokens / day | Max concurrent |
+|------|--------------|-------------|----------------|
+| Free | 10 | 50,000 | 1 |
+| Pro | 60 | 500,000 | 5 |
+| Enterprise | Unlimited | Unlimited | 20 |
+
+### Backend Implementation (express-rate-limit)
+
+```js
+// backend/middleware/rateLimiter.js
+import rateLimit from 'express-rate-limit'
+import RedisStore from 'rate-limit-redis'
+import { createClient } from 'redis'
+
+const redis = createClient({ url: process.env.REDIS_URL })
+
+export const chatRateLimiter = rateLimit({
+  windowMs: 60 * 1000,           // 1-minute sliding window
+  max: (req) => {
+    switch (req.user?.plan) {
+      case 'enterprise': return 10000  // effectively unlimited
+      case 'pro': return 60
+      default: return 10               // free tier
+    }
+  },
+  keyGenerator: (req) => req.user?.id ?? req.ip,
+  store: new RedisStore({ sendCommand: (...args) => redis.sendCommand(args) }),
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  handler: (req, res) => {
+    res.status(429).json({
+      error: {
+        code: 'RATE_LIMIT_EXCEEDED',
+        message: `Too many requests. Try again in ${Math.ceil(req.rateLimit.resetTime / 1000)}s.`,
+        retryAfter: Math.ceil(req.rateLimit.resetTime / 1000),
+      }
+    })
+  },
+})
+```
+
+### Client-Side Retry with Exponential Back-off
+
+```ts
+// src/lib/api.ts
+async function fetchWithRetry(url: string, options: RequestInit, maxRetries = 3) {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    const res = await fetch(url, options)
+
+    if (res.status === 429) {
+      const retryAfter = Number(res.headers.get('Retry-After') ?? 5)
+      const jitter = Math.random() * 1000   // Add jitter to avoid thundering herd
+      const delay = (retryAfter * 1000 + jitter) * Math.pow(2, attempt)
+      await new Promise((r) => setTimeout(r, delay))
+      continue
+    }
+
+    return res
+  }
+  throw new Error('Rate limit exceeded after maximum retries')
+}
+```
+
+> The `Retry-After` response header always tells the client exactly how many seconds to wait — always respect it instead of polling aggressively.
