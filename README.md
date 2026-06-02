@@ -3172,3 +3172,92 @@ export function useStreamingResponse() {
 ```
 
 > Never put a hook inside a condition, loop, or nested function. Hooks must always be called in the same order on every render.
+
+---
+
+## 🗄️ Database Schema & Migrations
+
+### Full Schema
+
+```sql
+-- Users table (managed by Supabase Auth, extended via profiles)
+CREATE TABLE profiles (
+  id          UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  username    TEXT UNIQUE NOT NULL,
+  avatar_url  TEXT,
+  plan        TEXT NOT NULL DEFAULT 'free' CHECK (plan IN ('free', 'pro', 'enterprise')),
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Conversations
+CREATE TABLE conversations (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id      UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  title        TEXT NOT NULL DEFAULT 'New Conversation',
+  model        TEXT NOT NULL DEFAULT 'meta/llama-3.1-70b-instruct',
+  system_prompt TEXT,
+  is_archived  BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Messages
+CREATE TABLE messages (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  conversation_id UUID NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+  role            TEXT NOT NULL CHECK (role IN ('user', 'assistant', 'system')),
+  content         TEXT NOT NULL,
+  model           TEXT,                    -- Only set for 'assistant' messages
+  prompt_tokens   INTEGER,
+  completion_tokens INTEGER,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Indexes for performance
+CREATE INDEX idx_conversations_user_id ON conversations(user_id);
+CREATE INDEX idx_messages_conversation_id ON messages(conversation_id);
+CREATE INDEX idx_messages_created_at ON messages(created_at DESC);
+
+-- Full-text search index
+CREATE INDEX idx_messages_content_fts ON messages USING gin(to_tsvector('english', content));
+```
+
+### Row Level Security (RLS)
+
+```sql
+-- Enable RLS on all tables
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE conversations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
+
+-- Users can only see and modify their own data
+CREATE POLICY "users_own_profile" ON profiles
+  FOR ALL USING (auth.uid() = id);
+
+CREATE POLICY "users_own_conversations" ON conversations
+  FOR ALL USING (auth.uid() = user_id);
+
+CREATE POLICY "users_own_messages" ON messages
+  FOR ALL USING (
+    conversation_id IN (
+      SELECT id FROM conversations WHERE user_id = auth.uid()
+    )
+  );
+```
+
+### Running a Migration
+
+```bash
+# Create a new migration file
+supabase migration new add_conversation_tags
+
+# Edit the generated file in supabase/migrations/
+# Then apply it locally
+supabase db reset
+
+# Apply to production
+supabase db push
+```
+
+> Always test migrations locally with `supabase db reset` before running `supabase db push` against production.
