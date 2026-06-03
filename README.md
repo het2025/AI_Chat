@@ -3831,3 +3831,82 @@ describe('useDebounce', () => {
 | E2E (Playwright) | Key user journeys | Smoke test top 5 flows |
 
 > Use `screen.getByRole` over `getByTestId` wherever possible — role-based queries test accessibility at the same time.
+
+---
+
+## 🧠 System Prompt Engineering Guide
+
+A well-crafted system prompt dramatically improves the quality and consistency of AI responses.
+
+### Anatomy of a Good System Prompt
+
+```
+You are [persona/role].
+
+[Core behaviour instructions — what the AI should always do]
+
+[Constraints — what the AI should never do]
+
+[Format instructions — how responses should be structured]
+
+[Examples — optional but powerful for complex tasks]
+```
+
+### Built-in Prompt Templates
+
+EKKA AI ships with ready-made templates in **Settings → System Prompt**:
+
+| Template | Best For |
+|----------|---------|
+| **Default Assistant** | General Q&A and conversation |
+| **Code Expert** | Programming help with code formatting |
+| **Creative Writer** | Stories, poems, brainstorming |
+| **Tutor** | Learning concepts step by step |
+| **Concise Responder** | Short, direct answers only |
+| **Data Analyst** | Table formatting, statistical reasoning |
+
+### Example: Code Expert Prompt
+
+```
+You are an expert software engineer with deep knowledge across all programming languages and paradigms.
+
+When helping with code:
+- Always explain your reasoning before writing code
+- Write clean, well-commented, production-ready code
+- Point out potential edge cases or performance issues
+- Suggest improvements beyond what was asked if you notice them
+
+Constraints:
+- Never provide code that could be used for malicious purposes
+- If a request is ambiguous, ask clarifying questions before writing code
+
+Format:
+- Use fenced code blocks with the correct language identifier
+- For multi-file changes, clearly label each file
+- Include example usage at the end
+```
+
+### Prompt Variables (Dynamic Injection)
+
+System prompts support variables that are substituted at runtime:
+
+```
+You are a helpful assistant for {{company_name}}.
+Today's date is {{current_date}}.
+The user's name is {{user_name}}.
+```
+
+Supported variables:
+
+| Variable | Value |
+|----------|-------|
+| `{{current_date}}` | Today's date in `YYYY-MM-DD` format |
+| `{{current_time}}` | Current time in user's timezone |
+| `{{user_name}}` | Authenticated user's display name |
+| `{{model_name}}` | Currently selected model |
+
+> Keep system prompts under 500 tokens. Longer prompts consume more of the context window and can reduce response quality.
+
+---
+
+*EKKA AI — Powered by open-source AI · Last updated: 2026-06-03*
