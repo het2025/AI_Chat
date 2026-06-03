@@ -3497,4 +3497,82 @@ async function fetchWithRetry(url: string, options: RequestInit, maxRetries = 3)
 
 ---
 
-*EKKA AI — Built with 💜 by the community · [MIT License](LICENSE) · Last updated: 2026-06-02*
+*EKKA AI — Built with 💜 by the community · [MIT License](LICENSE) · Last updated: 2026-06-03*
+
+---
+
+## 🪙 Token Usage Dashboard
+
+EKKA AI provides a real-time token usage panel so users can track API consumption and stay within their plan limits.
+
+### What Gets Counted
+
+Every AI message exchange records:
+
+| Field | Description |
+|-------|-------------|
+| `prompt_tokens` | Tokens in the full context sent to the model (system prompt + history + new message) |
+| `completion_tokens` | Tokens generated in the model's response |
+| `total_tokens` | `prompt_tokens + completion_tokens` |
+| `estimated_cost_usd` | Calculated using the model's per-token pricing |
+
+### Live Token Counter
+
+The chat input box shows a live token estimate that updates as you type:
+
+```ts
+// src/hooks/useTokenCount.ts
+import { encode } from 'gpt-tokenizer'   // cl100k_base encoding (compatible with LLaMA 3)
+
+export function useTokenCount(text: string): number {
+  return useMemo(() => encode(text).length, [text])
+}
+
+// In ChatInput.tsx
+const inputTokens = useTokenCount(inputText)
+const historyTokens = useTokenCount(conversationHistory.map(m => m.content).join(' '))
+const totalTokens = inputTokens + historyTokens
+const contextLimit = MODEL_CONTEXT_WINDOWS[selectedModel] ?? 8192
+const percentUsed = Math.round((totalTokens / contextLimit) * 100)
+```
+
+The counter turns:
+- 🟢 **Green** — under 70% of the context window
+- 🟡 **Yellow** — 70–90% used (consider summarising the conversation)
+- 🔴 **Red** — over 90% used (next message may be truncated)
+
+### Usage Statistics API
+
+Fetch aggregated usage for the authenticated user:
+
+```ts
+// GET /api/usage?period=30d
+{
+  "period": "30d",
+  "totalRequests": 847,
+  "totalPromptTokens": 1_284_312,
+  "totalCompletionTokens": 423_891,
+  "totalTokens": 1_708_203,
+  "estimatedCostUsd": 2.14,
+  "byModel": [
+    { "model": "meta/llama-3.1-70b-instruct", "tokens": 1_200_000, "requests": 720 },
+    { "model": "mistralai/mistral-7b-instruct", "tokens": 508_203, "requests": 127 }
+  ],
+  "dailyBreakdown": [
+    { "date": "2026-06-03", "tokens": 45_200, "requests": 28 },
+    ...
+  ]
+}
+```
+
+### Per-Model Context Windows
+
+| Model | Context Window | Notes |
+|-------|---------------|-------|
+| `meta/llama-3.1-405b-instruct` | 128,000 tokens | Best quality |
+| `meta/llama-3.1-70b-instruct` | 128,000 tokens | Balanced |
+| `meta/llama-3.1-8b-instruct` | 128,000 tokens | Fastest |
+| `mistralai/mistral-7b-instruct` | 32,768 tokens | Efficient |
+| `google/gemma-2-27b-it` | 8,192 tokens | Compact |
+
+> Context window usage above 90% often degrades response quality. EKKA AI automatically warns the user and offers to summarise old messages to free up space.
