@@ -3576,3 +3576,66 @@ Fetch aggregated usage for the authenticated user:
 | `google/gemma-2-27b-it` | 8,192 tokens | Compact |
 
 > Context window usage above 90% often degrades response quality. EKKA AI automatically warns the user and offers to summarise old messages to free up space.
+
+---
+
+## 🌿 Conversation Branching
+
+EKKA AI lets users **branch** any conversation from any message — creating a parallel thread to explore a different direction without losing the original.
+
+### How It Works
+
+```
+Original conversation:
+  User: "Write a poem about the ocean"
+  AI:   "The waves crash gently..."
+  User: "Make it darker"           ← Branch from here
+  AI:   "The sea swallows ships..."
+
+Branched conversation (fork of message 3):
+  User: "Make it darker"
+  AI:   "The abyss hungers..."     ← Different response, same starting point
+```
+
+### Creating a Branch
+
+1. Hover over any **user message** in the conversation
+2. Click the **🌿 Branch** icon that appears
+3. Edit the message (optional) and press **Enter**
+4. A new conversation is created, branched from that point
+5. The original conversation is untouched
+
+### Data Model
+
+Branches are stored as linked conversations in the database:
+
+```sql
+-- Add to conversations table
+ALTER TABLE conversations
+  ADD COLUMN parent_conversation_id UUID REFERENCES conversations(id),
+  ADD COLUMN branch_from_message_id UUID REFERENCES messages(id),
+  ADD COLUMN is_branch BOOLEAN NOT NULL DEFAULT FALSE;
+
+-- Index for fetching all branches of a conversation
+CREATE INDEX idx_conversations_parent ON conversations(parent_conversation_id)
+  WHERE is_branch = TRUE;
+```
+
+### Branch Tree UI
+
+```ts
+// Fetch the full branch tree for a conversation
+async function getBranchTree(rootConversationId: string): Promise<BranchNode[]> {
+  const { data } = await supabase
+    .from('conversations')
+    .select('id, title, branch_from_message_id, created_at')
+    .eq('parent_conversation_id', rootConversationId)
+    .order('created_at')
+
+  return data ?? []
+}
+```
+
+The sidebar shows a tree view of all branches using indentation and connecting lines to make the relationship clear.
+
+> Branches inherit the system prompt and model selection from the parent conversation but can be changed independently afterwards.
