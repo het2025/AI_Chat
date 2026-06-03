@@ -3729,3 +3729,105 @@ To add support for a new format (e.g. PlantUML diagrams):
 3. Add any required CSS to `src/components/MarkdownRenderer/MarkdownRenderer.css`
 
 > Never use `dangerouslySetInnerHTML` with unsanitised AI output — always pipe through `rehype-sanitize` first.
+
+---
+
+## 🧪 Unit Testing with React Testing Library
+
+EKKA AI uses **Vitest** + **React Testing Library (RTL)** for unit and integration tests.
+
+### Running Tests
+
+```bash
+npm test                    # Run all tests in watch mode
+npm test -- --run           # Run once (CI mode)
+npm test -- --coverage      # With coverage report
+npm test -- ChatInput       # Filter by filename
+```
+
+### Testing a Component
+
+```tsx
+// src/components/ChatInput/ChatInput.test.tsx
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { ChatInput } from './ChatInput'
+
+describe('ChatInput', () => {
+  it('renders the textarea and send button', () => {
+    render(<ChatInput onSend={vi.fn()} isStreaming={false} />)
+    expect(screen.getByRole('textbox')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /send/i })).toBeInTheDocument()
+  })
+
+  it('calls onSend with the message text when Enter is pressed', async () => {
+    const user = userEvent.setup()
+    const onSend = vi.fn()
+    render(<ChatInput onSend={onSend} isStreaming={false} />)
+
+    await user.type(screen.getByRole('textbox'), 'Hello AI!')
+    await user.keyboard('{Enter}')
+
+    expect(onSend).toHaveBeenCalledWith('Hello AI!')
+  })
+
+  it('does not send on Shift+Enter (inserts newline instead)', async () => {
+    const user = userEvent.setup()
+    const onSend = vi.fn()
+    render(<ChatInput onSend={onSend} isStreaming={false} />)
+
+    await user.type(screen.getByRole('textbox'), 'Line 1')
+    await user.keyboard('{Shift>}{Enter}{/Shift}')
+
+    expect(onSend).not.toHaveBeenCalled()
+  })
+
+  it('disables the send button while streaming', () => {
+    render(<ChatInput onSend={vi.fn()} isStreaming={true} />)
+    expect(screen.getByRole('button', { name: /send/i })).toBeDisabled()
+  })
+})
+```
+
+### Testing a Custom Hook
+
+```ts
+// src/hooks/useDebounce.test.ts
+import { renderHook, act } from '@testing-library/react'
+import { useDebounce } from './useDebounce'
+
+describe('useDebounce', () => {
+  beforeEach(() => vi.useFakeTimers())
+  afterEach(() => vi.useRealTimers())
+
+  it('returns the initial value immediately', () => {
+    const { result } = renderHook(() => useDebounce('hello', 300))
+    expect(result.current).toBe('hello')
+  })
+
+  it('debounces updates by the specified delay', () => {
+    const { result, rerender } = renderHook(
+      ({ value }) => useDebounce(value, 300),
+      { initialProps: { value: 'hello' } }
+    )
+
+    rerender({ value: 'world' })
+    expect(result.current).toBe('hello')  // Not yet updated
+
+    act(() => vi.advanceTimersByTime(300))
+    expect(result.current).toBe('world')  // Now updated
+  })
+})
+```
+
+### Test Coverage Targets
+
+| Area | Target | Why |
+|------|--------|-----|
+| Utility functions | 95%+ | Pure functions are easy to test fully |
+| Custom hooks | 90%+ | Core business logic lives here |
+| UI components | 80%+ | Focus on behaviour, not implementation |
+| API route handlers | 85%+ | Critical paths need solid coverage |
+| E2E (Playwright) | Key user journeys | Smoke test top 5 flows |
+
+> Use `screen.getByRole` over `getByTestId` wherever possible — role-based queries test accessibility at the same time.
