@@ -3639,3 +3639,93 @@ async function getBranchTree(rootConversationId: string): Promise<BranchNode[]> 
 The sidebar shows a tree view of all branches using indentation and connecting lines to make the relationship clear.
 
 > Branches inherit the system prompt and model selection from the parent conversation but can be changed independently afterwards.
+
+---
+
+## ✨ AI Response Formatting Guide
+
+EKKA AI renders AI responses as rich content using a multi-pass parsing pipeline.
+
+### Supported Formats
+
+| Format | Rendered As | Library |
+|--------|------------|---------|
+| Markdown | Headings, bold, italic, lists, links | `react-markdown` |
+| Fenced code blocks | Syntax-highlighted code with copy button | `highlight.js` |
+| Inline code | Monospaced styled spans | `react-markdown` |
+| LaTeX math (inline) | `$E = mc^2$` → rendered equation | `KaTeX` |
+| LaTeX math (block) | `$$\int_0^\infty$$` → display equation | `KaTeX` |
+| Markdown tables | Styled, scrollable tables | `remark-gfm` |
+| Mermaid diagrams | Flow charts, sequence diagrams | `mermaid` |
+
+### Rendering Pipeline
+
+```
+Raw AI text (streaming)
+        │
+        ▼
+  Accumulate chunks
+        │
+        ▼
+  Detect & stream code blocks in-progress
+        │
+        ▼
+  On stream complete: pass full text to
+        │
+        ├──► react-markdown (Markdown AST)
+        │         │
+        │         ├──► remark-gfm (tables, strikethrough)
+        │         ├──► rehype-highlight (code syntax)
+        │         └──► rehype-katex (LaTeX equations)
+        │
+        └──► Mermaid (async, post-render)
+```
+
+### Code Block Component
+
+```tsx
+// src/components/CodeBlock/CodeBlock.tsx
+interface CodeBlockProps {
+  language: string
+  code: string
+}
+
+export function CodeBlock({ language, code }: CodeBlockProps) {
+  const [copied, setCopied] = useState(false)
+
+  const copy = async () => {
+    await navigator.clipboard.writeText(code)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <div className="code-block" data-language={language}>
+      <div className="code-block-header">
+        <span className="language-label">{language}</span>
+        <button onClick={copy} aria-label="Copy code">
+          {copied ? '✅ Copied' : '📋 Copy'}
+        </button>
+      </div>
+      <pre>
+        <code
+          className={`language-${language}`}
+          dangerouslySetInnerHTML={{
+            __html: highlight.highlight(code, { language }).value,
+          }}
+        />
+      </pre>
+    </div>
+  )
+}
+```
+
+### Adding a New Renderer
+
+To add support for a new format (e.g. PlantUML diagrams):
+
+1. Install the `rehype` plugin for that format
+2. Add it to the `remarkPlugins` or `rehypePlugins` array in `src/components/MarkdownRenderer/MarkdownRenderer.tsx`
+3. Add any required CSS to `src/components/MarkdownRenderer/MarkdownRenderer.css`
+
+> Never use `dangerouslySetInnerHTML` with unsanitised AI output — always pipe through `rehype-sanitize` first.
