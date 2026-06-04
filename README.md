@@ -3910,4 +3910,82 @@ Supported variables:
 
 ---
 
-*EKKA AI — Powered by open-source AI · Last updated: 2026-06-03*
+*EKKA AI — Powered by open-source AI · Last updated: 2026-06-04*
+
+---
+
+## 🔔 User Notification System
+
+EKKA AI uses a two-tier notification system: in-app toast notifications for immediate feedback and browser push notifications for background events.
+
+### Toast Notifications (In-App)
+
+Toasts are managed through a global `useToast` hook backed by Zustand:
+
+```ts
+// src/hooks/useToast.ts
+interface Toast {
+  id: string
+  type: 'success' | 'error' | 'warning' | 'info'
+  title: string
+  message?: string
+  durationMs?: number
+}
+
+// Usage anywhere in the app
+const { toast } = useToast()
+
+toast.success('Conversation saved!')
+toast.error('Failed to send message', { message: 'Check your connection and try again.' })
+toast.warning('Context window almost full', { durationMs: 8000 })
+```
+
+### Toast Display Rules
+
+| Type | Icon | Colour | Default Duration | Auto-dismiss |
+|------|------|--------|-----------------|-------------|
+| `success` | ✅ | Green | 3 seconds | Yes |
+| `info` | ℹ️ | Blue | 4 seconds | Yes |
+| `warning` | ⚠️ | Amber | 6 seconds | Yes |
+| `error` | ❌ | Red | Never | No — user must dismiss |
+
+### Browser Push Notifications
+
+For events that happen in the background (e.g. a long-running task completes), EKKA AI uses the Web Push API:
+
+```ts
+// Request permission on first use
+async function requestPushPermission(): Promise<boolean> {
+  if (!('Notification' in window)) return false
+  const result = await Notification.requestPermission()
+  return result === 'granted'
+}
+
+// Send a push from the service worker
+self.addEventListener('push', (event: PushEvent) => {
+  const data = event.data?.json()
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: '/icons/icon-192x192.png',
+      badge: '/icons/badge-72x72.png',
+      tag: data.tag,        // Replaces previous notification with same tag
+      data: { url: data.url },
+    })
+  )
+})
+```
+
+### Notification Preferences
+
+Users control notification settings at **Settings → Notifications**:
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| In-app toasts | ✅ On | Show toast messages inside the app |
+| Error alerts | ✅ On | Show persistent error toasts |
+| Push: task complete | ✅ On | Notify when a long AI response finishes |
+| Push: new features | ❌ Off | Product update announcements |
+| Sound alerts | ❌ Off | Play a chime when AI responds |
+
+> Push notifications are not supported on iOS Safari < 16.4. Users on those devices only receive in-app toasts.
