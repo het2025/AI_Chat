@@ -3989,3 +3989,84 @@ Users control notification settings at **Settings → Notifications**:
 | Sound alerts | ❌ Off | Play a chime when AI responds |
 
 > Push notifications are not supported on iOS Safari < 16.4. Users on those devices only receive in-app toasts.
+
+---
+
+## 📤 Conversation Export Formats
+
+Users can export any conversation from **⋯ Menu → Export**. Four formats are supported.
+
+### Format Comparison
+
+| Format | Best For | Includes Metadata | File Size |
+|--------|---------|------------------|-----------|
+| **JSON** | Developers, re-importing, backups | ✅ Full | Medium |
+| **Markdown** | Documentation, sharing | ✅ Basic | Small |
+| **PDF** | Printing, formal records | ✅ Basic | Large |
+| **Plain Text** | Simple copy-paste | ❌ None | Tiny |
+
+### JSON Export Schema
+
+```json
+{
+  "version": "1.0",
+  "exportedAt": "2026-06-04T10:30:00Z",
+  "conversation": {
+    "id": "conv_abc123",
+    "title": "Explaining async/await",
+    "model": "meta/llama-3.1-70b-instruct",
+    "systemPrompt": "You are a helpful coding assistant.",
+    "createdAt": "2026-06-04T09:00:00Z",
+    "messages": [
+      {
+        "id": "msg_001",
+        "role": "user",
+        "content": "Can you explain async/await in JavaScript?",
+        "createdAt": "2026-06-04T09:00:05Z"
+      },
+      {
+        "id": "msg_002",
+        "role": "assistant",
+        "content": "Sure! async/await is syntactic sugar over Promises...",
+        "model": "meta/llama-3.1-70b-instruct",
+        "promptTokens": 42,
+        "completionTokens": 318,
+        "createdAt": "2026-06-04T09:00:08Z"
+      }
+    ]
+  }
+}
+```
+
+### Markdown Export Example
+
+```markdown
+# Explaining async/await
+**Model:** meta/llama-3.1-70b-instruct
+**Date:** 2026-06-04
+
+---
+
+**You:** Can you explain async/await in JavaScript?
+
+**EKKA AI:** Sure! async/await is syntactic sugar over Promises...
+```
+
+### Export API Endpoint
+
+```ts
+// GET /api/conversations/:id/export?format=json|markdown|pdf|text
+const response = await fetch(`/api/conversations/${id}/export?format=markdown`, {
+  headers: { Authorization: `Bearer ${token}` }
+})
+
+const blob = await response.blob()
+const url = URL.createObjectURL(blob)
+const a = document.createElement('a')
+a.href = url
+a.download = `conversation-${id}.md`
+a.click()
+URL.revokeObjectURL(url)
+```
+
+> PDF export uses Puppeteer on the backend to render the Markdown to a styled PDF. It requires a running Chrome/Chromium instance in the backend container.
