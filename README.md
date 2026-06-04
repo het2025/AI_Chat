@@ -4070,3 +4070,101 @@ URL.revokeObjectURL(url)
 ```
 
 > PDF export uses Puppeteer on the backend to render the Markdown to a styled PDF. It requires a running Chrome/Chromium instance in the backend container.
+
+---
+
+## 🔗 Webhook Integration Guide
+
+EKKA AI can deliver real-time event notifications to your own server via webhooks — useful for automations, logging pipelines, and third-party integrations.
+
+### Supported Events
+
+| Event | Triggered When |
+|-------|---------------|
+| `conversation.created` | A new conversation is started |
+| `conversation.deleted` | A conversation is deleted |
+| `message.sent` | A user sends a message |
+| `message.completed` | An AI response finishes streaming |
+| `user.signed_up` | A new user registers |
+| `usage.limit_reached` | A user hits their monthly token limit |
+
+### Registering a Webhook
+
+```ts
+// POST /api/webhooks
+{
+  "url": "https://your-server.com/webhooks/ekka",
+  "events": ["message.completed", "usage.limit_reached"],
+  "secret": "your-signing-secret"   // Used for HMAC signature verification
+}
+```
+
+### Webhook Payload Format
+
+```json
+{
+  "id": "evt_a1b2c3d4",
+  "type": "message.completed",
+  "createdAt": "2026-06-04T10:30:00Z",
+  "data": {
+    "conversationId": "conv_xyz789",
+    "messageId": "msg_456",
+    "model": "meta/llama-3.1-70b-instruct",
+    "completionTokens": 248,
+    "durationMs": 1840
+  }
+}
+```
+
+### Verifying the Signature
+
+Every webhook request includes an `X-EKKA-Signature` header. Always verify it to prevent spoofing:
+
+```ts
+import crypto from 'crypto'
+
+function verifyWebhookSignature(
+  rawBody: Buffer,
+  signature: string,
+  secret: string
+): boolean {
+  const expected = crypto
+    .createHmac('sha256', secret)
+    .update(rawBody)
+    .digest('hex')
+  // Use timingSafeEqual to prevent timing attacks
+  return crypto.timingSafeEqual(
+    Buffer.from(`sha256=${expected}`),
+    Buffer.from(signature)
+  )
+}
+
+// In your Express webhook handler
+app.post('/webhooks/ekka', express.raw({ type: 'application/json' }), (req, res) => {
+  const sig = req.headers['x-ekka-signature'] as string
+  if (!verifyWebhookSignature(req.body, sig, process.env.WEBHOOK_SECRET!)) {
+    return res.status(401).send('Invalid signature')
+  }
+  const event = JSON.parse(req.body.toString())
+  // Handle the event...
+  res.status(200).send('OK')
+})
+```
+
+### Retry Policy
+
+If your endpoint returns a non-2xx status, EKKA AI will retry with exponential back-off:
+
+| Attempt | Delay |
+|---------|-------|
+| 1st retry | 5 seconds |
+| 2nd retry | 30 seconds |
+| 3rd retry | 5 minutes |
+| 4th retry | 30 minutes |
+| Give up | After 4 failed retries, event is marked `failed` |
+
+> Failed events are visible in **Settings → Webhooks → Event Log** and can be manually replayed.
+
+---
+
+*EKKA AI — Built for developers · Last updated: 2026-06-04*
