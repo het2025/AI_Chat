@@ -4440,3 +4440,111 @@ const title = useConversationStore((s) =>
 ```
 
 > Avoid storing derived data in state. Compute it inside selectors or with `useMemo` to keep the store as a single source of truth.
+
+---
+
+## 📄 API Pagination Guide
+
+All list endpoints in EKKA AI use **cursor-based pagination** — more efficient and consistent than offset pagination for real-time data.
+
+### Why Cursor Pagination?
+
+| | Offset (`?page=2&limit=20`) | Cursor (`?after=abc123&limit=20`) |
+|-|---------------------------|---------------------------------|
+| Consistent with real-time data | ❌ Items shift when new records added | ✅ Stable cursor point |
+| Performance on large datasets | ❌ DB must skip N rows | ✅ Index lookup |
+| Random page access | ✅ Yes | ❌ Sequential only |
+
+### Paginated Response Format
+
+```json
+{
+  "data": [ ... ],
+  "pagination": {
+    "hasNextPage": true,
+    "hasPreviousPage": false,
+    "startCursor": "conv_aaa111",
+    "endCursor":   "conv_zzz999",
+    "totalCount":  142
+  }
+}
+```
+
+### Fetching a Page
+
+```ts
+// GET /api/conversations?limit=20&after=conv_zzz999
+const res = await fetch('/api/conversations?limit=20&after=' + cursor)
+const { data, pagination } = await res.json()
+```
+
+### Infinite Scroll Hook
+
+```ts
+// src/hooks/useInfiniteConversations.ts
+export function useInfiniteConversations() {
+  const [conversations, setConversations] = useState<Conversation[]>([])
+  const [cursor, setCursor] = useState<string | null>(null)
+  const [hasMore, setHasMore] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const loadMore = useCallback(async () => {
+    if (isLoading || !hasMore) return
+    setIsLoading(true)
+
+    const url = cursor
+      ? `/api/conversations?limit=20&after=${cursor}`
+      : '/api/conversations?limit=20'
+
+    const { data, pagination } = await fetch(url).then((r) => r.json())
+
+    setConversations((prev) => [...prev, ...data])
+    setCursor(pagination.endCursor)
+    setHasMore(pagination.hasNextPage)
+    setIsLoading(false)
+  }, [cursor, hasMore, isLoading])
+
+  useEffect(() => { loadMore() }, [])  // Load first page on mount
+
+  return { conversations, loadMore, hasMore, isLoading }
+}
+```
+
+### Backend Cursor Implementation
+
+```ts
+// backend/routes/conversations.ts
+app.get('/api/conversations', authMiddleware, async (req, res) => {
+  const limit = Math.min(Number(req.query.limit) || 20, 100)  // Cap at 100
+  const after = req.query.after as string | undefined
+
+  let query = supabase
+    .from('conversations')
+    .select('*, profiles!inner(id)', { count: 'exact' })
+    .eq('user_id', req.user.id)
+    .order('updated_at', { ascending: false })
+    .limit(limit + 1)        // Fetch one extra to determine hasNextPage
+
+  if (after) {
+    const { data: pivot } = await supabase
+      .from('conversations').select('updated_at').eq('id', after).single()
+    if (pivot) query = query.lt('updated_at', pivot.updated_at)
+  }
+
+  const { data, count } = await query
+  const hasNextPage = data!.length > limit
+  const items = hasNextPage ? data!.slice(0, -1) : data!
+
+  res.json({
+    data: items,
+    pagination: {
+      hasNextPage,
+      hasPreviousPage: !!after,
+      endCursor: items.at(-1)?.id ?? null,
+      totalCount: count,
+    },
+  })
+})
+```
+
+> Always cap the `limit` parameter server-side to prevent clients requesting thousands of rows in a single request.
