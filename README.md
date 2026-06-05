@@ -4168,4 +4168,90 @@ If your endpoint returns a non-2xx status, EKKA AI will retry with exponential b
 
 ---
 
-*EKKA AI — Built for developers · Last updated: 2026-06-04*
+*EKKA AI — Built for developers · Last updated: 2026-06-05*
+
+---
+
+## ♿ WCAG Accessibility Compliance Guide
+
+EKKA AI targets **WCAG 2.1 AA** conformance. This section explains what that means in practice.
+
+### Keyboard Navigation
+
+Every interactive element must be reachable and operable via keyboard alone:
+
+| Element | Expected Keyboard Behaviour |
+|---------|---------------------------|
+| Sidebar conversation items | `Tab` to focus, `Enter` to open, `Delete` to delete |
+| Chat input | Auto-focused on conversation open, `Enter` sends, `Shift+Enter` newlines |
+| Model picker dropdown | `↑`/`↓` to navigate options, `Enter` to select, `Esc` to close |
+| Message actions menu | `Tab` through actions, `Enter` to activate, `Esc` to close |
+| Modal dialogs | Focus trapped inside, `Esc` closes, focus returns to trigger element |
+
+### ARIA Patterns
+
+```tsx
+// Message list — live region announces new AI responses to screen readers
+<div
+  role="log"
+  aria-label="Conversation messages"
+  aria-live="polite"
+  aria-atomic="false"
+>
+  {messages.map((msg) => (
+    <article
+      key={msg.id}
+      aria-label={`${msg.role === 'user' ? 'You' : 'EKKA AI'}: ${msg.content.slice(0, 60)}...`}
+    >
+      {msg.content}
+    </article>
+  ))}
+</div>
+
+// Loading spinner — announced to screen readers
+<div role="status" aria-live="assertive" aria-label="EKKA AI is thinking…">
+  <Spinner />
+</div>
+
+// Icon-only buttons must have accessible labels
+<button aria-label="New conversation" onClick={createConversation}>
+  <PlusIcon aria-hidden="true" />
+</button>
+```
+
+### Colour Contrast Requirements
+
+| Text Type | Minimum Contrast Ratio | EKKA AI Value |
+|-----------|----------------------|--------------|
+| Normal text (< 18pt) | 4.5 : 1 | ✅ 7.2 : 1 |
+| Large text (≥ 18pt or 14pt bold) | 3 : 1 | ✅ 5.8 : 1 |
+| UI components & focus rings | 3 : 1 | ✅ 4.1 : 1 |
+| Disabled elements | No requirement | — |
+
+Check contrast at any time:
+
+```bash
+# Run the automated accessibility audit
+npm run test:a11y
+
+# Or manually with the axe browser extension
+# Install: https://www.deque.com/axe/browser-extensions/
+```
+
+### Focus Visible
+
+All focusable elements show a clear focus ring. Never suppress it with `outline: none` without providing a custom replacement:
+
+```css
+/* ✅ Good — custom focus ring */
+:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ❌ Bad — removes all focus indication */
+* { outline: none; }
+```
+
+> If you add a new interactive component, run `npm run test:a11y` before opening a PR to catch issues early.
