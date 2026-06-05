@@ -4255,3 +4255,103 @@ All focusable elements show a clear focus ring. Never suppress it with `outline:
 ```
 
 > If you add a new interactive component, run `npm run test:a11y` before opening a PR to catch issues early.
+
+---
+
+## 🎨 Theme Engine Internals
+
+EKKA AI's theme system is built entirely on CSS custom properties (variables) — no CSS-in-JS, no runtime style injection.
+
+### Design Token Structure
+
+```css
+/* src/styles/tokens.css */
+:root {
+  /* Colour palette */
+  --color-bg-primary:       #0d0d0d;
+  --color-bg-secondary:     #1a1a1a;
+  --color-bg-elevated:      #252525;
+  --color-surface:          #2d2d2d;
+
+  --color-text-primary:     #f5f5f5;
+  --color-text-secondary:   #a0a0a0;
+  --color-text-muted:       #666666;
+
+  --color-accent:           #7c6ef8;
+  --color-accent-hover:     #9585fb;
+  --color-accent-active:    #6357d4;
+
+  --color-success:          #34d399;
+  --color-warning:          #fbbf24;
+  --color-error:            #f87171;
+  --color-info:             #60a5fa;
+
+  /* Typography */
+  --font-sans:    'Inter', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', 'Fira Code', monospace;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+
+  /* Spacing */
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+
+  /* Border radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.5);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.6);
+}
+```
+
+### Applying a Theme
+
+Themes override the root variables by setting a `data-theme` attribute on `<html>`:
+
+```css
+/* Light theme */
+[data-theme="light"] {
+  --color-bg-primary:    #ffffff;
+  --color-bg-secondary:  #f5f5f5;
+  --color-text-primary:  #111111;
+  --color-text-secondary: #555555;
+  --color-accent:        #5b4fcf;
+}
+```
+
+```ts
+// Zustand theme store
+const useThemeStore = create<ThemeState>()(
+  persist(
+    (set) => ({
+      theme: 'dark',
+      setTheme: (theme) => {
+        document.documentElement.setAttribute('data-theme', theme)
+        set({ theme })
+      },
+    }),
+    { name: 'ekka-theme' }
+  )
+)
+```
+
+### Creating a Custom Theme
+
+1. Add a new CSS block to `src/styles/themes/` (e.g. `solarized.css`)
+2. Override only the tokens that differ from the dark default
+3. Add the theme name to the `Theme` union type in `src/types/theme.ts`
+4. Add a preview card to **Settings → Appearance → Themes**
+
+> All theme tokens must pass WCAG AA contrast checks before the theme is shipped. Run `npm run check:contrast -- --theme=your-theme-name`.
