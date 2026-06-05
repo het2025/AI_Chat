@@ -4548,3 +4548,74 @@ app.get('/api/conversations', authMiddleware, async (req, res) => {
 ```
 
 > Always cap the `limit` parameter server-side to prevent clients requesting thousands of rows in a single request.
+
+---
+
+## 🛡️ Security Headers Reference
+
+EKKA AI sets a comprehensive set of HTTP security headers via **Helmet.js**. Here's what each one does.
+
+### Full Header Configuration
+
+```ts
+// backend/middleware/security.ts
+import helmet from 'helmet'
+
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc:     ["'self'"],
+      scriptSrc:      ["'self'", "'nonce-{NONCE}'"],
+      styleSrc:       ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc:        ["'self'", "https://fonts.gstatic.com"],
+      imgSrc:         ["'self'", "data:", "https:"],
+      connectSrc:     ["'self'", "https://*.supabase.co", "wss://*.supabase.co",
+                       "https://api.nvidia.com"],
+      frameAncestors: ["'none'"],
+      upgradeInsecureRequests: [],
+    },
+  },
+  crossOriginEmbedderPolicy: true,
+  crossOriginOpenerPolicy: { policy: 'same-origin' },
+  crossOriginResourcePolicy: { policy: 'same-site' },
+  strictTransportSecurity: {
+    maxAge: 63072000,          // 2 years in seconds
+    includeSubDomains: true,
+    preload: true,
+  },
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  xContentTypeOptions: true,   // X-Content-Type-Options: nosniff
+  xFrameOptions: { action: 'deny' },
+}))
+```
+
+### Header Explanation Table
+
+| Header | Value | Purpose |
+|--------|-------|---------|
+| `Content-Security-Policy` | See config above | Prevent XSS by restricting script/style sources |
+| `Strict-Transport-Security` | `max-age=63072000; includeSubDomains; preload` | Force HTTPS for 2 years |
+| `X-Frame-Options` | `DENY` | Prevent clickjacking via iframes |
+| `X-Content-Type-Options` | `nosniff` | Prevent MIME-type sniffing |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` | Limit referrer info on cross-origin requests |
+| `Cross-Origin-Opener-Policy` | `same-origin` | Isolate browsing context from other origins |
+| `Cross-Origin-Resource-Policy` | `same-site` | Prevent cross-origin resource loading |
+| `Permissions-Policy` | `camera=(), microphone=(), geolocation=()` | Disable unused browser features |
+
+### Verifying Headers
+
+```bash
+# Check which security headers are set
+curl -I https://ekka-ai.vercel.app
+
+# Or use the Mozilla Observatory scanner
+# https://observatory.mozilla.org/analyze/ekka-ai.vercel.app
+```
+
+Target score: **A+** on Mozilla Observatory (≥ 115 points).
+
+> Never set `Access-Control-Allow-Origin: *` on authenticated endpoints. Always restrict CORS to known frontend origins listed in the `ALLOWED_ORIGINS` environment variable.
+
+---
+
+*EKKA AI — Security-first by design · Last updated: 2026-06-05*
