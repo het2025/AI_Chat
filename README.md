@@ -4619,3 +4619,85 @@ Target score: **A+** on Mozilla Observatory (≥ 115 points).
 ---
 
 *EKKA AI — Security-first by design · Last updated: 2026-06-05*
+
+---
+
+## ⚡ Performance Profiling Guide
+
+### Core Web Vitals Targets
+
+| Metric | Target | What It Measures |
+|--------|--------|-----------------|
+| **LCP** (Largest Contentful Paint) | < 2.5s | How fast main content loads |
+| **FID** (First Input Delay) | < 100ms | How fast the app responds to first interaction |
+| **CLS** (Cumulative Layout Shift) | < 0.1 | How much the layout jumps unexpectedly |
+| **INP** (Interaction to Next Paint) | < 200ms | Responsiveness to all interactions |
+| **TTFB** (Time to First Byte) | < 600ms | Server response speed |
+
+### Finding Slow Components with React DevTools
+
+1. Open **React DevTools** → **Profiler** tab
+2. Click **Record** and interact with the app
+3. Click **Stop** and inspect the flame graph
+4. Components with long bars are re-rendering too often or doing expensive work
+
+Common causes and fixes:
+
+| Symptom | Fix |
+|---------|-----|
+| Component re-renders on every parent update | Wrap with `React.memo()` |
+| Expensive calculation runs every render | Move into `useMemo()` |
+| Callback reference changes every render | Wrap with `useCallback()` |
+| Large list re-renders all items | Virtualise with `react-window` |
+
+### Lighthouse Audit
+
+```bash
+# Run a Lighthouse audit against the local dev server
+npx lighthouse http://localhost:5173 \
+  --output=html \
+  --output-path=./lighthouse-report.html \
+  --chrome-flags="--headless"
+
+# Open the report
+start lighthouse-report.html
+```
+
+### Bundle Size Analysis
+
+```bash
+# Build and visualise the bundle
+npm run build
+npx vite-bundle-visualizer
+
+# Or check bundle sizes without a full build
+npx bundlephobia-cli react-markdown
+```
+
+Target: total JS bundle < **200 kB gzipped** on initial load.
+
+### Memory Leak Detection
+
+```ts
+// Watch for growing heap size during long chat sessions
+// Open Chrome DevTools → Memory → Heap Snapshot
+// Take snapshots before and after a long session and compare
+
+// Common leak sources in EKKA AI:
+// 1. Event listeners not removed in useEffect cleanup
+// 2. AbortController not aborted on unmount
+// 3. Zustand subscriptions not unsubscribed
+
+// ✅ Always return a cleanup function from useEffect
+useEffect(() => {
+  const controller = new AbortController()
+  fetchData(controller.signal)
+  return () => controller.abort()   // Cleanup prevents memory leak
+}, [])
+```
+
+> Run a Lighthouse audit before every major release. Keep the Performance score above **90** on both desktop and mobile.
+
+---
+
+*EKKA AI — Fast, accessible, secure · Last updated: 2026-06-05*
