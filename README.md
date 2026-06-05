@@ -4355,3 +4355,88 @@ const useThemeStore = create<ThemeState>()(
 4. Add a preview card to **Settings → Appearance → Themes**
 
 > All theme tokens must pass WCAG AA contrast checks before the theme is shipped. Run `npm run check:contrast -- --theme=your-theme-name`.
+
+---
+
+## 🏪 State Management Patterns
+
+EKKA AI uses **Zustand** for global state. This section documents the store architecture and best practices.
+
+### Store Map
+
+| Store | File | Responsibility |
+|-------|------|---------------|
+| `useConversationStore` | `src/stores/conversationStore.ts` | Conversation list, active conversation, messages |
+| `useUIStore` | `src/stores/uiStore.ts` | Sidebar open/closed, modal state, loading flags |
+| `useThemeStore` | `src/stores/themeStore.ts` | Current theme, persisted to localStorage |
+| `useToastStore` | `src/stores/toastStore.ts` | Toast queue |
+| `useSettingsStore` | `src/stores/settingsStore.ts` | User preferences, model selection, system prompt |
+
+### Slice Pattern
+
+For large stores, we use the **slice pattern** to split state into logical modules:
+
+```ts
+// src/stores/conversationStore.ts
+import { create } from 'zustand'
+import { immer } from 'zustand/middleware/immer'
+
+interface ConversationSlice {
+  conversations: Conversation[]
+  activeConversationId: string | null
+  setActive: (id: string) => void
+  addConversation: (conv: Conversation) => void
+  deleteConversation: (id: string) => void
+}
+
+interface MessageSlice {
+  messages: Record<string, Message[]>   // keyed by conversationId
+  addMessage: (conversationId: string, msg: Message) => void
+  appendToken: (conversationId: string, messageId: string, token: string) => void
+}
+
+type ConversationStore = ConversationSlice & MessageSlice
+
+export const useConversationStore = create<ConversationStore>()(
+  immer((set) => ({
+    // Conversation slice
+    conversations: [],
+    activeConversationId: null,
+    setActive: (id) => set((s) => { s.activeConversationId = id }),
+    addConversation: (conv) => set((s) => { s.conversations.unshift(conv) }),
+    deleteConversation: (id) => set((s) => {
+      s.conversations = s.conversations.filter((c) => c.id !== id)
+    }),
+
+    // Message slice
+    messages: {},
+    addMessage: (cid, msg) => set((s) => {
+      if (!s.messages[cid]) s.messages[cid] = []
+      s.messages[cid].push(msg)
+    }),
+    appendToken: (cid, mid, token) => set((s) => {
+      const msg = s.messages[cid]?.find((m) => m.id === mid)
+      if (msg) msg.content += token
+    }),
+  }))
+)
+```
+
+### Selector Optimisation
+
+Always derive the minimum slice of state needed to prevent unnecessary re-renders:
+
+```ts
+// ❌ Re-renders on ANY state change
+const store = useConversationStore()
+
+// ✅ Re-renders only when activeConversationId changes
+const activeId = useConversationStore((s) => s.activeConversationId)
+
+// ✅ Re-renders only when the active conversation's title changes
+const title = useConversationStore((s) =>
+  s.conversations.find((c) => c.id === s.activeConversationId)?.title
+)
+```
+
+> Avoid storing derived data in state. Compute it inside selectors or with `useMemo` to keep the store as a single source of truth.
