@@ -4959,3 +4959,107 @@ npm run dev
 | `removed` | Flag deleted from registry after one major version |
 
 > When a flag reaches `stable` for one full release cycle, remove the flag entirely and make the feature unconditional to reduce code complexity.
+
+---
+
+## 🔐 Authentication Flow Diagrams
+
+### Email/Password Sign-Up
+
+```
+Browser                    EKKA Backend           Supabase Auth
+   │                            │                      │
+   │──POST /auth/signup────────►│                      │
+   │  { email, password }       │                      │
+   │                            │──createUser()───────►│
+   │                            │                      │── Hash password
+   │                            │                      │── Create user record
+   │                            │◄── { user, session }─│
+   │                            │── Create profile ──►DB│
+   │◄── { user, accessToken }───│                      │
+   │── Store token in cookie    │                      │
+```
+
+### Email/Password Sign-In
+
+```
+Browser                    EKKA Backend           Supabase Auth
+   │                            │                      │
+   │──POST /auth/signin────────►│                      │
+   │  { email, password }       │                      │
+   │                            │──signInWithPassword()►│
+   │                            │                      │── Verify password
+   │                            │◄── { session }───────│
+   │◄── { accessToken,          │                      │
+   │      refreshToken }────────│                      │
+   │── Store both tokens        │                      │
+```
+
+### Token Refresh Flow
+
+```
+Browser                    EKKA Backend           Supabase Auth
+   │                            │                      │
+   │  [Access token expires]    │                      │
+   │──POST /auth/refresh────────►│                     │
+   │  { refreshToken }          │                      │
+   │                            │──refreshSession()───►│
+   │                            │◄── { newSession }────│
+   │◄── { newAccessToken }──────│                      │
+   │── Replace old token        │                      │
+```
+
+### OAuth (Google / GitHub)
+
+```
+Browser              Supabase Auth         Google/GitHub OAuth
+   │                      │                       │
+   │──Click "Sign in       │                       │
+   │  with Google"         │                       │
+   │                       │                       │
+   │──signInWithOAuth()───►│                       │
+   │◄─ Redirect URL────────│                       │
+   │                       │                       │
+   │──────────────────────────────────────────────►│
+   │                       │         User grants permission
+   │◄──────────────────────────────────────────────│
+   │  Redirect back with code                      │
+   │──────────────────►│                           │
+   │                   │── Exchange code for token─►│
+   │                   │◄── Access token────────────│
+   │                   │── Create/update Supabase user
+   │◄── Session ───────│                           │
+```
+
+### Auth State in React
+
+```ts
+// src/hooks/useAuth.ts
+export function useAuth() {
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    // Get current session on mount
+    supabase.auth.getSession().then(({ data }) => {
+      setUser(data.session?.user ?? null)
+      setLoading(false)
+    })
+
+    // Listen for auth state changes (login, logout, token refresh)
+    const { data: listener } = supabase.auth.onAuthStateChange((_, session) => {
+      setUser(session?.user ?? null)
+    })
+
+    return () => listener.subscription.unsubscribe()
+  }, [])
+
+  return { user, loading, isAuthenticated: !!user }
+}
+```
+
+> Access tokens expire after **1 hour**. Supabase automatically refreshes them using the refresh token stored in a secure `HttpOnly` cookie.
+
+---
+
+*EKKA AI — Secure by design · Last updated: 2026-06-06*
