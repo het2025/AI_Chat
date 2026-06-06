@@ -3,6 +3,7 @@
 > **A high-performance, aesthetically pleasing AI chat platform built for the modern web — featuring multi-model switching, real-time streaming, and enterprise-grade security.**
 
 ## 🆕 Latest Updates
+- **2026-06-06**: Added Docker deployment guide, documented multi-environment config strategy, introduced feature flag system docs, and expanded authentication flow diagrams.
 - **2026-06-05**: Added accessibility (WCAG) compliance guide, documented theme engine internals, introduced state management patterns, added API pagination docs, and expanded security headers reference.
 - **2026-06-04**: Added user notification system docs, documented conversation export formats, introduced API webhook guide, and refined system prompt variable documentation.
 - **2026-06-03**: Added token usage dashboard docs, documented conversation branching feature, introduced AI response formatting guide, and expanded unit testing patterns with React Testing Library examples.
