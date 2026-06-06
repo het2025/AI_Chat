@@ -4874,3 +4874,88 @@ git push origin master --tags   # Triggers production deployment
 ```
 
 > Never commit `.env` files with real API keys. Use GitHub Actions secrets for CI/CD and inject them at deploy time.
+
+---
+
+## 🚩 Feature Flag System
+
+EKKA AI uses a lightweight, built-in feature flag system to ship features to a subset of users before a full rollout.
+
+### Flag Registry
+
+All flags live in a single file so there's one place to audit what's enabled:
+
+```ts
+// src/lib/featureFlags.ts
+export const FLAGS = {
+  // Stable — on for all users
+  CONVERSATION_BRANCHING:    true,
+  MARKDOWN_EXPORT:           true,
+  SEARCH_FULLTEXT:           true,
+
+  // Beta — on for pro/enterprise only
+  VOICE_INPUT:               false,
+  COLLABORATIVE_CHAT:        false,
+  CUSTOM_SYSTEM_PROMPTS:     false,
+
+  // Experimental — off by default, enable via env var
+  AI_MEMORY:                 import.meta.env.VITE_FF_AI_MEMORY === 'true',
+  PLUGIN_SYSTEM:             import.meta.env.VITE_FF_PLUGINS === 'true',
+} as const
+
+export type Flag = keyof typeof FLAGS
+```
+
+### Checking a Flag in Code
+
+```tsx
+import { useFeatureFlag } from '@/hooks/useFeatureFlag'
+
+function ChatToolbar() {
+  const voiceEnabled = useFeatureFlag('VOICE_INPUT')
+
+  return (
+    <div className="toolbar">
+      <SendButton />
+      {voiceEnabled && <VoiceInputButton />}  {/* Hidden until flag is on */}
+    </div>
+  )
+}
+```
+
+### The `useFeatureFlag` Hook
+
+```ts
+// src/hooks/useFeatureFlag.ts
+import { FLAGS, type Flag } from '@/lib/featureFlags'
+
+export function useFeatureFlag(flag: Flag): boolean {
+  const user = useCurrentUser()
+
+  // Plan-based overrides
+  if (flag === 'VOICE_INPUT' && user?.plan === 'pro') return true
+  if (flag === 'COLLABORATIVE_CHAT' && user?.plan === 'enterprise') return true
+
+  return FLAGS[flag]
+}
+```
+
+### Enabling a Flag Locally
+
+```bash
+# Enable an experimental flag for local testing
+echo "VITE_FF_AI_MEMORY=true" >> .env
+npm run dev
+```
+
+### Flag Lifecycle
+
+| Stage | Description |
+|-------|-------------|
+| `experimental` | Off by default, enabled via env var for testing |
+| `beta` | On for specific user plans only |
+| `stable` | On for all users |
+| `deprecated` | Being removed — flag kept but logs a warning |
+| `removed` | Flag deleted from registry after one major version |
+
+> When a flag reaches `stable` for one full release cycle, remove the flag entirely and make the feature unconditional to reduce code complexity.
