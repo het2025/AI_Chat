@@ -4701,4 +4701,104 @@ useEffect(() => {
 
 ---
 
-*EKKA AI — Fast, accessible, secure · Last updated: 2026-06-05*
+*EKKA AI — Fast, accessible, secure · Last updated: 2026-06-06*
+
+---
+
+## 🐳 Docker Deployment Guide
+
+EKKA AI ships with production-ready Docker configuration for both the frontend and backend.
+
+### Project Structure
+
+```
+EKKA AI/
+├── Dockerfile              ← Frontend (Vite build + Nginx serve)
+├── backend/
+│   └── Dockerfile          ← Backend (Node.js Express API)
+└── docker-compose.yml      ← Orchestrates all services
+```
+
+### Frontend Dockerfile (Multi-stage)
+
+```dockerfile
+# Dockerfile
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM nginx:1.27-alpine AS runner
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+```
+
+### Backend Dockerfile
+
+```dockerfile
+# backend/Dockerfile
+FROM node:20-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+EXPOSE 3001
+USER node
+CMD ["node", "src/index.js"]
+```
+
+### docker-compose.yml
+
+```yaml
+version: '3.9'
+services:
+  frontend:
+    build: .
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_URL=http://backend:3001
+
+  backend:
+    build: ./backend
+    ports:
+      - "3001:3001"
+    env_file:
+      - ./backend/.env
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:
+```
+
+### One-Command Deploy
+
+```bash
+# Build and start all services
+docker compose up --build -d
+
+# View logs
+docker compose logs -f backend
+
+# Stop everything
+docker compose down
+
+# Update to latest (pull + rebuild)
+git pull origin master
+docker compose up --build -d
+```
+
+> Use `docker compose exec backend sh` to open a shell inside the running backend container for debugging.
