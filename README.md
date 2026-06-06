@@ -4802,3 +4802,75 @@ docker compose up --build -d
 ```
 
 > Use `docker compose exec backend sh` to open a shell inside the running backend container for debugging.
+
+---
+
+## 🌍 Multi-Environment Configuration
+
+EKKA AI runs across three environments — **development**, **staging**, and **production** — each with its own config.
+
+### Environment Files
+
+| File | Committed | Purpose |
+|------|----------|---------|
+| `.env.example` | ✅ Yes | Template with all required keys (no values) |
+| `.env` | ❌ No | Local development overrides |
+| `.env.staging` | ❌ No | Staging environment values |
+| `.env.production` | ❌ No | Production values (managed via CI secrets) |
+| `.env.test` | ✅ Yes | Safe test values (mock mode, no real API keys) |
+
+### Required Variables by Environment
+
+```bash
+# .env.example — copy this to .env and fill in real values
+
+# ── AI ──────────────────────────────────────────────
+NVIDIA_NIM_API_KEY=                  # Required in staging/prod; optional with VITE_MOCK_AI=true
+NVIDIA_NIM_BASE_URL=https://integrate.api.nvidia.com/v1
+
+# ── Database ─────────────────────────────────────────
+SUPABASE_URL=                        # Your project's URL
+SUPABASE_ANON_KEY=                   # Public anon key (safe to expose)
+SUPABASE_SERVICE_ROLE_KEY=           # Secret — backend only, never expose
+
+# ── Frontend (Vite — VITE_ prefix exposes to browser) ─
+VITE_SUPABASE_URL=                   # Same as SUPABASE_URL
+VITE_SUPABASE_ANON_KEY=              # Same as SUPABASE_ANON_KEY
+VITE_MOCK_AI=false                   # true = use MSW mock handlers
+VITE_MOCK_AUTH=false
+VITE_DISABLE_ANALYTICS=false
+
+# ── Backend ──────────────────────────────────────────
+BACKEND_PORT=3001
+REDIS_URL=redis://localhost:6379
+ALLOWED_ORIGINS=http://localhost:5173
+JWT_SECRET=                          # Min 32 chars, randomly generated
+WEBHOOK_SECRET=                      # For verifying outgoing webhook signatures
+```
+
+### Environment Detection at Runtime
+
+```ts
+// src/lib/env.ts
+export const env = {
+  isDev:        import.meta.env.DEV,
+  isProd:       import.meta.env.PROD,
+  isTest:       import.meta.env.MODE === 'test',
+  isMockAI:     import.meta.env.VITE_MOCK_AI === 'true',
+  supabaseUrl:  import.meta.env.VITE_SUPABASE_URL,
+  supabaseKey:  import.meta.env.VITE_SUPABASE_ANON_KEY,
+} as const
+```
+
+### Promoting to Production
+
+```bash
+# Staging deploy (via GitHub Actions on push to 'staging' branch)
+git push origin main:staging
+
+# Production deploy (via GitHub Actions on tag push)
+npm version minor               # Bumps version, creates git tag
+git push origin master --tags   # Triggers production deployment
+```
+
+> Never commit `.env` files with real API keys. Use GitHub Actions secrets for CI/CD and inject them at deploy time.
