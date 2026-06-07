@@ -5182,3 +5182,105 @@ jobs:
 ```
 
 > All secrets are stored in **GitHub → Settings → Secrets and Variables → Actions**. Never hardcode secrets in workflow files.
+
+---
+
+## 🚧 Error Boundary Patterns
+
+Error boundaries catch JavaScript errors anywhere in the component tree and display a fallback UI instead of crashing the whole app.
+
+### Global Error Boundary
+
+```tsx
+// src/components/ErrorBoundary/ErrorBoundary.tsx
+import { Component, type ReactNode } from 'react'
+
+interface Props {
+  children: ReactNode
+  fallback?: ReactNode
+  onError?: (error: Error, info: { componentStack: string }) => void
+}
+
+interface State {
+  hasError: boolean
+  error: Error | null
+}
+
+export class ErrorBoundary extends Component<Props, State> {
+  state: State = { hasError: false, error: null }
+
+  static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error }
+  }
+
+  componentDidCatch(error: Error, info: { componentStack: string }) {
+    // Log to your error tracking service (e.g. Sentry)
+    console.error('[ErrorBoundary]', error, info.componentStack)
+    this.props.onError?.(error, info)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback ?? (
+        <div className="error-boundary-fallback">
+          <h2>Something went wrong</h2>
+          <p>{this.state.error?.message}</p>
+          <button onClick={() => this.setState({ hasError: false, error: null })}>
+            Try Again
+          </button>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
+```
+
+### Placement Strategy
+
+Wrap different sections at different granularities to isolate failures:
+
+```tsx
+// src/App.tsx
+function App() {
+  return (
+    // Outermost — catches catastrophic failures
+    <ErrorBoundary fallback={<AppCrashPage />}>
+
+      <Sidebar>
+        {/* Isolated — sidebar crash won't affect the chat */}
+        <ErrorBoundary fallback={<SidebarError />}>
+          <ConversationList />
+        </ErrorBoundary>
+      </Sidebar>
+
+      <main>
+        {/* Isolated — chat crash won't affect the sidebar */}
+        <ErrorBoundary fallback={<ChatError />}>
+          <ChatWindow />
+        </ErrorBoundary>
+      </main>
+
+    </ErrorBoundary>
+  )
+}
+```
+
+### Resetting on Navigation
+
+Reset the error boundary when the user navigates to a new conversation:
+
+```tsx
+<ErrorBoundary
+  key={conversationId}   // New key = fresh ErrorBoundary instance
+  fallback={<ChatError />}
+>
+  <ChatWindow conversationId={conversationId} />
+</ErrorBoundary>
+```
+
+> Always pair error boundaries with an error reporting service like **Sentry**. Silently swallowed errors are impossible to debug in production.
+
+---
+
+*EKKA AI — Resilient by design · Last updated: 2026-06-07*
