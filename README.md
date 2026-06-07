@@ -5063,4 +5063,122 @@ export function useAuth() {
 
 ---
 
-*EKKA AI — Secure by design · Last updated: 2026-06-06*
+*EKKA AI — Secure by design · Last updated: 2026-06-07*
+
+---
+
+## 🔄 CI/CD Pipeline Documentation
+
+EKKA AI uses **GitHub Actions** for automated testing, building, and deployment on every push.
+
+### Pipeline Overview
+
+```
+Push to branch / PR opened
+         │
+         ▼
+   ┌─────────────┐
+   │   Lint &    │  ← ESLint, Prettier, TypeScript type-check
+   │  Type Check │
+   └──────┬──────┘
+          │ Pass
+          ▼
+   ┌─────────────┐
+   │  Unit Tests │  ← Vitest (frontend) + Jest (backend)
+   └──────┬──────┘
+          │ Pass
+          ▼
+   ┌─────────────┐
+   │  E2E Tests  │  ← Playwright (headless Chromium)
+   └──────┬──────┘
+          │ Pass (on main/staging branch only)
+          ▼
+   ┌─────────────┐
+   │    Build    │  ← Vite production build + Docker image
+   └──────┬──────┘
+          │
+          ├── Push to 'staging' branch ──► Deploy to staging
+          └── Push tag (v*.*.*)        ──► Deploy to production
+```
+
+### Full GitHub Actions Workflow
+
+```yaml
+# .github/workflows/ci.yml
+name: CI / CD
+
+on:
+  push:
+    branches: [master, staging]
+    tags: ['v*.*.*']
+  pull_request:
+    branches: [master]
+
+jobs:
+  lint-and-typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'npm' }
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run type-check
+
+  test:
+    needs: lint-and-typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'npm' }
+      - run: npm ci
+      - run: npm test -- --run --coverage
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+
+  e2e:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'npm' }
+      - run: npm ci
+      - run: npx playwright install chromium --with-deps
+      - run: npm run test:e2e
+        env:
+          VITE_MOCK_AI: 'true'
+          VITE_MOCK_AUTH: 'true'
+
+  deploy-staging:
+    needs: e2e
+    if: github.ref == 'refs/heads/staging'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci
+      - run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
+      - run: vercel deploy --token=${{ secrets.VERCEL_TOKEN }}
+
+  deploy-production:
+    needs: e2e
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci
+      - run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.PROD_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.PROD_SUPABASE_ANON_KEY }}
+      - run: vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }}
+```
+
+> All secrets are stored in **GitHub → Settings → Secrets and Variables → Actions**. Never hardcode secrets in workflow files.
