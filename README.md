@@ -5746,3 +5746,41 @@ Configure an external monitor to ping `/health` every 60 seconds:
 ---
 
 *EKKA AI — Production-grade infrastructure · Last updated: 2026-06-08*
+
+---
+
+## 📖 Glossary of Terms
+
+| Term | Definition |
+|------|-----------|
+| **SSE** | Server-Sent Events — a one-way HTTP streaming protocol used to push AI tokens to the browser in real time |
+| **Token** | The basic unit of text processed by AI models — roughly 3/4 of a word. "Hello world" ≈ 2 tokens |
+| **Context Window** | The maximum number of tokens a model can consider at once (prompt + response combined) |
+| **System Prompt** | An instruction given to the model before the conversation begins that shapes its persona and behaviour |
+| **Completion** | The AI-generated response to a prompt |
+| **Streaming** | Sending the AI response token-by-token as it's generated rather than waiting for the full response |
+| **LLM** | Large Language Model — the underlying neural network that generates text responses |
+| **RLS** | Row-Level Security — PostgreSQL feature that restricts which rows a user can query based on policies |
+| **GIN Index** | Generalised Inverted Index — PostgreSQL index type optimal for full-text search and JSONB |
+| **Cursor Pagination** | Pagination using an opaque pointer to the last seen item rather than a numeric page number |
+| **Hydration** | The process of React attaching event handlers to server-rendered HTML on first load |
+| **Code Splitting** | Splitting the JavaScript bundle into smaller chunks loaded on demand |
+| **Virtual List** | A technique that renders only the visible items in a long list, improving performance dramatically |
+| **Feature Flag** | A conditional code switch that enables/disables a feature without deploying new code |
+| **Presence** | Real-time awareness of who is currently viewing or interacting with a shared resource |
+| **Abort Controller** | Web API for cancelling in-flight `fetch()` requests — important for streaming responses |
+| **WCAG** | Web Content Accessibility Guidelines — the international standard for web accessibility |
+| **CSP** | Content Security Policy — an HTTP header that restricts which resources a page can load |
+| **HSTS** | HTTP Strict Transport Security — forces browsers to use HTTPS for a specified duration |
+| **HMAC** | Hash-based Message Authentication Code — used to sign webhook payloads and verify authenticity |
+| **Supabase Realtime** | Supabase's WebSocket-based service for broadcasting database changes and custom events |
+| **Edge Function** | Serverless functions running close to users geographically for low-latency responses |
+| **Optimistic Update** | Immediately updating the UI before the server confirms the action, then reverting if it fails |
+| **Selector** | A function passed to a Zustand/Redux store that extracts a specific slice of state |
+| **Immer** | A JavaScript library that lets you write "mutating" state updates that are applied immutably |
+| **ts_rank** | PostgreSQL function that scores full-text search results by relevance |
+| **Core Web Vitals** | Google's set of metrics (LCP, FID, CLS, INP) that measure real-world user experience |
+
+---
+
+*EKKA AI — Complete documentation · Last updated: 2026-06-08*
