@@ -5284,4 +5284,90 @@ Reset the error boundary when the user navigates to a new conversation:
 
 ---
 
-*EKKA AI — Resilient by design · Last updated: 2026-06-07*
+*EKKA AI — Resilient by design · Last updated: 2026-06-08*
+
+---
+
+## 🤝 Real-Time Collaboration
+
+EKKA AI's enterprise plan supports **shared conversations** — multiple users viewing and contributing to the same chat simultaneously.
+
+### Architecture
+
+```
+User A ──write──► Supabase Realtime ──broadcast──► User B
+                        │
+                   Postgres DB ←── persisted
+```
+
+### Setting Up a Shared Channel
+
+```ts
+// src/hooks/useRealtimeConversation.ts
+export function useRealtimeConversation(conversationId: string) {
+  const channel = useRef<RealtimeChannel | null>(null)
+
+  useEffect(() => {
+    channel.current = supabase
+      .channel(`conversation:${conversationId}`)
+
+      // Presence — track who is viewing the conversation
+      .on('presence', { event: 'sync' }, () => {
+        const state = channel.current!.presenceState()
+        const viewers = Object.values(state).flat() as Viewer[]
+        setViewers(viewers)
+      })
+
+      // Broadcast — real-time typing indicators
+      .on('broadcast', { event: 'typing' }, ({ payload }) => {
+        setTypingUsers((prev) => {
+          const filtered = prev.filter((u) => u.id !== payload.userId)
+          if (payload.isTyping) return [...filtered, payload]
+          return filtered
+        })
+      })
+
+      // Postgres changes — new messages from other users
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages',
+          filter: `conversation_id=eq.${conversationId}` },
+        ({ new: msg }) => {
+          addMessageToStore(msg as Message)
+        }
+      )
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await channel.current!.track({ userId: user.id, name: user.name })
+        }
+      })
+
+    return () => { supabase.removeChannel(channel.current!) }
+  }, [conversationId])
+}
+```
+
+### Typing Indicator Component
+
+```tsx
+function TypingIndicator({ users }: { users: Viewer[] }) {
+  if (users.length === 0) return null
+  const names = users.map((u) => u.name).join(', ')
+  return (
+    <p className="typing-indicator">
+      <span className="dots">···</span>
+      {names} {users.length === 1 ? 'is' : 'are'} typing
+    </p>
+  )
+}
+```
+
+### Conflict Resolution
+
+Since multiple users can't submit to the AI simultaneously, EKKA AI uses a **turn-based lock**:
+
+1. User who clicks Send acquires a 30-second lock on the conversation
+2. Other users see a "**User A is asking…**" banner and their Send button is disabled
+3. Lock is released when the AI response completes or times out
+
+> Shared conversations are only available on the **Enterprise plan**. The `COLLABORATIVE_CHAT` feature flag must also be enabled for the tenant.
