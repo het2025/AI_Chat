@@ -5654,3 +5654,95 @@ export function useSearch() {
 ```
 
 > The GIN index makes most FTS queries complete in < 10ms even on tables with millions of rows. Avoid `LIKE '%term%'` queries — they can't use indexes and become extremely slow at scale.
+
+---
+
+## 🏥 Deployment Health Checks
+
+EKKA AI exposes a `/health` endpoint so load balancers, container orchestrators and monitoring tools can verify the service is alive and ready.
+
+### Health Check Endpoint
+
+```ts
+// backend/routes/health.ts
+app.get('/health', async (req, res) => {
+  const checks = await Promise.allSettled([
+    checkDatabase(),
+    checkRedis(),
+    checkAIProvider(),
+  ])
+
+  const [db, redis, ai] = checks.map((c) =>
+    c.status === 'fulfilled' ? c.value : { status: 'error', error: (c as PromiseRejectedResult).reason?.message }
+  )
+
+  const allHealthy = [db, redis, ai].every((c) => c.status === 'ok')
+
+  res.status(allHealthy ? 200 : 503).json({
+    status: allHealthy ? 'healthy' : 'degraded',
+    timestamp: new Date().toISOString(),
+    version: process.env.npm_package_version,
+    checks: { database: db, redis, aiProvider: ai },
+  })
+})
+
+async function checkDatabase() {
+  const start = Date.now()
+  await supabase.from('profiles').select('id').limit(1)
+  return { status: 'ok', latencyMs: Date.now() - start }
+}
+
+async function checkRedis() {
+  const start = Date.now()
+  await redis.ping()
+  return { status: 'ok', latencyMs: Date.now() - start }
+}
+
+async function checkAIProvider() {
+  const start = Date.now()
+  const res = await fetch('https://integrate.api.nvidia.com/v1/models', {
+    headers: { Authorization: `Bearer ${process.env.NVIDIA_NIM_API_KEY}` },
+  })
+  if (!res.ok) throw new Error(`AI API returned ${res.status}`)
+  return { status: 'ok', latencyMs: Date.now() - start }
+}
+```
+
+### Sample Healthy Response
+
+```json
+{
+  "status": "healthy",
+  "timestamp": "2026-06-08T10:30:00Z",
+  "version": "1.4.2",
+  "checks": {
+    "database":   { "status": "ok", "latencyMs": 12 },
+    "redis":      { "status": "ok", "latencyMs": 2 },
+    "aiProvider": { "status": "ok", "latencyMs": 340 }
+  }
+}
+```
+
+### Docker Health Check
+
+```dockerfile
+# backend/Dockerfile
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+  CMD wget -qO- http://localhost:3001/health || exit 1
+```
+
+### Uptime Monitoring
+
+Configure an external monitor to ping `/health` every 60 seconds:
+
+| Service | Free Tier | Setup |
+|---------|----------|-------|
+| [UptimeRobot](https://uptimerobot.com) | 50 monitors, 5-min interval | Paste URL → Done |
+| [Better Uptime](https://betteruptime.com) | 10 monitors, 3-min interval | Also monitors SSL expiry |
+| GitHub Actions cron | Unlimited | Schedule a curl job |
+
+> If `/health` returns a non-200 status for 3 consecutive checks, PagerDuty/Slack alerts fire and the container is automatically restarted by the orchestrator.
+
+---
+
+*EKKA AI — Production-grade infrastructure · Last updated: 2026-06-08*
