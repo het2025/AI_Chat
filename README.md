@@ -5371,3 +5371,88 @@ Since multiple users can't submit to the AI simultaneously, EKKA AI uses a **tur
 3. Lock is released when the AI response completes or times out
 
 > Shared conversations are only available on the **Enterprise plan**. The `COLLABORATIVE_CHAT` feature flag must also be enabled for the tenant.
+
+---
+
+## 🖼️ Image Attachment Handling
+
+Users can attach images to messages when using a vision-capable model (e.g. `google/gemma-3-27b-it`).
+
+### Upload Flow
+
+```
+User selects image
+      │
+      ▼
+Client validates (size < 10MB, MIME type is image/*)
+      │
+      ▼
+Client compresses to max 1024px wide (canvas API)
+      │
+      ▼
+POST /api/attachments  ← uploads to Supabase Storage
+      │
+      ▼
+Returns { url, width, height, sizeBytes }
+      │
+      ▼
+URL embedded in message payload alongside text
+      │
+      ▼
+Backend encodes as base64 in the AI API request
+```
+
+### Client-Side Compression
+
+```ts
+// src/lib/compressImage.ts
+export async function compressImage(file: File, maxPx = 1024): Promise<Blob> {
+  const img = await createImageBitmap(file)
+  const scale = Math.min(1, maxPx / Math.max(img.width, img.height))
+  const canvas = new OffscreenCanvas(
+    Math.round(img.width * scale),
+    Math.round(img.height * scale)
+  )
+  const ctx = canvas.getContext('2d')!
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+  return canvas.convertToBlob({ type: 'image/webp', quality: 0.85 })
+}
+```
+
+### Storage Configuration
+
+```ts
+// Supabase Storage bucket policy
+{
+  "bucket": "attachments",
+  "public": false,
+  "allowedMimeTypes": ["image/jpeg", "image/png", "image/webp", "image/gif"],
+  "fileSizeLimit": "10MB"
+}
+```
+
+Files are stored at: `attachments/{userId}/{conversationId}/{timestamp}-{filename}`
+
+### Sending to the Vision Model
+
+```ts
+// backend/services/ai.ts
+function buildVisionMessage(message: Message): AIMessage {
+  if (!message.attachments?.length) {
+    return { role: message.role, content: message.content }
+  }
+
+  return {
+    role: message.role,
+    content: [
+      { type: 'text', text: message.content },
+      ...message.attachments.map((att) => ({
+        type: 'image_url',
+        image_url: { url: att.url, detail: 'high' },
+      })),
+    ],
+  }
+}
+```
+
+> Images are deleted from Supabase Storage 30 days after the conversation is deleted. Users can manually delete attachments from **Settings → Storage**.
