@@ -5561,3 +5561,96 @@ function MessageList({ messages }: { messages: Message[] }) {
 ```
 
 > Use `React.lazy` for every page component and any component that imports a library > 20 kB. Check with `npx bundlephobia-cli <package-name>`.
+
+---
+
+## 🔍 Full-Text Search Indexing Guide
+
+EKKA AI uses **PostgreSQL full-text search** to power the conversation and message search feature.
+
+### Index Setup
+
+```sql
+-- Add a generated tsvector column to messages for fast FTS
+ALTER TABLE messages
+  ADD COLUMN content_fts tsvector
+  GENERATED ALWAYS AS (to_tsvector('english', content)) STORED;
+
+-- GIN index for high-speed lookups
+CREATE INDEX idx_messages_content_fts
+  ON messages USING GIN (content_fts);
+
+-- Also index conversation titles
+ALTER TABLE conversations
+  ADD COLUMN title_fts tsvector
+  GENERATED ALWAYS AS (to_tsvector('english', title)) STORED;
+
+CREATE INDEX idx_conversations_title_fts
+  ON conversations USING GIN (title_fts);
+```
+
+### Ranked Search Query
+
+```sql
+-- Search messages, ranked by relevance
+SELECT
+  m.id,
+  m.conversation_id,
+  m.content,
+  m.created_at,
+  ts_rank(m.content_fts, query) AS rank,
+  ts_headline('english', m.content, query,
+    'StartSel=<mark>, StopSel=</mark>, MaxWords=20, MinWords=10'
+  ) AS snippet
+FROM messages m,
+     to_tsquery('english', 'async & await') query
+WHERE m.content_fts @@ query
+  AND m.conversation_id IN (
+    SELECT id FROM conversations WHERE user_id = auth.uid()
+  )
+ORDER BY rank DESC
+LIMIT 20;
+```
+
+### Search API Endpoint
+
+```ts
+// GET /api/search?q=async+await&scope=messages
+app.get('/api/search', authMiddleware, async (req, res) => {
+  const rawQuery = req.query.q as string
+  if (!rawQuery?.trim()) return res.json({ results: [] })
+
+  // Convert user input to a PostgreSQL tsquery (AND logic)
+  const tsQuery = rawQuery.trim().split(/\s+/).join(' & ')
+
+  const { data } = await supabase.rpc('search_messages', {
+    query_text: tsQuery,
+    user_id: req.user.id,
+    limit_count: 20,
+  })
+
+  res.json({ results: data ?? [] })
+})
+```
+
+### Frontend Search Hook
+
+```ts
+// src/hooks/useSearch.ts
+export function useSearch() {
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState<SearchResult[]>([])
+  const debouncedQuery = useDebounce(query, 400)
+
+  useEffect(() => {
+    if (!debouncedQuery.trim()) { setResults([]); return }
+    fetch(`/api/search?q=${encodeURIComponent(debouncedQuery)}`)
+      .then((r) => r.json())
+      .then(({ results }) => setResults(results))
+  }, [debouncedQuery])
+
+  return { query, setQuery, results }
+}
+```
+
+> The GIN index makes most FTS queries complete in < 10ms even on tables with millions of rows. Avoid `LIKE '%term%'` queries — they can't use indexes and become extremely slow at scale.
