@@ -5456,3 +5456,108 @@ function buildVisionMessage(message: Message): AIMessage {
 ```
 
 > Images are deleted from Supabase Storage 30 days after the conversation is deleted. Users can manually delete attachments from **Settings → Storage**.
+
+---
+
+## ⚡ Lazy Loading Patterns
+
+Lazy loading keeps the initial bundle small and defers heavy work until it's actually needed.
+
+### Route-Level Code Splitting with React.lazy
+
+```tsx
+// src/router.tsx
+import { lazy, Suspense } from 'react'
+
+const SettingsPage   = lazy(() => import('./pages/Settings'))
+const AnalyticsPage  = lazy(() => import('./pages/Analytics'))
+const UsagePage      = lazy(() => import('./pages/Usage'))
+
+export function Router() {
+  return (
+    <Suspense fallback={<PageSpinner />}>
+      <Routes>
+        <Route path="/"          element={<ChatPage />} />       {/* Eager */}
+        <Route path="/settings"  element={<SettingsPage />} />   {/* Lazy */}
+        <Route path="/analytics" element={<AnalyticsPage />} />  {/* Lazy */}
+        <Route path="/usage"     element={<UsagePage />} />      {/* Lazy */}
+      </Routes>
+    </Suspense>
+  )
+}
+```
+
+### Lazy Loading Heavy Components
+
+```tsx
+// Heavy libraries loaded only when the component mounts
+const MermaidDiagram = lazy(() =>
+  import('./components/MermaidDiagram').then((m) => ({ default: m.MermaidDiagram }))
+)
+
+const PDFViewer = lazy(() => import('./components/PDFViewer'))
+```
+
+### Image Lazy Loading with Intersection Observer
+
+```tsx
+// src/components/LazyImage/LazyImage.tsx
+export function LazyImage({ src, alt, ...props }: ImgHTMLAttributes<HTMLImageElement>) {
+  const imgRef = useRef<HTMLImageElement>(null)
+  const [loaded, setLoaded] = useState(false)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          imgRef.current!.src = src!
+          observer.disconnect()
+        }
+      },
+      { rootMargin: '200px' }    // Start loading 200px before it enters viewport
+    )
+    if (imgRef.current) observer.observe(imgRef.current)
+    return () => observer.disconnect()
+  }, [src])
+
+  return (
+    <img
+      ref={imgRef}
+      alt={alt}
+      onLoad={() => setLoaded(true)}
+      className={`lazy-img ${loaded ? 'loaded' : 'loading'}`}
+      {...props}
+    />
+  )
+}
+```
+
+### Virtualised Message List
+
+For conversations with hundreds of messages, render only the visible ones:
+
+```tsx
+import { VariableSizeList } from 'react-window'
+
+function MessageList({ messages }: { messages: Message[] }) {
+  const getItemSize = (index: number) =>
+    estimateMessageHeight(messages[index])   // ~80px for text, more for code blocks
+
+  return (
+    <VariableSizeList
+      height={window.innerHeight - 120}
+      itemCount={messages.length}
+      itemSize={getItemSize}
+      width="100%"
+    >
+      {({ index, style }) => (
+        <div style={style}>
+          <MessageBubble message={messages[index]} />
+        </div>
+      )}
+    </VariableSizeList>
+  )
+}
+```
+
+> Use `React.lazy` for every page component and any component that imports a library > 20 kB. Check with `npx bundlephobia-cli <package-name>`.
