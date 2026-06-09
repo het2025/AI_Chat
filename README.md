@@ -3,6 +3,7 @@
 > **A high-performance, aesthetically pleasing AI chat platform built for the modern web — featuring multi-model switching, real-time streaming, and enterprise-grade security.**
 
 ## 🆕 Latest Updates
+- **2026-06-09**: Added keyboard shortcut customisation guide and documented offline mode / PWA caching strategy.
 - **2026-06-08**: Added real-time collaboration docs, documented image attachment handling, introduced lazy loading patterns, added search indexing guide, and expanded deployment health check docs.
 - **2026-06-07**: Added CI/CD pipeline documentation, documented GitHub Actions workflow anatomy, and introduced error boundary patterns for resilient React UIs.
 - **2026-06-06**: Added Docker deployment guide, documented multi-environment config strategy, introduced feature flag system docs, and expanded authentication flow diagrams.
@@ -5783,4 +5784,4 @@ Configure an external monitor to ping `/health` every 60 seconds:
 
 ---
 
-*EKKA AI — Complete documentation · Last updated: 2026-06-08*
+*EKKA AI — Complete documentation · Last updated: 2026-06-09*
