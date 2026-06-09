@@ -5785,3 +5785,117 @@ Configure an external monitor to ping `/health` every 60 seconds:
 ---
 
 *EKKA AI — Complete documentation · Last updated: 2026-06-09*
+
+---
+
+## 📶 Offline Mode & PWA Caching Strategy
+
+EKKA AI is a **Progressive Web App (PWA)** — it can be installed on desktop and mobile and remains partially functional when the network is unavailable.
+
+### Cache Strategy by Resource Type
+
+| Resource | Cache Strategy | TTL | Rationale |
+|----------|---------------|-----|-----------|
+| App shell (HTML, CSS, JS) | Cache-first | Until new version | Instant load on repeat visits |
+| Google Fonts | Cache-first | 1 year | Fonts don't change |
+| API: conversation list | Network-first | 5 minutes | Show fresh data; fall back to cache |
+| API: message history | Stale-while-revalidate | 10 minutes | Show cached while fetching update |
+| API: AI chat stream | Network-only | — | Streaming can't be cached |
+| Images / attachments | Cache-first | 30 days | Avoid re-downloading large files |
+
+### Service Worker (Workbox)
+
+```ts
+// vite.config.ts — register PWA plugin
+import { VitePWA } from 'vite-plugin-pwa'
+
+export default defineConfig({
+  plugins: [
+    VitePWA({
+      registerType: 'autoUpdate',
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: { cacheName: 'google-fonts', expiration: { maxAgeSeconds: 60 * 60 * 24 * 365 } },
+          },
+          {
+            urlPattern: /^\/api\/conversations/,
+            handler: 'NetworkFirst',
+            options: { cacheName: 'api-conversations', expiration: { maxAgeSeconds: 300 } },
+          },
+        ],
+      },
+      manifest: {
+        name: 'EKKA AI',
+        short_name: 'EKKA',
+        theme_color: '#7c6ef8',
+        background_color: '#0d0d0d',
+        display: 'standalone',
+        icons: [
+          { src: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+          { src: '/icons/icon-512x512.png', sizes: '512x512', type: 'image/png' },
+        ],
+      },
+    }),
+  ],
+})
+```
+
+### Offline Fallback UI
+
+When the user has no connection and tries to send a message, the app queues it:
+
+```ts
+// src/hooks/useOfflineQueue.ts
+export function useOfflineQueue() {
+  const isOnline = useOnlineStatus()
+  const [queue, setQueue] = useLocalStorage<PendingMessage[]>('offline-queue', [])
+
+  const enqueue = (msg: PendingMessage) =>
+    setQueue((prev) => [...prev, { ...msg, id: crypto.randomUUID() }])
+
+  // Flush queue when connection is restored
+  useEffect(() => {
+    if (isOnline && queue.length > 0) {
+      queue.forEach(sendMessage)
+      setQueue([])
+    }
+  }, [isOnline])
+
+  return { isOnline, queue, enqueue }
+}
+```
+
+### Install Prompt
+
+```tsx
+// src/components/InstallBanner/InstallBanner.tsx
+export function InstallBanner() {
+  const [prompt, setPrompt] = useState<BeforeInstallPromptEvent | null>(null)
+
+  useEffect(() => {
+    const handler = (e: Event) => { e.preventDefault(); setPrompt(e as BeforeInstallPromptEvent) }
+    window.addEventListener('beforeinstallprompt', handler)
+    return () => window.removeEventListener('beforeinstallprompt', handler)
+  }, [])
+
+  if (!prompt) return null
+
+  return (
+    <div className="install-banner">
+      <span>Install EKKA AI for a faster experience</span>
+      <button onClick={() => { prompt.prompt(); setPrompt(null) }}>Install App</button>
+      <button onClick={() => setPrompt(null)}>Not now</button>
+    </div>
+  )
+}
+```
+
+> Test the PWA install flow with **Chrome DevTools → Application → Service Workers**. Check "Offline" and reload to verify the app shell loads without a network connection.
+
+---
+
+*EKKA AI — Works everywhere, even offline · Last updated: 2026-06-09*
