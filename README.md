@@ -5899,3 +5899,4 @@ export function InstallBanner() {
 ---
 
 *EKKA AI — Works everywhere, even offline · Last updated: 2026-06-09*
+<!-- minor update 1 -->
