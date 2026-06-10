@@ -251,6 +251,18 @@ To get started quickly, you can clone and install all dependencies in one comman
 - **Side Panel**: Use the 'Artifacts' panel to view and copy code snippets more easily.
 - **Hot Reloading**: If Vite development server stops reflecting changes, try starting with `npm run dev -- --force`.
 
+### Usage Examples
+
+Use these examples to verify the common EKKA AI workflows after setup:
+
+1. **Start a local chat session**: Run the backend with `npm start`, run the frontend with `npm run dev`, then open the Vite URL and send a short prompt such as "Summarize this project in three bullets."
+2. **Switch models for comparison**: Ask the same prompt with `meta/llama-3.1-70b-instruct` and `nvidia/nemotron-4-340b-instruct`, then compare response speed, tone, and reasoning depth.
+3. **Generate an artifact**: Prompt the assistant to "Create a React pricing table component with Tailwind classes" and review the rendered code in the Artifacts side panel.
+4. **Test Markdown rendering**: Send a prompt that asks for a checklist, table, code block, and inline math expression to confirm Markdown, GFM, syntax highlighting, and KaTeX output.
+5. **Export a conversation**: Create a multi-message chat, use the export action, and confirm the downloaded Markdown or JSON file includes the title, messages, timestamps, and model metadata.
+6. **Validate authentication**: Sign in with a Supabase test user, create a conversation, sign out, then sign back in and confirm the saved conversation is restored only for that user.
+7. **Check mobile layout**: Open the frontend in a narrow viewport, toggle the sidebar with `Ctrl + /`, send a message, and verify the input, message list, and artifact panel remain usable.
+
 ### Prerequisites
 - **Node.js**: v18.x or v20.x (v20.11.1+ LTS strongly recommended)
 - **Package Manager**: npm v10+ or yarn v1.22+
