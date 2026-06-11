@@ -3,6 +3,7 @@
 > **A high-performance, aesthetically pleasing AI chat platform built for the modern web — featuring multi-model switching, real-time streaming, and enterprise-grade security.**
 
 ## 🆕 Latest Updates
+- **2026-06-11**: Added input validation patterns, documented API error handling standards, introduced logging best practices, and expanded roadmap section.
 - **2026-06-09**: Added keyboard shortcut customisation guide and documented offline mode / PWA caching strategy.
 - **2026-06-08**: Added real-time collaboration docs, documented image attachment handling, introduced lazy loading patterns, added search indexing guide, and expanded deployment health check docs.
 - **2026-06-07**: Added CI/CD pipeline documentation, documented GitHub Actions workflow anatomy, and introduced error boundary patterns for resilient React UIs.
@@ -5910,7 +5911,7 @@ export function InstallBanner() {
 
 ---
 
-*EKKA AI — Works everywhere, even offline · Last updated: 2026-06-09*
+*EKKA AI — Works everywhere, even offline · Last updated: 2026-06-11*
 <!-- minor update 1 -->
 
 <!-- minor update 2 -->
