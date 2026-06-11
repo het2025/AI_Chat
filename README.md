@@ -6009,6 +6009,91 @@ function NewConversationForm() {
 
 <!-- minor update 1 -->
 
+---
+
+## 🚨 API Error Handling Standards
+
+All EKKA AI API errors follow a consistent JSON envelope so the frontend can handle them uniformly.
+
+### Error Response Shape
+
+```ts
+// Every error response has this exact shape
+interface APIError {
+  error: {
+    code:    string    // Machine-readable snake_case code
+    message: string    // Human-readable explanation
+    details?: Record<string, string[]>  // Field-level errors (validation only)
+    requestId?: string // For correlating logs — include in bug reports
+  }
+}
+```
+
+### Error Code Taxonomy
+
+| HTTP Status | Code | When Used |
+|-------------|------|-----------|
+| 400 | `VALIDATION_ERROR` | Request body fails Zod schema |
+| 401 | `UNAUTHORIZED` | Missing or expired access token |
+| 403 | `FORBIDDEN` | Valid token but insufficient permissions |
+| 404 | `NOT_FOUND` | Resource does not exist |
+| 409 | `CONFLICT` | Duplicate resource (e.g. username taken) |
+| 422 | `UNPROCESSABLE` | Request shape is valid but semantics are wrong |
+| 429 | `RATE_LIMIT_EXCEEDED` | Too many requests |
+| 500 | `INTERNAL_ERROR` | Unexpected server error |
+| 503 | `SERVICE_UNAVAILABLE` | AI provider or database is down |
+
+### Global Error Handler (Express)
+
+```ts
+// backend/middleware/errorHandler.ts  — must be last middleware registered
+app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
+  const requestId = req.headers['x-request-id'] as string ?? crypto.randomUUID()
+
+  if (err instanceof AppError) {
+    return res.status(err.statusCode).json({
+      error: { code: err.code, message: err.message, requestId },
+    })
+  }
+
+  // Unexpected error — log fully, expose minimally
+  console.error('[UNHANDLED]', err)
+  res.status(500).json({
+    error: { code: 'INTERNAL_ERROR', message: 'An unexpected error occurred.', requestId },
+  })
+})
+```
+
+### Frontend Error Parsing
+
+```ts
+// src/lib/api.ts
+export async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(url, init)
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    const code    = body.error?.code    ?? 'UNKNOWN_ERROR'
+    const message = body.error?.message ?? `HTTP ${res.status}`
+    throw new APIError(code, message, res.status, body.error?.details)
+  }
+
+  return res.json()
+}
+
+// Usage — errors are typed, not raw exceptions
+try {
+  const data = await apiFetch<Conversation>('/api/conversations', { method: 'POST', ... })
+} catch (err) {
+  if (err instanceof APIError && err.code === 'RATE_LIMIT_EXCEEDED') {
+    toast.warning('Slow down! You are sending messages too quickly.')
+  }
+}
+```
+
+> Always include the `requestId` when reporting bugs. It links the frontend error to the backend log entry for instant root-cause analysis.
+
+
 <!-- minor update 2 -->
 
 <!-- minor update 3 -->
