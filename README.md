@@ -6098,6 +6098,98 @@ try {
 
 <!-- minor update 3 -->
 
+---
+
+## 📋 Server-Side Logging Best Practices
+
+EKKA AI uses **Pino** for structured, JSON-format logging — fast, low overhead, and compatible with log aggregation platforms (Datadog, Loki, CloudWatch).
+
+### Logger Setup
+
+```ts
+// backend/lib/logger.ts
+import pino from 'pino'
+
+export const logger = pino({
+  level: process.env.LOG_LEVEL ?? 'info',
+  ...(process.env.NODE_ENV !== 'production' && {
+    transport: {
+      target: 'pino-pretty',    // Human-readable in dev
+      options: { colorize: true, translateTime: 'SYS:HH:MM:ss' },
+    },
+  }),
+  redact: {
+    paths: ['req.headers.authorization', 'body.password', 'body.apiKey'],
+    censor: '[REDACTED]',
+  },
+})
+```
+
+### Log Level Guide
+
+| Level | When to Use | Example |
+|-------|------------|---------|
+| `trace` | Extremely detailed — off in production | Entering function X with args Y |
+| `debug` | Useful during development | Cache miss for key X |
+| `info` | Normal operations worth recording | User signed in, message sent |
+| `warn` | Unexpected but recoverable | AI API slow response (>5s) |
+| `error` | Failures that need attention | Database query failed |
+| `fatal` | App cannot continue | Cannot connect to Redis on startup |
+
+### Structured Log Fields
+
+Always include contextual fields — never use plain string interpolation:
+
+```ts
+// ❌ Bad — hard to query, no context
+logger.info(`User ${userId} sent a message to ${conversationId}`)
+
+// ✅ Good — every field is queryable in Datadog/Loki
+logger.info({
+  event:          'message.sent',
+  userId,
+  conversationId,
+  model,
+  tokenCount:     response.usage.total_tokens,
+  latencyMs:      Date.now() - startTime,
+}, 'Message sent successfully')
+```
+
+### Request Logging Middleware
+
+```ts
+// Logs every request and response automatically
+app.use(pinoHttp({
+  logger,
+  customLogLevel: (_req, res) => res.statusCode >= 500 ? 'error' : 'info',
+  customSuccessMessage: (req, res) => `${req.method} ${req.url} — ${res.statusCode}`,
+  serializers: {
+    req: (req) => ({ method: req.method, url: req.url, id: req.id }),
+    res: (res) => ({ statusCode: res.statusCode }),
+  },
+}))
+```
+
+### PII Redaction
+
+Never log personally identifiable information:
+
+```ts
+// Always redact before logging user data
+logger.info({
+  event:  'user.profile.viewed',
+  userId, // OK — internal ID
+  // ❌ Never log: email, name, IP, conversation content
+})
+```
+
+> Set `LOG_LEVEL=debug` in development and `LOG_LEVEL=warn` in production to avoid log noise overwhelming your aggregation budget.
+
+---
+
+*EKKA AI — Observable, debuggable, secure · Last updated: 2026-06-11*
+
+
 <!-- minor update 4 -->
 
 <!-- minor update 5 -->
