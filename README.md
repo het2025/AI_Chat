@@ -5912,6 +5912,101 @@ export function InstallBanner() {
 ---
 
 *EKKA AI — Works everywhere, even offline · Last updated: 2026-06-11*
+
+---
+
+## ✅ Input Validation Patterns
+
+EKKA AI uses **Zod** for runtime validation on both frontend (forms) and backend (API request bodies).
+
+### Shared Schema Definitions
+
+```ts
+// src/lib/schemas.ts  (shared between frontend and backend via a monorepo package)
+import { z } from 'zod'
+
+export const MessageSchema = z.object({
+  content: z.string().min(1, 'Message cannot be empty').max(32_000, 'Message too long'),
+  conversationId: z.string().uuid('Invalid conversation ID'),
+  attachments: z.array(z.object({
+    url:       z.string().url(),
+    mimeType:  z.string().regex(/^image\//),
+    sizeBytes: z.number().positive().max(10 * 1024 * 1024),  // 10 MB limit
+  })).max(5, 'Maximum 5 attachments per message').optional(),
+})
+
+export const ConversationCreateSchema = z.object({
+  title:       z.string().min(1).max(200).optional(),
+  model:       z.enum(['meta/llama-3.1-405b-instruct', 'meta/llama-3.1-70b-instruct',
+                       'meta/llama-3.1-8b-instruct', 'mistralai/mistral-7b-instruct']),
+  systemPrompt: z.string().max(4000).optional(),
+})
+
+export const UserSettingsSchema = z.object({
+  theme:           z.enum(['dark', 'light', 'system']),
+  language:        z.string().length(2),   // ISO 639-1 code
+  defaultModel:    ConversationCreateSchema.shape.model,
+  notifyOnComplete: z.boolean(),
+})
+```
+
+### Backend Validation Middleware
+
+```ts
+// backend/middleware/validate.ts
+import { type ZodSchema } from 'zod'
+
+export function validate(schema: ZodSchema) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const result = schema.safeParse(req.body)
+    if (!result.success) {
+      return res.status(400).json({
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Invalid request body',
+          details: result.error.flatten().fieldErrors,
+        },
+      })
+    }
+    req.body = result.data   // Replace body with validated & typed data
+    next()
+  }
+}
+
+// Usage on a route
+app.post('/api/messages', authMiddleware, validate(MessageSchema), sendMessageHandler)
+```
+
+### Frontend Form Validation with React Hook Form
+
+```tsx
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+
+function NewConversationForm() {
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: zodResolver(ConversationCreateSchema),
+    defaultValues: { model: 'meta/llama-3.1-70b-instruct' },
+  })
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <input {...register('title')} placeholder="Conversation title" />
+      {errors.title && <p className="error">{errors.title.message}</p>}
+
+      <select {...register('model')}>
+        <option value="meta/llama-3.1-70b-instruct">LLaMA 3.1 70B</option>
+        <option value="meta/llama-3.1-8b-instruct">LLaMA 3.1 8B</option>
+      </select>
+
+      <button type="submit">Start Chat</button>
+    </form>
+  )
+}
+```
+
+> Always validate on both client and server. Client-side validation improves UX; server-side validation is what actually keeps your data safe.
+
 <!-- minor update 1 -->
 
 <!-- minor update 2 -->
