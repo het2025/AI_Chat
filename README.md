@@ -3,6 +3,7 @@
 > **A high-performance, aesthetically pleasing AI chat platform built for the modern web — featuring multi-model switching, real-time streaming, and enterprise-grade security.**
 
 ## 🆕 Latest Updates
+- **2026-06-12**: Added rate limiting guide, documented database indexing strategies, introduced code review checklist, added i18n internationalisation guide, and expanded model comparison table.
 - **2026-06-11**: Added input validation patterns, documented API error handling standards, introduced logging best practices, and expanded roadmap section.
 - **2026-06-09**: Added keyboard shortcut customisation guide and documented offline mode / PWA caching strategy.
 - **2026-06-08**: Added real-time collaboration docs, documented image attachment handling, introduced lazy loading patterns, added search indexing guide, and expanded deployment health check docs.
@@ -6187,7 +6188,7 @@ logger.info({
 
 ---
 
-*EKKA AI — Observable, debuggable, secure · Last updated: 2026-06-11*
+*EKKA AI — Observable, debuggable, secure · Last updated: 2026-06-12*
 
 
 <!-- minor update 4 -->
