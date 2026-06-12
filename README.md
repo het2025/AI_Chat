@@ -6582,3 +6582,93 @@ export const MODEL_CAPABILITIES = {
 
 
 <!-- minor update -->
+
+---
+
+## 🤝 Contributing Guide
+
+Thank you for contributing to EKKA AI! Follow these steps to get started.
+
+### 1. Fork & Clone
+
+```bash
+# Fork the repo on GitHub, then clone your fork
+git clone https://github.com/<your-username>/AI_Chat.git
+cd AI_Chat
+npm install
+
+# Set upstream remote so you can pull the latest changes
+git remote add upstream https://github.com/het2025/AI_Chat.git
+```
+
+### 2. Branch Naming Convention
+
+```
+<type>/<short-description>
+
+feat/voice-input
+fix/sidebar-scroll-overflow
+docs/update-docker-guide
+chore/upgrade-vite-6
+test/add-auth-hook-tests
+```
+
+### 3. Commit Message Convention
+
+Follow **Conventional Commits** — our changelog is generated automatically from these:
+
+```
+<type>(scope): <short summary>
+
+feat(chat): add voice input support
+fix(auth): handle expired refresh token gracefully
+docs(api): document pagination endpoints
+perf(messages): virtualise long conversation list
+test(hooks): add useSearch unit tests
+chore(deps): upgrade Vite to 6.0
+```
+
+### 4. Development Workflow
+
+```bash
+# Stay up to date with main
+git fetch upstream
+git rebase upstream/master
+
+# Start the dev server
+npm run dev
+
+# Run tests (watch mode)
+npm test
+
+# Type-check
+npm run type-check
+
+# Lint
+npm run lint
+```
+
+### 5. Opening a Pull Request
+
+1. Push your branch to your fork
+2. Open a PR against `het2025/AI_Chat:master`
+3. Fill in the PR template (auto-populated from `.github/pull_request_template.md`)
+4. Link the related GitHub issue using `Closes #<issue-number>`
+5. Request a review from at least one maintainer
+6. Wait for CI to pass — all checks must be green before merge
+
+### 6. What Gets Merged
+
+| ✅ Will be merged | ❌ Won't be merged |
+|------------------|--------------------|
+| Passes all CI checks | Breaks existing tests |
+| Follows code style | Adds `any` types without justification |
+| Has tests for new behaviour | Introduces a security vulnerability |
+| PR description explains *why* | Adds large dependencies without discussion |
+
+> First-time contributor? Look for issues tagged **`good first issue`** — they're designed to be small, self-contained and well-documented.
+
+---
+
+*EKKA AI — Built together · Last updated: 2026-06-12*
+
