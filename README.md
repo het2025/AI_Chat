@@ -6518,4 +6518,67 @@ t('typingIndicator', { names: 'Alice' })   // "Alice is typing..."
 
 *EKKA AI — Accessible to the world · Last updated: 2026-06-12*
 
+---
+
+## 🤖 AI Model Comparison Table
+
+EKKA AI supports multiple models via NVIDIA NIM. Choose the right one for your use case.
+
+| Model | Context Window | Speed | Cost (relative) | Best For |
+|-------|---------------|-------|----------------|----------|
+| `meta/llama-3.1-405b-instruct` | 128K tokens | ⭐⭐⭐ | 💰💰💰💰 | Complex reasoning, research, coding |
+| `meta/llama-3.1-70b-instruct` | 128K tokens | ⭐⭐⭐⭐ | 💰💰💰 | Balanced quality and speed |
+| `meta/llama-3.1-8b-instruct` | 128K tokens | ⭐⭐⭐⭐⭐ | 💰 | High-volume tasks, simple Q&A |
+| `mistralai/mistral-7b-instruct` | 32K tokens | ⭐⭐⭐⭐⭐ | 💰 | Fast responses, instruction following |
+| `mistralai/mixtral-8x7b-instruct` | 32K tokens | ⭐⭐⭐⭐ | 💰💰 | Code generation, structured output |
+| `google/gemma-3-27b-it` | 128K tokens | ⭐⭐⭐⭐ | 💰💰 | Vision tasks (images + text) |
+| `microsoft/phi-3-mini-128k-instruct` | 128K tokens | ⭐⭐⭐⭐⭐ | 💰 | Long document analysis on a budget |
+
+### Model Selection Logic
+
+EKKA AI auto-selects the default model based on the user's plan:
+
+```ts
+// src/lib/modelDefaults.ts
+export function getDefaultModel(plan: UserPlan): Model {
+  switch (plan) {
+    case 'enterprise': return 'meta/llama-3.1-405b-instruct'
+    case 'pro':        return 'meta/llama-3.1-70b-instruct'
+    default:           return 'meta/llama-3.1-8b-instruct'
+  }
+}
+```
+
+### Switching Models Mid-Conversation
+
+Users can switch models at any time using the model picker in the chat toolbar. The switch takes effect on the **next message** — previous messages in the context window are preserved and sent to the new model.
+
+```ts
+// When user switches model, store the choice for future messages
+const handleModelChange = (newModel: Model) => {
+  updateConversationSettings(conversationId, { model: newModel })
+  toast.info(`Switched to ${getModelDisplayName(newModel)}`)
+}
+```
+
+### Vision-Capable Models
+
+Only models tagged `vision` in the registry accept image attachments:
+
+```ts
+export const MODEL_CAPABILITIES = {
+  'google/gemma-3-27b-it':           { vision: true,  streaming: true },
+  'meta/llama-3.1-405b-instruct':    { vision: false, streaming: true },
+  'meta/llama-3.1-70b-instruct':     { vision: false, streaming: true },
+  'mistralai/mistral-7b-instruct':   { vision: false, streaming: true },
+} as const
+```
+
+> Context window includes **both the prompt and the response**. For a 128K model, if you send 120K tokens of context, the response is limited to 8K tokens. Monitor token usage in **Settings → Usage**.
+
+---
+
+*EKKA AI — Choose the right model · Last updated: 2026-06-12*
+
+
 <!-- minor update -->
