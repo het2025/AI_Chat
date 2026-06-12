@@ -6416,4 +6416,106 @@ Use this checklist when reviewing any pull request to EKKA AI. Every item should
 
 
 <!-- minor update 7 -->
+
+---
+
+## 🌐 i18n Internationalisation Guide
+
+EKKA AI uses **react-i18next** for multi-language support. Adding a new language takes about 30 minutes.
+
+### Supported Languages
+
+| Code | Language | Status |
+|------|----------|--------|
+| `en` | English | ✅ Complete |
+| `hi` | Hindi | ✅ Complete |
+| `es` | Spanish | ✅ Complete |
+| `fr` | French | 🔄 In progress |
+| `de` | German | 📋 Planned |
+| `ja` | Japanese | 📋 Planned |
+
+### Setup
+
+```ts
+// src/lib/i18n.ts
+import i18n from 'i18next'
+import { initReactI18next } from 'react-i18next'
+import LanguageDetector from 'i18next-browser-languagedetector'
+
+i18n
+  .use(LanguageDetector)      // Auto-detect browser language
+  .use(initReactI18next)
+  .init({
+    fallbackLng: 'en',
+    supportedLngs: ['en', 'hi', 'es', 'fr'],
+    ns: ['common', 'chat', 'settings', 'errors'],
+    defaultNS: 'common',
+    interpolation: { escapeValue: false },  // React already escapes
+    backend: {
+      loadPath: '/locales/{{lng}}/{{ns}}.json',
+    },
+  })
+```
+
+### Translation File Structure
+
+```
+public/locales/
+├── en/
+│   ├── common.json       ← Shared UI labels
+│   ├── chat.json         ← Chat-specific strings
+│   ├── settings.json
+│   └── errors.json
+└── hi/
+    ├── common.json
+    └── ...
+```
+
+```json
+// public/locales/en/chat.json
+{
+  "sendButton":      "Send",
+  "typingIndicator": "{{names}} is typing...",
+  "emptyState":      "Start a conversation to get going.",
+  "messageCount_one":   "{{count}} message",
+  "messageCount_other": "{{count}} messages"
+}
+```
+
+### Using Translations in Components
+
+```tsx
+import { useTranslation } from 'react-i18next'
+
+function ChatInput() {
+  const { t } = useTranslation('chat')
+
+  return (
+    <button type="submit" aria-label={t('sendButton')}>
+      {t('sendButton')}
+    </button>
+  )
+}
+
+// Pluralisation — i18next picks _one or _other automatically
+const count = messages.length
+t('messageCount', { count })   // "1 message" or "42 messages"
+
+// Interpolation
+t('typingIndicator', { names: 'Alice' })   // "Alice is typing..."
+```
+
+### Adding a New Language
+
+1. Copy `public/locales/en/` to `public/locales/<code>/`
+2. Translate every string value (keep the keys identical)
+3. Add the language code to `supportedLngs` in `i18n.ts`
+4. Add a row to the table above and open a PR
+
+> Never hardcode UI strings directly in JSX. Every visible string must go through `t()` so it can be translated without touching component code.
+
+---
+
+*EKKA AI — Accessible to the world · Last updated: 2026-06-12*
+
 <!-- minor update -->
