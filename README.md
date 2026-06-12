@@ -6365,5 +6365,55 @@ LIMIT 20;
 
 <!-- minor update 6 -->
 
+---
+
+## ✔️ Code Review Checklist
+
+Use this checklist when reviewing any pull request to EKKA AI. Every item should be checked before approving.
+
+### 🔍 Correctness
+- [ ] Logic matches the acceptance criteria in the ticket
+- [ ] Edge cases handled (empty arrays, null values, network errors)
+- [ ] No dead code or commented-out blocks left in
+- [ ] All new functions/components have at least one unit test
+- [ ] Existing tests still pass (`npm test -- --run`)
+
+### 🔒 Security
+- [ ] No secrets or API keys hardcoded in source files
+- [ ] User input validated with Zod before use
+- [ ] SQL queries use parameterised statements — no string interpolation
+- [ ] New API endpoints protected by `authMiddleware`
+- [ ] CORS settings not loosened beyond necessity
+- [ ] No PII logged (email, IP, conversation content)
+
+### ⚡ Performance
+- [ ] No N+1 query patterns (batch where possible)
+- [ ] New indexes added for any new `WHERE` / `ORDER BY` columns
+- [ ] Heavy components wrapped in `React.lazy()`
+- [ ] No unnecessary `useEffect` dependencies that cause excessive re-renders
+- [ ] Images compressed and served in WebP format
+
+### 🎨 UI / UX
+- [ ] All interactive elements reachable via keyboard
+- [ ] Colour contrast meets WCAG AA (4.5:1 for normal text)
+- [ ] Loading states shown for any async operation > 300ms
+- [ ] Error states are user-friendly (not raw error messages)
+- [ ] Responsive — tested at 375px, 768px and 1280px widths
+
+### 📝 Code Quality
+- [ ] TypeScript types are explicit — no `any` unless justified with a comment
+- [ ] Functions are pure where possible (no hidden side effects)
+- [ ] Constants extracted from magic numbers
+- [ ] Consistent naming conventions (camelCase for vars, PascalCase for components)
+- [ ] PR description explains *why*, not just *what*
+
+### 📦 Dependencies
+- [ ] No new dependency added without checking bundle size (`npx bundlephobia-cli <pkg>`)
+- [ ] New dependencies have active maintenance (last commit < 6 months)
+- [ ] Licences compatible with the project (MIT, Apache-2.0, BSD)
+
+> This checklist is also available as a **PR template** at `.github/pull_request_template.md` — it auto-populates on every new PR.
+
+
 <!-- minor update 7 -->
 <!-- minor update -->
