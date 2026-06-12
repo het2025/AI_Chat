@@ -6193,6 +6193,102 @@ logger.info({
 
 <!-- minor update 4 -->
 
+---
+
+## 🚦 Rate Limiting Guide
+
+EKKA AI enforces per-user rate limits using a **Redis sliding-window algorithm** to prevent API abuse and control AI inference costs.
+
+### Limit Tiers
+
+| Plan | Messages / minute | API requests / minute | Max context window |
+|------|------------------|-----------------------|-------------------|
+| Free | 10 | 60 | 8,000 tokens |
+| Pro | 60 | 300 | 128,000 tokens |
+| Enterprise | Custom | Custom | 200,000 tokens |
+
+### Sliding Window Implementation
+
+```ts
+// backend/middleware/rateLimit.ts
+import { redis } from '../lib/redis'
+
+interface RateLimitOptions {
+  windowMs:  number   // Window size in milliseconds
+  maxTokens: number   // Max requests allowed in the window
+  keyPrefix: string
+}
+
+export async function checkRateLimit(
+  userId: string,
+  opts: RateLimitOptions
+): Promise<{ allowed: boolean; remaining: number; resetMs: number }> {
+  const now    = Date.now()
+  const key    = `${opts.keyPrefix}:${userId}`
+  const window = opts.windowMs
+
+  // Atomic sliding window using Redis sorted sets
+  const pipe = redis.pipeline()
+  pipe.zremrangebyscore(key, 0, now - window)         // Remove expired entries
+  pipe.zadd(key, now, `${now}-${Math.random()}`)      // Add current request
+  pipe.zcard(key)                                      // Count requests in window
+  pipe.pexpire(key, window)                            // Reset TTL
+  const results = await pipe.exec()
+
+  const count     = results![2][1] as number
+  const allowed   = count <= opts.maxTokens
+  const oldest    = await redis.zrange(key, 0, 0, 'WITHSCORES')
+  const resetMs   = oldest.length ? Number(oldest[1]) + window - now : window
+
+  return { allowed, remaining: Math.max(0, opts.maxTokens - count), resetMs }
+}
+```
+
+### Rate Limit Middleware
+
+```ts
+export function rateLimitMiddleware(plan: 'free' | 'pro' | 'enterprise') {
+  const limits = { free: 10, pro: 60, enterprise: 300 }
+
+  return async (req: Request, res: Response, next: NextFunction) => {
+    const { allowed, remaining, resetMs } = await checkRateLimit(req.user.id, {
+      windowMs:  60_000,
+      maxTokens: limits[plan],
+      keyPrefix: 'rl:messages',
+    })
+
+    res.setHeader('X-RateLimit-Limit',     limits[plan])
+    res.setHeader('X-RateLimit-Remaining', remaining)
+    res.setHeader('X-RateLimit-Reset',     Math.ceil(resetMs / 1000))
+
+    if (!allowed) {
+      return res.status(429).json({
+        error: {
+          code:    'RATE_LIMIT_EXCEEDED',
+          message: `Too many requests. Try again in ${Math.ceil(resetMs / 1000)} seconds.`,
+          retryAfterMs: resetMs,
+        },
+      })
+    }
+    next()
+  }
+}
+```
+
+### Frontend: Handling 429 Gracefully
+
+```ts
+// Show a countdown timer instead of a generic error
+if (err.code === 'RATE_LIMIT_EXCEEDED') {
+  const retryAfter = err.retryAfterMs ?? 60_000
+  startCooldownTimer(retryAfter)   // Disables send button with a live countdown
+  toast.warning(`Rate limit reached. Sending again in ${Math.ceil(retryAfter / 1000)}s`)
+}
+```
+
+> Rate limits apply per user, not per IP. This prevents one heavy user on a shared network from blocking others.
+
+
 <!-- minor update 5 -->
 
 <!-- minor update 6 -->
