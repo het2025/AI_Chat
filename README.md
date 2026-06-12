@@ -6291,6 +6291,78 @@ if (err.code === 'RATE_LIMIT_EXCEEDED') {
 
 <!-- minor update 5 -->
 
+---
+
+## 🗂️ Database Indexing Strategies
+
+Well-placed indexes are the single biggest performance lever for a data-heavy app. Here's what EKKA AI uses and why.
+
+### Index Reference Table
+
+| Table | Column(s) | Index Type | Query Pattern |
+|-------|-----------|-----------|---------------|
+| `messages` | `conversation_id` | B-tree | Fetch all messages in a conversation |
+| `messages` | `created_at DESC` | B-tree | Paginate messages newest-first |
+| `messages` | `content_fts` | GIN | Full-text search |
+| `conversations` | `user_id, updated_at DESC` | Composite B-tree | List user's conversations, sorted |
+| `conversations` | `title_fts` | GIN | Search conversation titles |
+| `profiles` | `email` | Unique B-tree | Login lookup, enforce uniqueness |
+| `api_keys` | `key_hash` | Unique B-tree | API key authentication lookup |
+| `messages` | `role` where `role = 'user'` | Partial B-tree | Count user messages for billing |
+
+### Creating the Indexes
+
+```sql
+-- Composite index for the most common query: "list my conversations, newest first"
+CREATE INDEX CONCURRENTLY idx_conversations_user_updated
+  ON conversations (user_id, updated_at DESC);
+
+-- Partial index — only indexes user-sent messages (billing queries)
+CREATE INDEX CONCURRENTLY idx_messages_user_role
+  ON messages (conversation_id, created_at)
+  WHERE role = 'user';
+
+-- Covering index — includes columns needed by SELECT to avoid table heap access
+CREATE INDEX CONCURRENTLY idx_messages_cover
+  ON messages (conversation_id, created_at DESC)
+  INCLUDE (id, role, content);
+```
+
+### Finding Missing Indexes
+
+```sql
+-- Find sequential scans that could benefit from an index
+SELECT
+  schemaname,
+  tablename,
+  seq_scan,
+  seq_tup_read,
+  idx_scan,
+  n_live_tup
+FROM pg_stat_user_tables
+WHERE seq_scan > 100
+  AND n_live_tup > 1000
+ORDER BY seq_tup_read DESC;
+```
+
+### Query Explain Analysis
+
+```sql
+-- Always check the query plan before adding an index
+EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT)
+SELECT id, content, created_at
+FROM messages
+WHERE conversation_id = 'abc123'
+ORDER BY created_at DESC
+LIMIT 20;
+
+-- Target: "Index Scan" not "Seq Scan"
+-- Actual rows should be close to Estimated rows
+```
+
+> Use `CREATE INDEX CONCURRENTLY` in production — it builds the index without locking the table. Never use plain `CREATE INDEX` on a live table with active traffic.
+
+
 <!-- minor update 6 -->
 
 <!-- minor update 7 -->
