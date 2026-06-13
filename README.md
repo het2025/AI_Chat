@@ -3,6 +3,7 @@
 > **A high-performance, aesthetically pleasing AI chat platform built for the modern web — featuring multi-model switching, real-time streaming, and enterprise-grade security.**
 
 ## 🆕 Latest Updates
+- **2026-06-13**: Added WebSocket architecture documentation, documented message formatting/markdown support, and introduced custom themes API reference.
 - **2026-06-12**: Added rate limiting guide, documented database indexing strategies, introduced code review checklist, added i18n internationalisation guide, and expanded model comparison table.
 - **2026-06-11**: Added input validation patterns, documented API error handling standards, introduced logging best practices, and expanded roadmap section.
 - **2026-06-09**: Added keyboard shortcut customisation guide and documented offline mode / PWA caching strategy.
@@ -6670,5 +6671,5 @@ npm run lint
 
 ---
 
-*EKKA AI — Built together · Last updated: 2026-06-12*
+*EKKA AI — Built together · Last updated: 2026-06-13*
 
