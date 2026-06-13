@@ -6856,4 +6856,101 @@ Because models often output math equations, we include `remark-math` and `rehype
 
 ---
 
+## 🎨 Custom Themes API
+
+Beyond the default light and dark modes, EKKA AI allows enterprise tenants to inject custom themes via the CSS Variables API.
+
+### Theme Schema
+
+A theme is defined by a set of HSL colour variables. Using HSL allows us to generate hover states and translucent backgrounds dynamically.
+
+```ts
+// src/types/theme.ts
+export interface ThemeConfig {
+  id: string
+  name: string
+  type: 'light' | 'dark'
+  variables: {
+    '--bg-primary': string       // Page background
+    '--bg-secondary': string     // Sidebar, message bubbles
+    '--text-primary': string     // Main text
+    '--text-secondary': string   // Muted text, timestamps
+    '--accent-main': string      // Buttons, links, active states
+    '--border-colour': string    // Dividers
+    '--error-main': string       // Destructive actions
+  }
+}
+```
+
+### Dynamic Theme Injection
+
+```tsx
+// src/components/ThemeProvider/ThemeProvider.tsx
+import { useEffect } from 'react'
+import { useThemeStore } from '../store/themeStore'
+
+export function ThemeProvider({ children }: { children: ReactNode }) {
+  const { activeTheme } = useThemeStore()
+
+  useEffect(() => {
+    const root = document.documentElement
+    
+    // Set the data-theme attribute for base styles
+    root.setAttribute('data-theme', activeTheme.type)
+    
+    // Inject the custom CSS variables
+    Object.entries(activeTheme.variables).forEach(([key, value]) => {
+      root.style.setProperty(key, value)
+    })
+  }, [activeTheme])
+
+  return <>{children}</>
+}
+```
+
+### Example: "Midnight Hacker" Preset
+
+```json
+{
+  "id": "midnight-hacker",
+  "name": "Midnight Hacker",
+  "type": "dark",
+  "variables": {
+    "--bg-primary": "120 100% 2%",
+    "--bg-secondary": "120 50% 6%",
+    "--text-primary": "120 100% 50%",
+    "--text-secondary": "120 50% 30%",
+    "--accent-main": "120 100% 40%",
+    "--border-colour": "120 100% 15%",
+    "--error-main": "0 100% 50%"
+  }
+}
+```
+
+### Tailwind CSS Integration
+
+To use these variables in Tailwind, configure `tailwind.config.js` to map colors to our CSS variables:
+
+```js
+// tailwind.config.js
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        background: 'hsl(var(--bg-primary) / <alpha-value>)',
+        surface: 'hsl(var(--bg-secondary) / <alpha-value>)',
+        primary: 'hsl(var(--text-primary) / <alpha-value>)',
+        muted: 'hsl(var(--text-secondary) / <alpha-value>)',
+        accent: 'hsl(var(--accent-main) / <alpha-value>)',
+        border: 'hsl(var(--border-colour) / <alpha-value>)',
+      }
+    }
+  }
+}
+```
+
+> The `<alpha-value>` syntax allows Tailwind's opacity utilities to work with our HSL variables (e.g. `bg-surface/50`).
+
+---
+
 *EKKA AI — Built together · Last updated: 2026-06-13*
