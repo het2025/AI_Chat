@@ -6671,5 +6671,99 @@ npm run lint
 
 ---
 
-*EKKA AI — Built together · Last updated: 2026-06-13*
+## 🔌 WebSocket Architecture
 
+While SSE (Server-Sent Events) is used for streaming AI responses, EKKA AI uses **Socket.IO** for all other real-time bidirectional communication.
+
+### When to use WebSockets vs SSE
+
+| Feature | Protocol | Reason |
+|---------|----------|--------|
+| AI Text Streaming | SSE | Unidirectional, native browser support, lower overhead |
+| Typing Indicators | WebSocket | High frequency, bidirectional, requires presence |
+| Online Status | WebSocket | Requires connection state management (heartbeats) |
+| Live Notifications | WebSocket | Needs acknowledgement guarantees |
+
+### Server Setup (Socket.IO)
+
+```ts
+// backend/lib/socket.ts
+import { Server } from 'socket.io'
+import { createAdapter } from '@socket.io/redis-adapter'
+import { redis, redisSub } from './redis'
+
+export function initializeSockets(httpServer: any) {
+  const io = new Server(httpServer, {
+    cors: { origin: process.env.CLIENT_URL, credentials: true },
+    adapter: createAdapter(redis, redisSub) // Enables multi-node scaling
+  })
+
+  io.use(async (socket, next) => {
+    // Authenticate socket connection using the standard JWT
+    const token = socket.handshake.auth.token
+    const user = await verifyToken(token)
+    if (!user) return next(new Error('Authentication error'))
+    
+    socket.data.user = user
+    next()
+  })
+
+  io.on('connection', (socket) => {
+    const userId = socket.data.user.id
+    socket.join(`user:${userId}`) // Personal room for direct notifications
+    
+    socket.on('join_conversation', (convId) => socket.join(`conv:${convId}`))
+    socket.on('leave_conversation', (convId) => socket.leave(`conv:${convId}`))
+    
+    socket.on('typing_start', (convId) => {
+      socket.to(`conv:${convId}`).emit('user_typing', { userId, convId })
+    })
+    
+    socket.on('disconnect', () => {
+      // Handle cleanup, update online status
+    })
+  })
+
+  return io
+}
+```
+
+### Client Integration
+
+```ts
+// src/hooks/useSocket.ts
+import { useEffect, useRef } from 'react'
+import { io, Socket } from 'socket.io-client'
+import { useAuthStore } from '../store/authStore'
+
+export function useSocket() {
+  const { token } = useAuthStore()
+  const socketRef = useRef<Socket | null>(null)
+
+  useEffect(() => {
+    if (!token) return
+
+    socketRef.current = io(import.meta.env.VITE_WS_URL, {
+      auth: { token },
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+    })
+
+    socketRef.current.on('connect_error', (err) => {
+      console.error('Socket connection failed:', err.message)
+    })
+
+    return () => {
+      socketRef.current?.disconnect()
+    }
+  }, [token])
+
+  return socketRef.current
+}
+```
+
+> The Redis adapter is critical. It allows multiple Node.js instances to broadcast events to each other, ensuring a user on Server A receives a typing indicator from a user connected to Server B.
+
+---
+
+*EKKA AI — Built together · Last updated: 2026-06-13*
