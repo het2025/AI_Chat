@@ -6766,4 +6766,94 @@ export function useSocket() {
 
 ---
 
+## 📝 Message Formatting & Markdown Support
+
+EKKA AI uses `react-markdown` to securely and beautifully render AI responses, supporting GitHub Flavored Markdown (GFM), syntax highlighting, and LaTeX math.
+
+### Markdown Pipeline
+
+```tsx
+// src/components/MessageRenderer/MessageRenderer.tsx
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
+import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
+import { CodeBlock } from './CodeBlock'
+
+// Secure schema: allows math classes but prevents XSS
+const schema = {
+  ...defaultSchema,
+  attributes: {
+    ...defaultSchema.attributes,
+    div: [...(defaultSchema.attributes?.div || []), 'className'],
+    span: [...(defaultSchema.attributes?.span || []), 'className'],
+  },
+}
+
+export function MessageRenderer({ content }: { content: string }) {
+  return (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm, remarkMath]}
+      rehypePlugins={[[rehypeSanitize, schema], rehypeKatex]}
+      components={{
+        // Override default pre/code with our custom syntax highlighter
+        code({ node, inline, className, children, ...props }: any) {
+          const match = /language-(\w+)/.exec(className || '')
+          return !inline && match ? (
+            <CodeBlock language={match[1]} value={String(children).replace(/\n$/, '')} />
+          ) : (
+            <code className={className} {...props}>{children}</code>
+          )
+        },
+        // Open links in new tab securely
+        a: ({ node, ...props }) => <a target="_blank" rel="noopener noreferrer" {...props} />
+      }}
+    >
+      {content}
+    </ReactMarkdown>
+  )
+}
+```
+
+### Syntax Highlighting (Prism / Shiki)
+
+We use a custom `CodeBlock` component wrapping `react-syntax-highlighter` to provide:
+1. One-click "Copy Code" button
+2. Language badge (e.g. "typescript")
+3. Custom IDE-like dark theme
+4. Horizontal scrolling for long lines
+
+```tsx
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
+
+export function CodeBlock({ language, value }: { language: string; value: string }) {
+  const handleCopy = () => navigator.clipboard.writeText(value)
+
+  return (
+    <div className="code-block-wrapper">
+      <div className="code-header">
+        <span className="lang-badge">{language}</span>
+        <button onClick={handleCopy}>Copy</button>
+      </div>
+      <SyntaxHighlighter language={language} style={vscDarkPlus} PreTag="div">
+        {value}
+      </SyntaxHighlighter>
+    </div>
+  )
+}
+```
+
+### LaTeX Math Rendering
+
+Because models often output math equations, we include `remark-math` and `rehype-katex`.
+
+- **Inline math:** Rendered using `$E=mc^2$`
+- **Block math:** Rendered using `$$x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$$`
+
+> You must import KaTeX CSS in your root file (`import 'katex/dist/katex.min.css'`) for the math to display correctly.
+
+---
+
 *EKKA AI — Built together · Last updated: 2026-06-13*
