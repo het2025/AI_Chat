@@ -7168,6 +7168,94 @@ const apiRequest = {
 
 > The system prompt consumes tokens from the context window just like user messages. Keep the base prompt under 500 tokens to leave maximum room for the actual conversation.
 
+## 👎 User Feedback & Thumbs Up/Down
+
+To continuously improve model responses and prompt engineering, EKKA AI allows users to provide explicit feedback on AI messages.
+
+### Feedback Schema
+
+```sql
+-- Database schema for feedback
+CREATE TABLE message_feedback (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  message_id UUID NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES profiles(id),
+  rating SMALLINT NOT NULL CHECK (rating IN (-1, 1)), -- -1 for down, 1 for up
+  category VARCHAR(50), -- e.g., 'inaccurate', 'unhelpful', 'formatting'
+  comments TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(message_id, user_id) -- One rating per user per message
+);
+```
+
+### UI Implementation
+
+Every AI message bubble includes a thumbs up/down button group that appears on hover:
+
+```tsx
+// src/components/FeedbackButtons/FeedbackButtons.tsx
+export function FeedbackButtons({ messageId }: { messageId: string }) {
+  const [rating, setRating] = useState<1 | -1 | null>(null)
+  const [showModal, setShowModal] = useState(false)
+
+  const handleRate = async (newRating: 1 | -1) => {
+    setRating(newRating)
+    
+    // Optimistic update
+    apiFetch(`/api/messages/${messageId}/feedback`, {
+      method: 'POST',
+      body: JSON.stringify({ rating: newRating })
+    }).catch(() => {
+      setRating(null)
+      toast.error('Failed to submit feedback')
+    })
+
+    // If downvoted, prompt for details
+    if (newRating === -1) setShowModal(true)
+  }
+
+  return (
+    <div className="feedback-controls">
+      <button 
+        className={rating === 1 ? 'active' : ''} 
+        onClick={() => handleRate(1)}
+        aria-label="Good response"
+      >👍</button>
+      <button 
+        className={rating === -1 ? 'active' : ''} 
+        onClick={() => handleRate(-1)}
+        aria-label="Bad response"
+      >👎</button>
+      
+      {showModal && <DownvoteReasonModal messageId={messageId} onClose={() => setShowModal(false)} />}
+    </div>
+  )
+}
+```
+
+### Analytics Dashboard
+
+Admin users can view feedback aggregate data to decide if the `systemPrompt` needs tuning or if a specific model is underperforming:
+
+```sql
+-- Admin query: Find worst performing models this week
+SELECT 
+  m.model_name,
+  COUNT(f.id) as total_ratings,
+  SUM(CASE WHEN f.rating = 1 THEN 1 ELSE 0 END) as upvotes,
+  SUM(CASE WHEN f.rating = -1 THEN 1 ELSE 0 END) as downvotes,
+  CAST(SUM(CASE WHEN f.rating = 1 THEN 1 ELSE 0 END) AS FLOAT) / COUNT(f.id) * 100 as approval_rate
+FROM message_feedback f
+JOIN messages msg ON f.message_id = msg.id
+JOIN conversations c ON msg.conversation_id = c.id
+JOIN models m ON c.model_id = m.id
+WHERE f.created_at > NOW() - INTERVAL '7 days'
+GROUP BY m.model_name
+ORDER BY approval_rate ASC;
+```
+
+> The feedback data is highly valuable for fine-tuning our own models in the future. We plan to use the `(prompt, good_response, bad_response)` pairs for Direct Preference Optimization (DPO).
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-14*
