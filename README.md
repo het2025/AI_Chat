@@ -7100,6 +7100,74 @@ We use CSS `@media print` queries to ensure the PDF looks like a clean document,
 
 > **Performance Note:** Launching Chromium per request is expensive. We use a pool of warm browser instances in production via `puppeteer-cluster` to handle concurrent export requests without exhausting server memory.
 
+## 🧠 System Prompt Engineering
+
+EKKA AI constructs a dynamic system prompt for every request to ensure the AI has the context it needs to provide high-quality, formatted responses.
+
+### Base System Prompt
+
+```ts
+// backend/prompts/systemPrompt.ts
+export const BASE_SYSTEM_PROMPT = `
+You are EKKA, an advanced AI assistant designed to be helpful, concise, and highly accurate.
+Follow these rules strictly:
+1. Use markdown for all formatting.
+2. If providing code, always wrap it in a code block and specify the language.
+3. If an answer involves math, use LaTeX syntax wrapped in $$ for block math or $ for inline math.
+4. Do not invent information; if you don't know, explicitly state that you don't know.
+5. Do not output conversational filler (e.g., "Certainly!", "Here is the code:"). Just provide the answer.
+`
+```
+
+### Dynamic Context Injection
+
+Before sending the prompt to the NVIDIA NIM API, we inject the current date, time, and user preferences:
+
+```ts
+// backend/services/ai.ts
+import { BASE_SYSTEM_PROMPT } from '../prompts/systemPrompt'
+
+function buildSystemMessage(user: User, conversationContext: any): string {
+  const dateStr = new Date().toLocaleDateString('en-GB', { 
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+  })
+  
+  let dynamicContext = `
+[Context]
+Current Date: ${dateStr}
+User Name: ${user.name}
+Preferred Output Language: ${user.settings.language}
+`
+
+  // If the user provided a custom system prompt for this specific conversation, append it
+  if (conversationContext.customPrompt) {
+    dynamicContext += `\n[User Instructions]\n${conversationContext.customPrompt}`
+  }
+
+  return `${BASE_SYSTEM_PROMPT.trim()}\n${dynamicContext}`
+}
+```
+
+### Request Construction
+
+The final API request always places the system message first:
+
+```ts
+const apiRequest = {
+  model: conversation.model,
+  messages: [
+    { role: 'system', content: buildSystemMessage(req.user, conversation) },
+    ...formattedHistory,
+    { role: 'user', content: req.body.message }
+  ],
+  stream: true,
+  temperature: 0.7,
+  max_tokens: 4096
+}
+```
+
+> The system prompt consumes tokens from the context window just like user messages. Keep the base prompt under 500 tokens to leave maximum room for the actual conversation.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-14*
