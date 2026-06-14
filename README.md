@@ -7256,6 +7256,83 @@ ORDER BY approval_rate ASC;
 
 > The feedback data is highly valuable for fine-tuning our own models in the future. We plan to use the `(prompt, good_response, bad_response)` pairs for Direct Preference Optimization (DPO).
 
+## 🚩 Tenant Feature Flags
+
+EKKA AI supports multi-tenancy (B2B). Different enterprise customers have different features enabled, managed via tenant-level feature flags.
+
+### Database Schema
+
+Instead of adding a new boolean column for every feature, we use a `JSONB` column on the `tenants` table.
+
+```sql
+ALTER TABLE tenants 
+  ADD COLUMN features JSONB NOT NULL DEFAULT '{}'::jsonb;
+
+-- Example data:
+-- { "ENABLE_VISION": true, "CUSTOM_THEMING": false, "MAX_USERS": 50 }
+```
+
+### Frontend Evaluation
+
+When a user logs in, their tenant's feature flags are included in the session token and placed into the Zustand store.
+
+```tsx
+// src/components/Sidebar/Sidebar.tsx
+import { useFeatureFlag } from '../hooks/useFeatureFlag'
+
+export function Sidebar() {
+  const canUseCustomThemes = useFeatureFlag('CUSTOM_THEMING')
+
+  return (
+    <nav>
+      <Link to="/chat">Chat</Link>
+      <Link to="/knowledge-base">Knowledge Base</Link>
+      
+      {/* Only render the settings link if the tenant paid for it */}
+      {canUseCustomThemes && (
+        <Link to="/settings/theme">Custom Branding</Link>
+      )}
+    </nav>
+  )
+}
+```
+
+### Backend Enforcement
+
+UI hiding is not security. The backend must enforce the flags.
+
+```ts
+// backend/middleware/requireFeature.ts
+export function requireFeature(flagName: string) {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    const tenantId = req.user.tenantId
+    
+    const { data: tenant } = await supabase
+      .from('tenants')
+      .select('features')
+      .eq('id', tenantId)
+      .single()
+
+    // If the flag is explicitly false or missing entirely
+    if (!tenant?.features?.[flagName]) {
+      return res.status(403).json({
+        error: {
+          code: 'FEATURE_DISABLED',
+          message: `Your organization does not have access to ${flagName}.`
+        }
+      })
+    }
+
+    next()
+  }
+}
+
+// Usage:
+app.post('/api/theme', requireFeature('CUSTOM_THEMING'), updateThemeHandler)
+```
+
+> LaunchDarkly is used for global rollout flags (e.g., turning on a new model for 10% of all users), but tenant-level flags are stored in our Postgres DB so they can be managed via the billing dashboard.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-14*
