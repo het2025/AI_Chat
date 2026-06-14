@@ -6952,6 +6952,70 @@ module.exports = {
 
 > The `<alpha-value>` syntax allows Tailwind's opacity utilities to work with our HSL variables (e.g. `bg-surface/50`).
 
+## 🧪 E2E Testing with Playwright
+
+EKKA AI uses Playwright for End-to-End (E2E) testing to ensure critical user journeys work across all supported browsers.
+
+### Test Coverage
+
+We write E2E tests for the following flows:
+1. User Authentication (Sign up, login, logout)
+2. Chat functionality (Send message, receive response stream)
+3. Conversation management (Create, rename, delete)
+4. User Settings (Change theme, select default model)
+
+### Example Test
+
+```ts
+// e2e/chat.spec.ts
+import { test, expect } from '@playwright/test'
+
+test.describe('Chat Functionality', () => {
+  test.beforeEach(async ({ page }) => {
+    // Uses a seeded test user
+    await page.goto('/login')
+    await page.fill('input[name="email"]', 'test@ekka.ai')
+    await page.fill('input[name="password"]', 'password123')
+    await page.click('button[type="submit"]')
+    await expect(page).toHaveURL('/')
+  })
+
+  test('can send a message and receive a response', async ({ page }) => {
+    const messageInput = page.locator('textarea[placeholder="Message EKKA..."]')
+    await messageInput.fill('Hello world')
+    await messageInput.press('Enter')
+
+    // Verify user message appears
+    await expect(page.locator('.message-bubble.user').last()).toContainText('Hello world')
+
+    // Verify AI response starts streaming (wait for the assistant bubble)
+    const assistantBubble = page.locator('.message-bubble.assistant').last()
+    await expect(assistantBubble).toBeVisible()
+    
+    // Wait for the typing indicator to disappear, indicating stream completion
+    await expect(page.locator('.typing-indicator')).toHaveCount(0, { timeout: 15000 })
+    
+    // Verify response contains text
+    await expect(assistantBubble.textContent()).not.toBeNull()
+  })
+})
+```
+
+### Running Tests Locally
+
+```bash
+# Install browsers (first time only)
+npx playwright install
+
+# Run tests in headless mode
+npm run e2e
+
+# Run tests with UI mode for debugging
+npm run e2e:ui
+```
+
+> In CI, Playwright is configured to run tests against the staging environment before any deployment to production. Traces are uploaded as artifacts on failure.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-14*
