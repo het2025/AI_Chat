@@ -7016,6 +7016,90 @@ npm run e2e:ui
 
 > In CI, Playwright is configured to run tests against the staging environment before any deployment to production. Traces are uploaded as artifacts on failure.
 
+## 📄 PDF Export Architecture
+
+To allow users to export conversations with perfect formatting (markdown, code blocks, math), EKKA AI generates PDFs server-side using **Puppeteer**.
+
+### Export Flow
+
+1. User clicks "Export PDF" in the UI.
+2. Client requests `GET /api/conversations/:id/pdf`
+3. Backend launches headless Chromium via Puppeteer.
+4. Puppeteer loads a special hidden print-only route: `/print/:id`.
+5. The print route renders the conversation without UI chrome (no sidebar, no input box).
+6. Puppeteer captures the page as a PDF buffer and streams it back to the client.
+
+### Backend PDF Generation
+
+```ts
+// backend/services/pdfGenerator.ts
+import puppeteer from 'puppeteer'
+
+export async function generateConversationPDF(conversationId: string, token: string): Promise<Buffer> {
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'] // Required for Docker
+  })
+  
+  try {
+    const page = await browser.newPage()
+    
+    // Inject auth token so the print route can fetch the private conversation
+    await page.setExtraHTTPHeaders({ Authorization: `Bearer ${token}` })
+    
+    // Load the special print-optimized route
+    await page.goto(`${process.env.CLIENT_URL}/print/${conversationId}`, {
+      waitUntil: 'networkidle0', // Wait until all images and fonts load
+    })
+    
+    // Generate the PDF
+    const pdf = await page.pdf({
+      format: 'A4',
+      printBackground: true, // Preserve code block backgrounds
+      margin: { top: '20px', bottom: '20px', left: '20px', right: '20px' }
+    })
+    
+    return pdf
+  } finally {
+    await browser.close()
+  }
+}
+```
+
+### Print-Specific CSS
+
+We use CSS `@media print` queries to ensure the PDF looks like a clean document, not a screenshot of a web app.
+
+```css
+/* src/styles/print.css */
+@media print {
+  /* Hide UI elements */
+  .sidebar, .chat-input-area, .toolbar {
+    display: none !important;
+  }
+  
+  /* Reset background and text colors for better contrast */
+  body {
+    background-color: white !important;
+    color: black !important;
+  }
+  
+  /* Prevent code blocks from breaking across pages */
+  pre, code, .math-block {
+    page-break-inside: avoid;
+  }
+  
+  /* Expand message bubbles to full width */
+  .message-bubble {
+    max-width: 100% !important;
+    box-shadow: none !important;
+    border: 1px solid #eee;
+  }
+}
+```
+
+> **Performance Note:** Launching Chromium per request is expensive. We use a pool of warm browser instances in production via `puppeteer-cluster` to handle concurrent export requests without exhausting server memory.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-14*
