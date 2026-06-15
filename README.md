@@ -7456,6 +7456,70 @@ v1Router.get('/messages', deprecationWarning('2027-01-01', '/api/v2/messages'), 
 
 > If you are building a custom integration against EKKA AI, always specify the version in the URL (e.g., `https://api.ekka.ai/v1/chat`). Never assume the default version will remain static.
 
+## 📧 Email Notifications with Resend
+
+EKKA AI uses **Resend** for transactional emails and **React Email** to build the email templates, allowing us to use JSX and Tailwind for email design.
+
+### Writing Email Templates
+
+Templates live in `backend/emails/`. They are standard React components.
+
+```tsx
+// backend/emails/WelcomeEmail.tsx
+import { Html, Head, Body, Container, Text, Link, Tailwind } from '@react-email/components'
+
+export default function WelcomeEmail({ name }: { name: string }) {
+  return (
+    <Tailwind>
+      <Html>
+        <Head />
+        <Body className="bg-gray-100 font-sans">
+          <Container className="bg-white p-8 rounded-lg shadow-sm mx-auto mt-10">
+            <Text className="text-2xl font-bold text-gray-900">Welcome to EKKA AI, {name}!</Text>
+            <Text className="text-gray-600 mt-4">
+              We're excited to have you on board. Start exploring the power of multi-model AI today.
+            </Text>
+            <Link 
+              href="https://app.ekka.ai" 
+              className="bg-blue-600 text-white px-6 py-3 rounded-md mt-6 inline-block"
+            >
+              Go to Dashboard
+            </Link>
+          </Container>
+        </Body>
+      </Html>
+    </Tailwind>
+  )
+}
+```
+
+### Sending Emails
+
+To avoid blocking the main API thread, emails are dispatched via a Redis background queue (using BullMQ).
+
+```ts
+// backend/workers/emailWorker.ts
+import { Resend } from 'resend'
+import { render } from '@react-email/render'
+import WelcomeEmail from '../emails/WelcomeEmail'
+
+const resend = new Resend(process.env.RESEND_API_KEY)
+
+export async function sendWelcomeEmail(to: string, name: string) {
+  // Render the React component to raw HTML
+  const html = render(<WelcomeEmail name={name} />)
+
+  await resend.emails.send({
+    from: 'EKKA AI <hello@ekka.ai>',
+    to,
+    subject: 'Welcome to EKKA AI!',
+    html,
+  })
+}
+```
+
+> **Testing Emails Locally:** Run `npm run email:dev` to spin up the React Email preview server. You can view and tweak all email templates at `http://localhost:3000` without sending actual emails.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-15*
