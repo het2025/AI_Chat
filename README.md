@@ -7598,6 +7598,65 @@ When we deploy a new version of the frontend or update the models list, we inval
 
 > **Warning:** Never add `public` cache headers to endpoints returning user-specific data (like `/conversations`). Doing so will leak private chats to other users via the edge cache.
 
+## 🔐 Third-Party OAuth Providers
+
+Alongside email/password authentication, EKKA AI supports **Google** and **GitHub** OAuth for frictionless onboarding, leveraging Supabase Auth.
+
+### Provider Configuration
+
+We store the OAuth Client IDs and Secrets in the Supabase dashboard, not in the application codebase. 
+
+```ts
+// src/components/Auth/OAuthButtons.tsx
+import { supabase } from '../../lib/supabase'
+
+export function OAuthButtons() {
+  const handleLogin = async (provider: 'google' | 'github') => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+        // Request specific scopes needed for user profiles
+        scopes: provider === 'github' ? 'user:email' : 'email profile',
+      }
+    })
+    
+    if (error) toast.error(`Failed to login with ${provider}`)
+  }
+
+  return (
+    <div className="oauth-group">
+      <button onClick={() => handleLogin('google')}>Continue with Google</button>
+      <button onClick={() => handleLogin('github')}>Continue with GitHub</button>
+    </div>
+  )
+}
+```
+
+### Account Linking Strategy
+
+If a user signs up with `test@example.com` using a password, and later clicks "Continue with Google" using the same email, Supabase handles **implicit account linking** automatically if the provider's email is verified.
+
+```sql
+-- Database trigger: Auto-populate user profile on first OAuth login
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.profiles (id, email, full_name, avatar_url)
+  VALUES (
+    new.id,
+    new.email,
+    -- Extract name and avatar from the provider's raw metadata
+    new.raw_user_meta_data->>'full_name',
+    new.raw_user_meta_data->>'avatar_url'
+  );
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+```
+
+> **Important:** Always enforce PKCE (Proof Key for Code Exchange) in the Supabase Auth settings. This prevents authorization code interception attacks, especially important for our mobile wrappers.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-15*
