@@ -7520,6 +7520,84 @@ export async function sendWelcomeEmail(to: string, name: string) {
 
 > **Testing Emails Locally:** Run `npm run email:dev` to spin up the React Email preview server. You can view and tweak all email templates at `http://localhost:3000` without sending actual emails.
 
+## ⚡ Serverless Edge Caching
+
+To ensure lightning-fast load times globally, EKKA AI utilises **Cloudflare Workers** and edge caching for all static assets and public API routes.
+
+### Cache-Control Strategy
+
+We use aggressive caching with `stale-while-revalidate` for non-sensitive data (like model lists or public prompts).
+
+```ts
+// backend/routes/models.ts
+router.get('/models', async (req, res) => {
+  // Cache at the edge for 1 hour, but serve stale data for up to 24 hours 
+  // while fetching fresh data in the background.
+  res.setHeader(
+    'Cache-Control', 
+    'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400'
+  )
+  
+  const models = await getAvailableModels()
+  res.json(models)
+})
+```
+
+### Edge Middleware
+
+Our frontend application is protected by a Cloudflare Worker that handles:
+1. Security headers injection
+2. Geo-routing (connecting the user to the nearest backend region)
+3. Bot mitigation
+
+```js
+// worker.js (Cloudflare Edge)
+export default {
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url)
+    
+    // Check edge cache first
+    const cache = caches.default
+    let response = await cache.match(request)
+    if (response) return response
+
+    // Add geo-location headers for the backend
+    const modifiedRequest = new Request(request, {
+      headers: {
+        ...request.headers,
+        'X-User-Country': request.cf.country,
+        'X-User-City': request.cf.city,
+      }
+    })
+
+    response = await fetch(modifiedRequest)
+    
+    // If it's a static asset, cache it at the edge
+    if (url.pathname.startsWith('/assets/')) {
+      ctx.waitUntil(cache.put(request, response.clone()))
+    }
+    
+    return response
+  }
+}
+```
+
+### Cache Purging
+
+When we deploy a new version of the frontend or update the models list, we invalidate the edge cache programmatically via GitHub Actions.
+
+```yaml
+# .github/workflows/deploy.yml
+      - name: Purge Cloudflare Cache
+        run: |
+          curl -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CF_ZONE_ID }}/purge_cache" \
+          -H "Authorization: Bearer ${{ secrets.CF_API_TOKEN }}" \
+          -H "Content-Type: application/json" \
+          --data '{"purge_everything":true}'
+```
+
+> **Warning:** Never add `public` cache headers to endpoints returning user-specific data (like `/conversations`). Doing so will leak private chats to other users via the edge cache.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-15*
