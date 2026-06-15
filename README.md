@@ -7399,6 +7399,63 @@ export const supabase = createClient(
 > **RPO (Recovery Point Objective):** 1 second (via PITR)
 > **RTO (Recovery Time Objective):** 30 seconds (via automatic replica promotion)
 
+## 🔄 API Versioning Strategy
+
+EKKA AI's public developer API uses **URI-based versioning**. We guarantee backwards compatibility within a major version.
+
+### Routing Architecture
+
+We mount separate Express routers for each API version to completely isolate breaking changes:
+
+```ts
+// backend/server.ts
+import { router as v1Router } from './routes/v1'
+import { router as v2Router } from './routes/v2'
+
+// Internal UI API (not versioned, moves fast, breaks things)
+app.use('/api/internal', internalRouter)
+
+// Public Developer API
+app.use('/api/v1', v1Router)
+app.use('/api/v2', v2Router)
+```
+
+### Breaking vs. Non-Breaking Changes
+
+| Change Type | Allowed in `v1`? | Action Required |
+|-------------|------------------|-----------------|
+| Adding a new endpoint | ✅ Yes | None |
+| Adding an optional parameter | ✅ Yes | None |
+| Adding a new field to a JSON response | ✅ Yes | Update docs |
+| Renaming or removing a field | ❌ No | Create `v2` |
+| Changing a field's data type | ❌ No | Create `v2` |
+| Making an optional param required | ❌ No | Create `v2` |
+
+### Deprecation Protocol
+
+When a version is slated for removal, we notify clients via standard HTTP headers at least 6 months in advance.
+
+```ts
+// backend/middleware/deprecation.ts
+export function deprecationWarning(sunsetDate: string, newLink: string) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    res.setHeader('Deprecation', 'true')
+    res.setHeader('Sunset', new Date(sunsetDate).toUTCString())
+    res.setHeader('Link', `<${newLink}>; rel="alternate"`)
+    
+    // Also log this internally so we can email users still hitting this endpoint
+    logger.warn({ event: 'deprecated_api_used', userId: req.user.id, path: req.path })
+    
+    next()
+  }
+}
+
+// Usage:
+v1Router.get('/messages', deprecationWarning('2027-01-01', '/api/v2/messages'), oldHandler)
+```
+
+> If you are building a custom integration against EKKA AI, always specify the version in the URL (e.g., `https://api.ekka.ai/v1/chat`). Never assume the default version will remain static.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-15*
