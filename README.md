@@ -7334,6 +7334,71 @@ app.post('/api/theme', requireFeature('CUSTOM_THEMING'), updateThemeHandler)
 
 > LaunchDarkly is used for global rollout flags (e.g., turning on a new model for 10% of all users), but tenant-level flags are stored in our Postgres DB so they can be managed via the billing dashboard.
 
+## 💾 Database Backups & Disaster Recovery
+
+EKKA AI maintains strict data durability guarantees through Supabase's managed Postgres infrastructure combined with our own off-site backup strategy.
+
+### Point-in-Time Recovery (PITR)
+
+Our production database uses WAL (Write-Ahead Logging) archiving to allow Point-in-Time Recovery. If data is accidentally dropped, we can restore the entire database to any specific second within the last 7 days.
+
+```bash
+# Example: Restoring to 10 minutes ago via Supabase CLI
+supabase db restore --project-ref $PROJECT_ID --time "2026-06-15T10:00:00Z"
+```
+
+### Daily Logical Backups (Off-site)
+
+While PITR handles immediate accidents, we also perform daily logical backups exported to AWS S3 for compliance and catastrophic disaster recovery.
+
+```yaml
+# .github/workflows/db-backup.yml
+name: Daily Database Backup
+on:
+  schedule:
+    - cron: '0 3 * * *' # Run at 3 AM UTC every day
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump Database
+        env:
+          PGPASSWORD: ${{ secrets.DB_PASSWORD }}
+        run: |
+          pg_dump -h db.ekka.ai -U postgres -d postgres \
+            -F c -f backup_$(date +%F).dump
+
+      - name: Upload to S3
+        run: |
+          aws s3 cp backup_$(date +%F).dump s3://ekka-backups-secure/
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+```
+
+### Read Replicas & Failover
+
+To handle heavy read traffic (e.g., searching past conversations) and ensure high availability, we use a primary-replica architecture:
+
+1. **Primary Node:** Handles all `INSERT`, `UPDATE`, and `DELETE` operations (sending messages, changing settings).
+2. **Read Replica:** Handles `SELECT` queries. 
+
+In the event the primary node goes down, the read replica is automatically promoted to primary within ~30 seconds.
+
+```ts
+// src/lib/supabase.ts
+// The client automatically routes read queries to the replica endpoint 
+// if configured in the Supabase dashboard. No application code changes needed.
+export const supabase = createClient(
+  process.env.VITE_SUPABASE_URL,
+  process.env.VITE_SUPABASE_ANON_KEY
+)
+```
+
+> **RPO (Recovery Point Objective):** 1 second (via PITR)
+> **RTO (Recovery Time Objective):** 30 seconds (via automatic replica promotion)
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-15*
