@@ -7657,6 +7657,42 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 > **Important:** Always enforce PKCE (Proof Key for Code Exchange) in the Supabase Auth settings. This prevents authorization code interception attacks, especially important for our mobile wrappers.
 
+## 🚑 Troubleshooting Guide
+
+If you run into issues while developing EKKA AI locally, check this list of common problems and their solutions.
+
+### 1. Redis Connection Refused
+**Symptom:** `Error: connect ECONNREFUSED 127.0.0.1:6379` in the backend console.
+**Solution:** You forgot to start the local Redis server. 
+- Windows/WSL: `sudo service redis-server start`
+- Mac: `brew services start redis`
+- Docker: `docker-compose up -d redis`
+
+### 2. Supabase Type Errors
+**Symptom:** TypeScript complains that `Database['public']['Tables']['new_table']` does not exist.
+**Solution:** You added a new table or column in the Supabase dashboard but haven't updated the local types.
+```bash
+# Run this from the project root to fetch the latest schema
+npm run generate-types
+```
+
+### 3. Vite HMR (Hot Module Replacement) Not Working
+**Symptom:** You save a React component, but the browser doesn't automatically update.
+**Solution:** This usually happens if you have casing mismatches in your imports (e.g., `import { Sidebar } from './sidebar'` when the file is `Sidebar.tsx`). Windows ignores casing, but Vite's HMR breaks. Fix the import casing.
+
+### 4. CORS Errors on API Requests
+**Symptom:** Browser console shows `Access to fetch at 'http://localhost:3001/api/chat' from origin 'http://localhost:5173' has been blocked by CORS policy`.
+**Solution:** Ensure your backend `.env` file has `CLIENT_URL=http://localhost:5173` set exactly, without a trailing slash.
+
+### 5. Playwright Tests Failing in CI, Passing Locally
+**Symptom:** E2E tests timeout or fail in GitHub Actions.
+**Solution:** The CI server is much slower than your local machine. If a test relies on the AI streaming a response, increase the timeout for that specific assertion:
+```ts
+await expect(assistantBubble).toContainText('Expected answer', { timeout: 30000 })
+```
+
+> Still stuck? Search the closed issues on GitHub or ask in the `#dev-help` Discord channel before opening a new issue.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-15*
