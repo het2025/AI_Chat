@@ -7752,6 +7752,73 @@ export async function processDocument(fileKey: string) {
 
 > **Size Limits:** Images are capped at 5MB, PDFs at 20MB. Any file exceeding the context window limit (e.g., a 1000-page PDF) will be truncated with a warning shown to the user.
 
+## 🛡️ Content Moderation API
+
+To ensure EKKA AI remains a safe environment and complies with our Terms of Service, we run all user inputs through an automated moderation pipeline before sending them to the LLM.
+
+### Moderation Pipeline
+
+We use the free OpenAI Moderation API to classify text.
+
+```ts
+// backend/services/moderation.ts
+import OpenAI from 'openai'
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+
+export async function checkContentModeration(input: string): Promise<{
+  flagged: boolean;
+  categories: string[];
+}> {
+  const response = await openai.moderations.create({ input })
+  const result = response.results[0]
+  
+  const flaggedCategories = Object.entries(result.categories)
+    .filter(([_, isFlagged]) => isFlagged)
+    .map(([category]) => category)
+
+  return {
+    flagged: result.flagged,
+    categories: flaggedCategories
+  }
+}
+```
+
+### Request Interception
+
+If a message is flagged, we intercept the request, log the incident, and return a standard 400 error. The message is never sent to the LLM, saving compute costs.
+
+```ts
+// backend/routes/chat.ts
+router.post('/message', async (req, res) => {
+  const { message } = req.body
+  
+  // 1. Moderate Input
+  const moderation = await checkContentModeration(message)
+  
+  if (moderation.flagged) {
+    // Log the flagged content for admin review
+    await supabase.from('moderation_logs').insert({
+      user_id: req.user.id,
+      content: message,
+      categories: moderation.categories
+    })
+    
+    return res.status(400).json({
+      error: {
+        code: 'CONTENT_POLICY_VIOLATION',
+        message: 'This message violates our content policy and cannot be processed.',
+        categories: moderation.categories
+      }
+    })
+  }
+  
+  // 2. Process message normally...
+})
+```
+
+> **Account Suspension:** If a user triggers the moderation filter more than 10 times in a 24-hour period, their account is automatically locked and flagged for manual admin review.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-16*
