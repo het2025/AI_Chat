@@ -3,6 +3,7 @@
 > **A high-performance, aesthetically pleasing AI chat platform built for the modern web — featuring multi-model switching, real-time streaming, and enterprise-grade security.**
 
 ## 🆕 Latest Updates
+- **2026-06-16**: Added file upload processing guide and documented content moderation API for safe AI interactions.
 - **2026-06-15**: Added disaster recovery guide, documented API versioning strategy, introduced email notification service, added edge caching docs, and expanded OAuth provider integration.
 - **2026-06-14**: Added E2E testing guide, documented PDF export architecture, introduced system prompt engineering docs, added user feedback guide, and expanded tenant feature flags reference.
 - **2026-06-13**: Added WebSocket architecture documentation, documented message formatting/markdown support, and introduced custom themes API reference.
@@ -7695,4 +7696,4 @@ await expect(assistantBubble).toContainText('Expected answer', { timeout: 30000 
 
 ---
 
-*EKKA AI — Built together · Last updated: 2026-06-15*
+*EKKA AI — Built together · Last updated: 2026-06-16*
