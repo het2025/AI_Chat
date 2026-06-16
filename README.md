@@ -7694,6 +7694,64 @@ await expect(assistantBubble).toContainText('Expected answer', { timeout: 30000 
 
 > Still stuck? Search the closed issues on GitHub or ask in the `#dev-help` Discord channel before opening a new issue.
 
+## 📁 File Upload Processing
+
+EKKA AI supports uploading documents (PDF, TXT, CSV) and images for multi-modal analysis. To handle large files efficiently without crashing the Node.js server, we use a combination of direct S3 uploads and background processing.
+
+### Direct-to-S3 Uploads
+
+Instead of piping file data through our API server, the client requests a temporary **Presigned URL** and uploads directly to the storage bucket.
+
+```ts
+// backend/routes/upload.ts
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+
+const s3 = new S3Client({ region: process.env.AWS_REGION })
+
+router.post('/presigned-url', async (req, res) => {
+  const { filename, contentType } = req.body
+  const fileKey = `uploads/${req.user.id}/${Date.now()}-${filename}`
+  
+  const command = new PutObjectCommand({
+    Bucket: process.env.S3_BUCKET,
+    Key: fileKey,
+    ContentType: contentType,
+  })
+
+  // URL expires in 5 minutes
+  const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 300 })
+  
+  res.json({ uploadUrl, fileKey })
+})
+```
+
+### Text Extraction Queue
+
+Once uploaded, the client notifies the backend. If the file is a document, we add it to a Redis queue for text extraction so it can be injected into the AI context window.
+
+```ts
+// backend/workers/documentWorker.ts
+import pdfParse from 'pdf-parse'
+
+export async function processDocument(fileKey: string) {
+  const fileBuffer = await downloadFromS3(fileKey)
+  
+  // Extract text from PDF
+  const data = await pdfParse(fileBuffer)
+  const extractedText = data.text
+  
+  // Save extracted text to database so it can be appended to the prompt
+  await supabase.from('file_contents').insert({
+    file_key: fileKey,
+    content: extractedText,
+    token_count: countTokens(extractedText)
+  })
+}
+```
+
+> **Size Limits:** Images are capped at 5MB, PDFs at 20MB. Any file exceeding the context window limit (e.g., a 1000-page PDF) will be truncated with a warning shown to the user.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-16*
