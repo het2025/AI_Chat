@@ -7939,6 +7939,75 @@ export function useChatStream() {
 
 > **UI Graceful Degradation:** If the stream drops without a `[DONE]` or `[ERROR]` signal (e.g., network disconnect), the UI displays a "Regenerate Response" button at the end of the partial text.
 
+## ⌨️ Keyboard Accessibility (a11y)
+
+EKKA AI is designed to be fully navigable without a mouse, complying with WCAG 2.1 AA standards for keyboard accessibility.
+
+### Semantic HTML & Focus Management
+
+We avoid using `<div>` with `onClick` handlers. Every interactive element must be natively focusable.
+
+```tsx
+// ❌ Bad: Not focusable, no screen reader context
+<div className="button" onClick={submit}>Send</div>
+
+// ✅ Good: Natively accessible
+<button type="submit" className="button" aria-label="Send message">
+  Send
+</button>
+```
+
+When a modal opens, focus is trapped inside the modal. When it closes, focus returns to the element that triggered it. We use Headless UI components to handle this complex logic automatically.
+
+### Global Shortcuts Hook
+
+Power users rely on keyboard shortcuts. We created a custom hook to manage global hotkeys without conflicting with native browser shortcuts.
+
+```ts
+// src/hooks/useHotkeys.ts
+import { useEffect } from 'react'
+
+type KeyMap = { [key: string]: () => void }
+
+export function useHotkeys(keyMap: KeyMap) {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't trigger shortcuts if the user is typing in an input
+      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) {
+        // Exception: Ctrl/Cmd + Enter to send message
+        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && keyMap['mod+enter']) {
+          e.preventDefault()
+          keyMap['mod+enter']()
+        }
+        return
+      }
+
+      const keyString = `${e.ctrlKey || e.metaKey ? 'mod+' : ''}${e.shiftKey ? 'shift+' : ''}${e.key.toLowerCase()}`
+      
+      if (keyMap[keyString]) {
+        e.preventDefault()
+        keyMap[keyString]()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [keyMap])
+}
+```
+
+### Supported Shortcuts
+
+| Shortcut | Action | Scope |
+|----------|--------|-------|
+| `Mod + Enter` | Send message | Chat Input |
+| `Mod + /` | Focus chat input | Global |
+| `Mod + K` | Open command palette | Global |
+| `Esc` | Close active modal/menu | Modals |
+| `Mod + Shift + C` | Copy last AI response | Chat View |
+
+> `Mod` maps to `Cmd` on macOS and `Ctrl` on Windows/Linux.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-17*
