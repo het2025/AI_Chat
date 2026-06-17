@@ -7820,6 +7820,50 @@ router.post('/message', async (req, res) => {
 
 > **Account Suspension:** If a user triggers the moderation filter more than 10 times in a 24-hour period, their account is automatically locked and flagged for manual admin review.
 
+## 🛑 Rate Limiting the Moderation API
+
+Because we use the free OpenAI Moderation API before sending requests to paid models, it can become an attack vector. A malicious user could spam the chat endpoint to exhaust our OpenAI rate limits, taking down the entire service.
+
+### Dedicated Moderation Rate Limiter
+
+We implemented a separate, stricter rate limiter specifically for the moderation step using Redis Sorted Sets.
+
+```ts
+// backend/middleware/moderationRateLimit.ts
+import { redis } from '../lib/redis'
+
+export async function moderationRateLimit(req: Request, res: Response, next: NextFunction) {
+  const userId = req.user.id
+  const key = `rl:moderation:${userId}`
+  const limit = 20 // 20 messages per minute allowed
+  const windowMs = 60_000
+  const now = Date.now()
+
+  const pipe = redis.pipeline()
+  pipe.zremrangebyscore(key, 0, now - windowMs)
+  pipe.zadd(key, now, `${now}-${Math.random()}`)
+  pipe.zcard(key)
+  pipe.pexpire(key, windowMs)
+  const results = await pipe.exec()
+
+  const count = results![2][1] as number
+
+  if (count > limit) {
+    logger.warn({ event: 'moderation_rate_limit_exceeded', userId })
+    return res.status(429).json({
+      error: {
+        code: 'RATE_LIMIT_EXCEEDED',
+        message: 'You are sending messages too fast. Please wait a moment.'
+      }
+    })
+  }
+  
+  next()
+}
+```
+
+> This limit is applied *before* the main API rate limiter. If a user hits this, they receive a 429 and the moderation API is never called.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-17*
