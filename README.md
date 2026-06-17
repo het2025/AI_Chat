@@ -8101,6 +8101,97 @@ useEffect(() => {
 
 > The refresh token is stored securely in an `HttpOnly` cookie by Supabase, preventing XSS attacks from stealing it.
 
+## 📦 Frontend Bundle Optimization
+
+To ensure fast Initial Load Times (Time to Interactive), we heavily optimize our Vite build process to keep the main bundle under 200KB.
+
+### Manual Chunk Splitting
+
+Large dependencies are split into their own chunks. They are only downloaded if the user visits a route that actually requires them.
+
+```ts
+// vite.config.ts
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/react-markdown') || id.includes('remark')) {
+            return 'markdown-engine'
+          }
+          if (id.includes('node_modules/d3') || id.includes('node_modules/recharts')) {
+            return 'charting'
+          }
+          if (id.includes('node_modules/react-syntax-highlighter')) {
+            return 'syntax-highlighter'
+          }
+          if (id.includes('node_modules')) {
+            return 'vendor' // Fallback for other node_modules
+          }
+        }
+      }
+    }
+  }
+})
+```
+
+### Dynamic Component Imports
+
+We use `React.lazy()` for modals, heavy settings pages, and complex renderers so they are completely excluded from the initial payload.
+
+```tsx
+// src/App.tsx
+import { lazy, Suspense } from 'react'
+import { LoadingSpinner } from './components/LoadingSpinner'
+
+// Standard import for the critical path
+import { ChatSidebar } from './components/ChatSidebar'
+
+// Lazy import for non-critical paths
+const SettingsModal = lazy(() => import('./components/Settings/SettingsModal'))
+const BillingPage = lazy(() => import('./pages/BillingPage'))
+
+function App() {
+  return (
+    <div className="app-layout">
+      <ChatSidebar />
+      <main>
+        {/* Suspense boundary is required for lazy components */}
+        <Suspense fallback={<LoadingSpinner />}>
+          <Routes>
+            <Route path="/billing" element={<BillingPage />} />
+            {/* ... */}
+          </Routes>
+        </Suspense>
+      </main>
+    </div>
+  )
+}
+```
+
+### Syntax Highlighter Lazy Loading
+
+`react-syntax-highlighter` includes definitions for hundreds of languages, which is massive. We only import the specific languages we explicitly support, and we use the `async` build to load the parsing engine on-demand.
+
+```tsx
+// ❌ BAD: Imports the entire language library (~1.5MB)
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+
+// ✅ GOOD: Uses the async build, saving ~1.4MB from the initial load
+import { PrismAsyncLight as SyntaxHighlighter } from 'react-syntax-highlighter'
+import ts from 'react-syntax-highlighter/dist/esm/languages/prism/typescript'
+import py from 'react-syntax-highlighter/dist/esm/languages/prism/python'
+
+SyntaxHighlighter.registerLanguage('typescript', ts)
+SyntaxHighlighter.registerLanguage('python', py)
+```
+
+> **Measuring Bundle Size:** Run `npm run build -- --profile` followed by `npx vite-bundle-visualizer` to see an interactive treemap of our dependencies.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-17*
