@@ -7864,6 +7864,81 @@ export async function moderationRateLimit(req: Request, res: Response, next: Nex
 
 > This limit is applied *before* the main API rate limiter. If a user hits this, they receive a 429 and the moderation API is never called.
 
+## 📡 Streaming Response Error Handling
+
+Server-Sent Events (SSE) pose unique challenges for error handling because a 200 OK status is returned immediately when the stream opens. If an error occurs midway through generation (e.g., model timeout), we must transmit the error over the open stream.
+
+### Backend Stream Formatting
+
+We use a custom data format for SSE chunks. Prefixing lines with `[ERROR]` allows the client parser to differentiate errors from AI text.
+
+```ts
+// backend/routes/chat.ts
+import { pipeline } from 'stream/promises'
+
+router.post('/stream', async (req, res) => {
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive'
+  })
+
+  try {
+    const stream = await aiService.generateStream(req.body)
+    
+    for await (const chunk of stream) {
+      res.write(`data: ${JSON.stringify({ text: chunk })}\n\n`)
+    }
+    res.write('data: [DONE]\n\n')
+    
+  } catch (err) {
+    logger.error('Stream generation failed', { error: err.message })
+    // Send the error event down the open stream
+    res.write(`data: [ERROR] {"code": "MODEL_TIMEOUT", "message": "The AI model took too long to respond."}\n\n`)
+    res.write('data: [DONE]\n\n')
+  } finally {
+    res.end()
+  }
+})
+```
+
+### Frontend Parser
+
+The React hook that consumes the stream must watch for these special prefixes.
+
+```ts
+// src/hooks/useChatStream.ts
+export function useChatStream() {
+  // ...
+  const processStream = async (reader: ReadableStreamDefaultReader<Uint8Array>) => {
+    const decoder = new TextDecoder()
+    
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      
+      const chunk = decoder.decode(value)
+      const lines = chunk.split('\n')
+      
+      for (const line of lines) {
+        if (line === 'data: [DONE]') return
+        if (line.startsWith('data: [ERROR]')) {
+          const errData = JSON.parse(line.replace('data: [ERROR] ', ''))
+          handleStreamError(errData)
+          return
+        }
+        if (line.startsWith('data: ')) {
+          const { text } = JSON.parse(line.replace('data: ', ''))
+          appendMessageText(text)
+        }
+      }
+    }
+  }
+}
+```
+
+> **UI Graceful Degradation:** If the stream drops without a `[DONE]` or `[ERROR]` signal (e.g., network disconnect), the UI displays a "Regenerate Response" button at the end of the partial text.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-17*
