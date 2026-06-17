@@ -8192,6 +8192,62 @@ SyntaxHighlighter.registerLanguage('python', py)
 
 > **Measuring Bundle Size:** Run `npm run build -- --profile` followed by `npx vite-bundle-visualizer` to see an interactive treemap of our dependencies.
 
+## 🗄️ Database Migration Strategy
+
+EKKA AI uses the Supabase CLI to manage database schema changes. We never modify the production database schema manually via the UI dashboard.
+
+### Creating a Migration
+
+When adding a new table or column, generate a new SQL migration file.
+
+```bash
+# 1. Create a new empty migration file
+supabase migration new create_workspaces_table
+
+# 2. Write your SQL in the generated file (supabase/migrations/20260617120000_create_workspaces_table.sql)
+
+# 3. Apply the migration to your local Postgres instance
+supabase db reset
+```
+
+### Remote Environments (Staging & Production)
+
+We maintain two separate Supabase projects: one for `staging` and one for `production`. Migrations are applied automatically via GitHub Actions when code is merged.
+
+```yaml
+# .github/workflows/deploy-production.yml
+name: Deploy Production
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+          
+      - name: Link to Production Project
+        run: supabase link --project-ref $PROD_PROJECT_ID
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          
+      - name: Push DB Migrations
+        run: supabase db push
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+```
+
+### Seed Data
+
+For local development, we maintain a `supabase/seed.sql` file that inserts dummy data (test users, mock chats). This file is automatically executed after migrations when you run `supabase db reset`.
+
+> **Warning:** Never put production secrets or actual user PII inside the `seed.sql` file, as it is committed to version control.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-17*
