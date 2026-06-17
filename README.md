@@ -8008,6 +8008,99 @@ export function useHotkeys(keyMap: KeyMap) {
 
 > `Mod` maps to `Cmd` on macOS and `Ctrl` on Windows/Linux.
 
+## 🔑 Session Expiry & Token Refresh
+
+Security best practices require short-lived access tokens (JWTs) and long-lived refresh tokens. EKKA AI implements a seamless background refresh mechanism so users are never unexpectedly logged out mid-conversation.
+
+### Axios Interceptor Setup
+
+We intercept all outbound API requests. If a request fails with a `401 Unauthorized` error, we pause the request, attempt to refresh the token, and then retry the original request.
+
+```ts
+// src/lib/api.ts
+import axios from 'axios'
+import { supabase } from './supabase'
+import { useAuthStore } from '../store/authStore'
+
+const api = axios.create({ baseURL: import.meta.env.VITE_API_URL })
+
+// Flag to prevent multiple refresh calls simultaneously
+let isRefreshing = false
+let failedQueue: Array<{ resolve: (token: string) => void; reject: (err: any) => void }> = []
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach(prom => {
+    if (error) prom.reject(error)
+    else prom.resolve(token!)
+  })
+  failedQueue = []
+}
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject })
+        }).then(token => {
+          originalRequest.headers['Authorization'] = 'Bearer ' + token
+          return api(originalRequest)
+        }).catch(err => Promise.reject(err))
+      }
+
+      originalRequest._retry = true
+      isRefreshing = true
+
+      try {
+        const { data, error: refreshError } = await supabase.auth.refreshSession()
+        if (refreshError) throw refreshError
+
+        const newToken = data.session!.access_token
+        useAuthStore.getState().setToken(newToken)
+        
+        processQueue(null, newToken)
+        originalRequest.headers['Authorization'] = 'Bearer ' + newToken
+        return api(originalRequest)
+        
+      } catch (err) {
+        processQueue(err, null)
+        useAuthStore.getState().logout()
+        window.location.href = '/login?expired=true'
+        return Promise.reject(err)
+      } finally {
+        isRefreshing = false
+      }
+    }
+
+    return Promise.reject(error)
+  }
+)
+```
+
+### Event Subscription
+
+We also listen for Supabase auth state changes (e.g., if the user logs out from another browser tab).
+
+```ts
+// Inside App.tsx
+useEffect(() => {
+  const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+      useAuthStore.getState().logout()
+    } else if (event === 'TOKEN_REFRESHED' && session) {
+      useAuthStore.getState().setToken(session.access_token)
+    }
+  })
+
+  return () => authListener.subscription.unsubscribe()
+}, [])
+```
+
+> The refresh token is stored securely in an `HttpOnly` cookie by Supabase, preventing XSS attacks from stealing it.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-17*
