@@ -3,6 +3,7 @@
 > **A high-performance, aesthetically pleasing AI chat platform built for the modern web — featuring multi-model switching, real-time streaming, and enterprise-grade security.**
 
 ## 🆕 Latest Updates
+- **2026-06-18**: Added Service Worker & PWA support, documented structured JSON outputs, added context window truncation rules, and introduced custom knowledge base ingestion.
 - **2026-06-17**: Added rate limiting for moderation API, documented streaming error handling, added keyboard a11y guide, documented token refresh flow, optimized frontend bundle, and outlined database migration strategy.
 - **2026-06-16**: Added file upload processing guide and documented content moderation API for safe AI interactions.
 - **2026-06-15**: Added disaster recovery guide, documented API versioning strategy, introduced email notification service, added edge caching docs, and expanded OAuth provider integration.
@@ -8250,4 +8251,4 @@ For local development, we maintain a `supabase/seed.sql` file that inserts dummy
 
 ---
 
-*EKKA AI — Built together · Last updated: 2026-06-17*
+*EKKA AI — Built together · Last updated: 2026-06-18*
