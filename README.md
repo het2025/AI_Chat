@@ -8443,6 +8443,80 @@ export function truncateMessages(messages: any[], maxTokens: number) {
 
 > **UX Consideration:** The UI currently does not notify the user when early parts of the conversation are forgotten. Future updates may add a visual indicator (like a "Faded" icon) to older messages that have fallen out of context.
 
+## 📚 Custom Knowledge Base Ingestion
+
+Beyond isolated file uploads, EKKA AI allows enterprise tenants to build persistent Knowledge Bases (RAG).
+
+### 1. Document Chunking
+
+Instead of storing a 500-page PDF as a single database row, we chunk it into smaller, semantically meaningful pieces using LangChain.
+
+```ts
+// backend/services/ingestion.ts
+import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter'
+
+export async function chunkDocument(text: string) {
+  // Split by paragraphs first, then sentences, then words
+  const splitter = new RecursiveCharacterTextSplitter({
+    chunkSize: 1000,
+    chunkOverlap: 200, // Overlap prevents cutting off context mid-sentence
+  })
+  
+  const chunks = await splitter.createDocuments([text])
+  return chunks.map(c => c.pageContent)
+}
+```
+
+### 2. Embedding Generation & Storage
+
+Each chunk is converted into a high-dimensional vector array using OpenAI's `text-embedding-3-small` model and stored in Supabase using the `pgvector` extension.
+
+```ts
+// backend/services/embeddings.ts
+import OpenAI from 'openai'
+import { supabase } from '../lib/supabase'
+
+const openai = new OpenAI()
+
+export async function ingestChunks(knowledgeBaseId: string, chunks: string[]) {
+  // Generate embeddings in batches of 100 to avoid rate limits
+  const response = await openai.embeddings.create({
+    model: 'text-embedding-3-small',
+    input: chunks,
+  })
+
+  const records = response.data.map((embeddingRecord, index) => ({
+    kb_id: knowledgeBaseId,
+    content: chunks[index],
+    embedding: embeddingRecord.embedding, // This is a 1536-dimensional float array
+  }))
+
+  await supabase.from('kb_chunks').insert(records)
+}
+```
+
+### 3. pgvector Schema
+
+The database table must be configured with an `hnsw` index for fast vector similarity search.
+
+```sql
+-- Create the vector extension
+CREATE EXTENSION IF NOT EXISTS vector;
+
+-- Create the chunks table
+CREATE TABLE kb_chunks (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  kb_id uuid REFERENCES knowledge_bases(id) ON DELETE CASCADE,
+  content text NOT NULL,
+  embedding vector(1536)
+);
+
+-- Create an HNSW index using cosine distance operator (<=>)
+CREATE INDEX ON kb_chunks USING hnsw (embedding vector_cosine_ops);
+```
+
+> **Retrieval:** When a user asks a question, we generate an embedding for their query and use a Postgres RPC function to find the top 5 most similar chunks (Cosine Similarity), injecting those chunks into the LLM context window.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-18*
