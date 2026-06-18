@@ -8249,6 +8249,80 @@ For local development, we maintain a `supabase/seed.sql` file that inserts dummy
 
 > **Warning:** Never put production secrets or actual user PII inside the `seed.sql` file, as it is committed to version control.
 
+## 📱 Service Worker & PWA Support
+
+EKKA AI is fully installable as a Progressive Web App (PWA) on desktop and mobile. We use Vite PWA plugin to generate the manifest and inject the service worker.
+
+### Offline Fallback
+
+While the AI cannot generate new responses offline, users can still read their past conversations.
+
+```ts
+// vite.config.ts
+import { VitePWA } from 'vite-plugin-pwa'
+
+export default defineConfig({
+  plugins: [
+    VitePWA({
+      registerType: 'autoUpdate',
+      workbox: {
+        runtimeCaching: [
+          {
+            // Cache the Supabase GET requests for past chats
+            urlPattern: /^https:\/\/.*\.supabase\.co\/rest\/v1\/conversations.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'chat-history-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // 1 week
+              },
+              cacheableResponse: { statuses: [200] }
+            }
+          }
+        ]
+      }
+    })
+  ]
+})
+```
+
+### Custom Install Prompt
+
+Instead of relying on the browser's default (and often intrusive) install banner, we intercept the `beforeinstallprompt` event to show a custom UI inside the settings menu.
+
+```tsx
+// src/hooks/usePWAInstall.ts
+import { useState, useEffect } from 'react'
+
+export function usePWAInstall() {
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
+
+  useEffect(() => {
+    const handleBeforeInstall = (e: Event) => {
+      e.preventDefault()
+      setDeferredPrompt(e)
+    }
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall)
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall)
+  }, [])
+
+  const installPWA = async () => {
+    if (!deferredPrompt) return
+    deferredPrompt.prompt()
+    const { outcome } = await deferredPrompt.userChoice
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null)
+    }
+  }
+
+  return { isInstallable: !!deferredPrompt, installPWA }
+}
+```
+
+> iOS Safari does not support `beforeinstallprompt`. For iOS users, we detect the user agent and show a tooltip instructing them to use the "Add to Home Screen" share menu option.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-18*
