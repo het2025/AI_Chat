@@ -8387,6 +8387,62 @@ const tools = [
 
 > **Warning:** Not all models support native JSON mode or function calling. The frontend UI greys out these toggles if the user has selected a model like `claude-instant-1.2` or older Llama variants.
 
+## ✂️ Context Window Truncation
+
+Different models have different maximum context windows (e.g., GPT-4o has 128k, Claude 3 has 200k, some older models have 4k). To prevent API 400 errors when a conversation gets too long, we implement an automatic truncation strategy.
+
+### Tiktoken Counting
+
+Before sending a request, we estimate the token count using `tiktoken` (or an equivalent BPE tokenizer).
+
+```ts
+// backend/utils/tokenizer.ts
+import { get_encoding } from '@dqbd/tiktoken'
+
+const encoder = get_encoding('cl100k_base')
+
+export function estimateTokens(messages: any[]): number {
+  let count = 0
+  for (const msg of messages) {
+    // Add 4 tokens per message for formatting overhead
+    count += 4
+    count += encoder.encode(msg.content).length
+  }
+  // Add 3 tokens for the final assistant priming
+  count += 3
+  return count
+}
+```
+
+### Eviction Strategy
+
+If the estimated tokens exceed the model's limit (minus a 1000-token buffer for the response), we start evicting messages from the history.
+
+1. **Never evict the System Prompt.**
+2. **Evict oldest messages first** (sliding window).
+3. **Preserve paired messages.** Always evict a full `(user, assistant)` pair to maintain logical flow.
+
+```ts
+// backend/services/chat.ts
+export function truncateMessages(messages: any[], maxTokens: number) {
+  let currentTokens = estimateTokens(messages)
+  
+  // Keep system prompt at index 0
+  const systemPrompt = messages[0]
+  let chatHistory = messages.slice(1)
+  
+  while (currentTokens > maxTokens && chatHistory.length > 2) {
+    // Remove the oldest user-assistant pair (index 0 and 1 of history)
+    chatHistory = chatHistory.slice(2)
+    currentTokens = estimateTokens([systemPrompt, ...chatHistory])
+  }
+  
+  return [systemPrompt, ...chatHistory]
+}
+```
+
+> **UX Consideration:** The UI currently does not notify the user when early parts of the conversation are forgotten. Future updates may add a visual indicator (like a "Faded" icon) to older messages that have fallen out of context.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-18*
