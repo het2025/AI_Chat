@@ -8323,6 +8323,70 @@ export function usePWAInstall() {
 
 > iOS Safari does not support `beforeinstallprompt`. For iOS users, we detect the user agent and show a tooltip instructing them to use the "Add to Home Screen" share menu option.
 
+## 🧩 Structured JSON Outputs
+
+Sometimes, internal AI agents need to communicate via strict JSON schemas rather than unstructured text. EKKA AI supports forcing models to output valid JSON.
+
+### Using JSON Mode
+
+When triggering background summarization tasks, we enforce `response_format: { type: "json_object" }`.
+
+```ts
+// backend/services/summarizer.ts
+export async function generateChatTitle(messages: any[]) {
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    messages: [
+      { 
+        role: 'system', 
+        content: 'You are a helpful assistant designed to output JSON. Generate a short, 3-word title for this conversation. The JSON must look like { "title": "string" }' 
+      },
+      ...messages
+    ],
+    response_format: { type: 'json_object' }
+  })
+  
+  const data = JSON.parse(response.choices[0].message.content!)
+  return data.title
+}
+```
+
+### Function Calling (Tools)
+
+For more complex data extraction, we pass JSON Schema definitions via the `tools` array. The model guarantees its output will validate against the schema.
+
+```ts
+const tools = [
+  {
+    type: "function",
+    function: {
+      name: "extract_action_items",
+      description: "Extract a list of actionable tasks from the meeting transcript.",
+      parameters: {
+        type: "object",
+        properties: {
+          tasks: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                assignee: { type: "string" },
+                deadline: { type: "string", format: "date" },
+                description: { type: "string" }
+              },
+              required: ["assignee", "description"]
+            }
+          }
+        },
+        required: ["tasks"]
+      }
+    }
+  }
+]
+```
+
+> **Warning:** Not all models support native JSON mode or function calling. The frontend UI greys out these toggles if the user has selected a model like `claude-instant-1.2` or older Llama variants.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-18*
