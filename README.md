@@ -8593,6 +8593,80 @@ export function MessageList({ messages, fetchNextPage, hasNextPage, isFetchingNe
 
 > **Why not offset pagination?** `LIMIT 50 OFFSET 5000` requires the database to scan and discard 5000 rows. Cursor pagination (`WHERE created_at < cursor LIMIT 50`) hits the index directly and is O(1).
 
+## 📊 Admin Analytics Dashboard
+
+To monitor platform usage and costs, enterprise admins have access to a dedicated dashboard route (`/admin/analytics`).
+
+### Frontend Visualization
+
+We use [Tremor](https://tremor.so), a React library built on top of Recharts and Tailwind CSS, for fast and beautiful dashboard components.
+
+```tsx
+// src/pages/Admin/Analytics.tsx
+import { Card, Title, AreaChart, DonutChart } from '@tremor/react'
+import { useAnalyticsData } from '../../hooks/useAnalytics'
+
+export default function AnalyticsDashboard() {
+  const { costOverTime, modelUsage } = useAnalyticsData()
+
+  return (
+    <div className="p-8 space-y-6">
+      <Title>Platform Analytics</Title>
+      
+      <div className="grid grid-cols-3 gap-6">
+        <Card className="col-span-2">
+          <Title>API Costs (Last 30 Days)</Title>
+          <AreaChart
+            data={costOverTime}
+            index="date"
+            categories={['Cost ($)']}
+            colors={['blue']}
+            valueFormatter={(number) => `$${number.toFixed(2)}`}
+          />
+        </Card>
+        
+        <Card>
+          <Title>Model Distribution</Title>
+          <DonutChart
+            data={modelUsage}
+            category="requests"
+            index="model"
+            colors={['rose', 'cyan', 'amber', 'emerald']}
+          />
+        </Card>
+      </div>
+    </div>
+  )
+}
+```
+
+### Backend Aggregation
+
+Calculating costs row-by-row on the frontend would be too slow. We use a Supabase RPC (Remote Procedure Call) to aggregate the data directly in Postgres.
+
+```sql
+-- Supabase SQL Editor
+CREATE OR REPLACE FUNCTION get_cost_analytics(start_date timestamp, end_date timestamp)
+RETURNS TABLE (date date, total_cost numeric) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    DATE(created_at) as date,
+    SUM(cost_usd) as total_cost
+  FROM 
+    api_logs
+  WHERE 
+    created_at >= start_date AND created_at <= end_date
+  GROUP BY 
+    DATE(created_at)
+  ORDER BY 
+    date ASC;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+```
+
+> **Security Note:** The RPC function is marked `SECURITY DEFINER` and we enforce admin-only access via RLS policies on the `api_logs` table. Standard users cannot query this data.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-19*
