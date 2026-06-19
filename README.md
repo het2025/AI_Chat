@@ -8747,6 +8747,66 @@ export default async function TenantLayout({
 
 > Custom domains require configuring CNAME records. We use Vercel's Domains API to automatically provision SSL certificates for these custom domains when the tenant adds them in the dashboard.
 
+## 🗑️ User Delete Account Flow
+
+GDPR and CCPA require users to have an easy, automated way to permanently delete their account and all associated data.
+
+### Supabase Auth Deletion
+
+When a user requests deletion, we first delete their identity from the Supabase `auth.users` table. This must be done server-side using the Service Role key.
+
+```ts
+// backend/routes/users.ts
+import { supabaseAdmin } from '../lib/supabaseAdmin'
+
+router.delete('/me', async (req, res) => {
+  const userId = req.user.id
+  
+  // 1. Cancel active Stripe subscriptions
+  await stripeService.cancelAllSubscriptions(userId)
+  
+  // 2. Delete the user from Supabase Auth
+  // This automatically triggers the Postgres cascading deletes
+  const { error } = await supabaseAdmin.auth.admin.deleteUser(userId)
+  
+  if (error) {
+    logger.error('Failed to delete user account', { userId, error })
+    return res.status(500).json({ error: 'Deletion failed' })
+  }
+  
+  res.json({ message: 'Account deleted successfully' })
+})
+```
+
+### Postgres Cascading Deletes
+
+We don't need to manually write SQL to delete every conversation, message, and file associated with the user. We use `ON DELETE CASCADE` on all foreign keys referencing the `profiles` table.
+
+```sql
+-- The profiles table is tied 1:1 with auth.users
+CREATE TABLE profiles (
+  id uuid REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+  full_name text,
+  stripe_customer_id text
+);
+
+-- Conversations are tied to profiles
+CREATE TABLE conversations (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid REFERENCES profiles(id) ON DELETE CASCADE,
+  title text
+);
+
+-- Messages are tied to conversations
+CREATE TABLE messages (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  conversation_id uuid REFERENCES conversations(id) ON DELETE CASCADE,
+  content text
+);
+```
+
+> **Soft Deletes vs. Hard Deletes:** For billing records (`api_logs`, `invoices`), we do *not* cascade delete, as we need them for tax purposes. The user ID is simply nullified (`ON DELETE SET NULL`).
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-19*
