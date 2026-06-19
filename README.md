@@ -8518,6 +8518,81 @@ CREATE INDEX ON kb_chunks USING hnsw (embedding vector_cosine_ops);
 
 > **Retrieval:** When a user asks a question, we generate an embedding for their query and use a Postgres RPC function to find the top 5 most similar chunks (Cosine Similarity), injecting those chunks into the LLM context window.
 
+## 📜 Message Pagination
+
+For long-running conversations, loading thousands of messages at once will crash the browser and max out memory. EKKA AI implements cursor-based pagination to load messages infinitely as the user scrolls up.
+
+### Cursor-Based Backend Pagination
+
+Instead of page numbers (which are brittle as new messages arrive), we use the ID or timestamp of the oldest message currently visible.
+
+```ts
+// backend/routes/messages.ts
+router.get('/conversations/:id/messages', async (req, res) => {
+  const conversationId = req.params.id
+  const cursor = req.query.cursor // Timestamp of the oldest known message
+  const limit = parseInt(req.query.limit as string) || 50
+
+  let query = supabase
+    .from('messages')
+    .select('*')
+    .eq('conversation_id', conversationId)
+    .order('created_at', { ascending: false })
+    .limit(limit)
+
+  if (cursor) {
+    query = query.lt('created_at', cursor)
+  }
+
+  const { data, error } = await query
+
+  // Return messages sorted chronologically for the UI
+  res.json({
+    messages: data.reverse(),
+    nextCursor: data.length === limit ? data[data.length - 1].created_at : null
+  })
+})
+```
+
+### React Intersection Observer
+
+On the frontend, we use an invisible `<div>` at the top of the chat container. When this div scrolls into view, it triggers the fetch for the next page of messages.
+
+```tsx
+// src/components/Chat/MessageList.tsx
+import { useEffect, useRef } from 'react'
+import { useInView } from 'react-intersection-observer'
+
+export function MessageList({ messages, fetchNextPage, hasNextPage, isFetchingNextPage }) {
+  const { ref, inView } = useInView()
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      // Save current scroll height to prevent the screen from jumping 
+      // when new messages are prepended to the top of the DOM
+      const scrollHeight = scrollContainerRef.current?.scrollHeight
+      
+      fetchNextPage().then(() => {
+        if (scrollContainerRef.current && scrollHeight) {
+          const newScrollHeight = scrollContainerRef.current.scrollHeight
+          scrollContainerRef.current.scrollTop = newScrollHeight - scrollHeight
+        }
+      })
+    }
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage])
+
+  return (
+    <div ref={scrollContainerRef} className="overflow-y-auto h-full flex flex-col">
+      {hasNextPage && <div ref={ref} className="h-4 w-full" />}
+      {messages.map(msg => <MessageBubble key={msg.id} message={msg} />)}
+    </div>
+  )
+}
+```
+
+> **Why not offset pagination?** `LIMIT 50 OFFSET 5000` requires the database to scan and discard 5000 rows. Cursor pagination (`WHERE created_at < cursor LIMIT 50`) hits the index directly and is O(1).
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-19*
