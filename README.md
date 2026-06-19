@@ -8667,6 +8667,86 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 > **Security Note:** The RPC function is marked `SECURITY DEFINER` and we enforce admin-only access via RLS policies on the `api_logs` table. Standard users cannot query this data.
 
+## 🌐 Custom Domain Routing
+
+For enterprise tenants, EKKA AI supports custom white-label domains (e.g., `chat.acmecorp.com`). We handle this at the edge using Vercel Middleware to rewrite requests without redirecting the user.
+
+### Vercel Edge Middleware
+
+The middleware inspects the `Host` header of every incoming request. If it matches a custom domain, it rewrites the URL to an internal dynamic route (`/_tenant/[domain]`).
+
+```ts
+// middleware.ts
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+
+export const config = {
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+  ],
+}
+
+export default async function middleware(req: NextRequest) {
+  const url = req.nextUrl
+  
+  // Get hostname of request (e.g. demo.vercel.pub, demo.localhost:3000)
+  const hostname = req.headers
+    .get('host')!
+    .replace('.localhost:3000', `.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`)
+
+  // Prevent routing to the main app if a custom domain is used
+  if (
+    hostname === 'localhost:3000' ||
+    hostname === process.env.NEXT_PUBLIC_ROOT_DOMAIN
+  ) {
+    return NextResponse.next()
+  }
+
+  // Rewrite to the dynamic tenant route
+  return NextResponse.rewrite(new URL(`/_tenant/${hostname}${url.pathname}`, req.url))
+}
+```
+
+### Tenant Identification
+
+In the Next.js page component, we extract the tenant domain from the rewritten URL and fetch their custom branding (logo, colors) server-side before rendering.
+
+```tsx
+// app/_tenant/[domain]/layout.tsx
+import { notFound } from 'next/navigation'
+import { getTenantByDomain } from '@/lib/db'
+import { ThemeProvider } from '@/components/ThemeProvider'
+
+export default async function TenantLayout({
+  params,
+  children,
+}: {
+  params: { domain: string }
+  children: React.ReactNode
+}) {
+  const tenant = await getTenantByDomain(params.domain)
+
+  if (!tenant) {
+    notFound()
+  }
+
+  return (
+    <ThemeProvider theme={tenant.theme}>
+      {children}
+    </ThemeProvider>
+  )
+}
+```
+
+> Custom domains require configuring CNAME records. We use Vercel's Domains API to automatically provision SSL certificates for these custom domains when the tenant adds them in the dashboard.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-19*
