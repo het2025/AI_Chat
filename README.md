@@ -8849,6 +8849,64 @@ USING (tenant_id = get_user_tenant_id());
 
 > **Testing RLS:** You can test RLS policies directly in the Supabase SQL Editor by impersonating a user using `set_config('request.jwt.claims', '{"sub": "USER_ID_HERE"}', true);`.
 
+## 🔀 OpenAI Model Fallbacks
+
+Cloud provider APIs go down. When an OpenAI model experiences an outage or severe latency, EKKA AI automatically falls back to a highly available alternative model without interrupting the user.
+
+### Fallback Utility Wrapper
+
+We wrap all API calls in a retry/fallback utility. If a 5xx error occurs or the request times out after 10 seconds, it catches the error and tries the next model in the cascade chain.
+
+```ts
+// backend/utils/llmFallback.ts
+import { openai } from '../lib/openai'
+import { logger } from './logger'
+
+const FALLBACK_CHAIN = {
+  'gpt-4o': ['gpt-4-turbo', 'gpt-3.5-turbo'],
+  'gpt-4o-mini': ['gpt-3.5-turbo'],
+  'claude-3-opus-20240229': ['claude-3-sonnet-20240229', 'claude-3-haiku-20240307'],
+}
+
+export async function createCompletionWithFallback(params: any, primaryModel: string) {
+  const modelsToTry = [primaryModel, ...(FALLBACK_CHAIN[primaryModel] || [])]
+
+  for (const model of modelsToTry) {
+    try {
+      // Create an AbortController to enforce the 10s timeout
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 10000)
+
+      const response = await openai.chat.completions.create(
+        { ...params, model },
+        { signal: controller.signal }
+      )
+      
+      clearTimeout(timeout)
+      
+      // If we used a fallback, log it so we can track provider reliability
+      if (model !== primaryModel) {
+        logger.warn({ event: 'model_fallback_triggered', primary: primaryModel, fallback: model })
+      }
+      
+      return response
+    } catch (error) {
+      if (error.name === 'AbortError' || error.status >= 500) {
+        logger.error(`Model ${model} failed, trying next...`, { error: error.message })
+        continue // Try the next model
+      }
+      // If it's a 4xx error (like invalid prompt or rate limit), throw immediately
+      throw error 
+    }
+  }
+
+  // If we exhausted all models
+  throw new Error('All AI models in the fallback chain are currently unavailable.')
+}
+```
+
+> **Client Notification:** Currently, the fallback happens silently. In future versions, we may add a small toast notification to inform the user that their request was routed to a fallback model.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-19*
