@@ -8807,6 +8807,48 @@ CREATE TABLE messages (
 
 > **Soft Deletes vs. Hard Deletes:** For billing records (`api_logs`, `invoices`), we do *not* cascade delete, as we need them for tax purposes. The user ID is simply nullified (`ON DELETE SET NULL`).
 
+## 🔒 Database Row Level Security (RLS)
+
+To ensure strict data isolation in our multi-tenant architecture, EKKA AI relies heavily on Postgres Row Level Security (RLS). We never trust the backend server to filter data correctly; the database enforces it at the lowest level.
+
+### Enabling RLS
+
+By default, tables in Supabase are open to the `anon` and `authenticated` roles. We must explicitly enable RLS and write policies.
+
+```sql
+-- Enable RLS on conversations table
+ALTER TABLE conversations ENABLE ROW LEVEL SECURITY;
+
+-- Policy 1: Users can read their own conversations
+CREATE POLICY "Users can view own conversations"
+ON conversations FOR SELECT
+USING (auth.uid() = user_id);
+
+-- Policy 2: Users can insert conversations for themselves
+CREATE POLICY "Users can insert own conversations"
+ON conversations FOR INSERT
+WITH CHECK (auth.uid() = user_id);
+```
+
+### Multi-Tenant Policies
+
+For organization-level data (e.g., custom knowledge bases shared across a company), the policy checks if the user belongs to the target tenant.
+
+```sql
+-- Create a helper function to get the current user's tenant_id
+CREATE OR REPLACE FUNCTION get_user_tenant_id()
+RETURNS uuid AS $$
+  SELECT tenant_id FROM profiles WHERE id = auth.uid();
+$$ LANGUAGE sql STABLE;
+
+-- Policy: Organization members can read the company knowledge base
+CREATE POLICY "Tenant members can view knowledge base"
+ON knowledge_bases FOR SELECT
+USING (tenant_id = get_user_tenant_id());
+```
+
+> **Testing RLS:** You can test RLS policies directly in the Supabase SQL Editor by impersonating a user using `set_config('request.jwt.claims', '{"sub": "USER_ID_HERE"}', true);`.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-19*
