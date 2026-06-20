@@ -9092,6 +9092,91 @@ router.post('/connect', async (req, res) => {
 
 > **Data Channel:** Along with audio, WebRTC opens a Data Channel where we can receive text transcripts of the conversation in real-time, which we save to the Supabase database after the call ends.
 
+## 💳 Usage Quotas & Billing Warnings
+
+To prevent runaway costs on API keys, EKKA AI enforces monthly usage quotas using Redis and Stripe metered billing.
+
+### Redis Quota Counters
+
+Every time an API request completes, we decrement the user's monthly token budget stored in Redis.
+
+```ts
+// backend/services/billing.ts
+import { redis } from '../lib/redis'
+import { stripe } from '../lib/stripe'
+
+export async function checkAndDeductQuota(userId: string, tokensUsed: number) {
+  const key = `quota:${userId}:month:${new Date().getMonth()}`
+  
+  // Get current remaining quota
+  const remaining = await redis.get(key)
+  
+  if (remaining && parseInt(remaining) < tokensUsed) {
+    throw new Error('QuotaExceeded')
+  }
+
+  // Deduct tokens
+  const newBalance = await redis.decrby(key, tokensUsed)
+
+  // Trigger warnings at 80% and 100% threshold
+  const startingQuota = await redis.get(`plan:${userId}:starting_quota`)
+  if (startingQuota) {
+    const limit = parseInt(startingQuota)
+    if (newBalance < limit * 0.2) {
+      await sendWarningEmail(userId, '80_percent')
+    }
+  }
+
+  // Report to Stripe for metered billing if on Pay-As-You-Go plan
+  const planType = await redis.get(`plan:${userId}:type`)
+  if (planType === 'metered') {
+    await stripe.billingRecords.create({
+      customer: await getStripeCustomerId(userId),
+      action: 'increment',
+      amount: tokensUsed
+    })
+  }
+}
+```
+
+### Frontend UI Warnings
+
+If a request returns a `402 Payment Required` (Quota Exceeded) or `429 Too Many Requests`, the frontend intercepts it and shows a billing modal.
+
+```tsx
+// src/components/Billing/QuotaWarning.tsx
+import { useAuthStore } from '../../store/authStore'
+
+export function QuotaWarningModal({ errorStatus }) {
+  const isExhausted = errorStatus === 402
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+      <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl max-w-md w-full">
+        <h2 className="text-xl font-bold text-red-500 mb-4">
+          {isExhausted ? 'Monthly Quota Exhausted' : 'Rate Limit Reached'}
+        </h2>
+        <p className="text-zinc-600 dark:text-zinc-400 mb-6">
+          {isExhausted 
+            ? "You've used all your API credits for this billing cycle. Please upgrade your plan or enable pay-as-you-go to continue chatting."
+            : "You're sending messages too fast. Please wait a moment."}
+        </p>
+        {isExhausted && (
+          <button 
+            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+            onClick={() => window.location.href = '/billing'}
+          >
+            Upgrade Plan
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+```
+
+> **Admin Overrides:** Super admins can manually inject bonus credits into a user's Redis bucket via the `/admin/users/:id/credits` endpoint to resolve customer support issues.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-20*
