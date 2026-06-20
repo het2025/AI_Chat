@@ -8997,6 +8997,101 @@ export function useTTS() {
 
 > **UX Note:** Autoplay is blocked by modern browsers. The TTS feature is strictly triggered by explicit user interaction (e.g., clicking a "Read Aloud" button next to a message).
 
+## 🎤 WebRTC Real-time Voice Chat
+
+For hands-free operation, EKKA AI implements a low-latency WebRTC connection directly to the OpenAI Realtime API, allowing users to have conversational, interruptible voice chats with the model.
+
+### Frontend WebRTC Connection
+
+We request microphone permissions, create a local WebRTC peer connection, and exchange SDP offers with our backend relay.
+
+```tsx
+// src/components/Voice/VoiceChat.tsx
+import { useEffect, useRef, useState } from 'react'
+
+export function VoiceChat() {
+  const pcRef = useRef<RTCPeerConnection | null>(null)
+  const [isConnected, setIsConnected] = useState(false)
+
+  const startVoice = async () => {
+    const pc = new RTCPeerConnection()
+    pcRef.current = pc
+
+    // Play remote audio
+    const audioEl = document.createElement('audio')
+    audioEl.autoplay = true
+    pc.ontrack = e => audioEl.srcObject = e.streams[0]
+
+    // Capture local mic
+    const ms = await navigator.mediaDevices.getUserMedia({ audio: true })
+    pc.addTrack(ms.getTracks()[0])
+
+    // Create SDP Offer
+    const offer = await pc.createOffer()
+    await pc.setLocalDescription(offer)
+
+    // Send offer to our secure backend relay
+    const baseUrl = import.meta.env.VITE_API_URL
+    const sdpResponse = await fetch(`${baseUrl}/rtc/connect`, {
+      method: 'POST',
+      body: offer.sdp,
+      headers: {
+        'Content-Type': 'application/sdp',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+
+    const answerSdp = await sdpResponse.text()
+    await pc.setRemoteDescription({ type: 'answer', sdp: answerSdp })
+    
+    setIsConnected(true)
+  }
+  
+  // ... stop logic and UI
+}
+```
+
+### Backend SDP Relay
+
+Our Node.js backend receives the SDP offer, attaches the `OPENAI_API_KEY`, and forwards the WebRTC connection to OpenAI. This ensures the frontend never sees our secret keys.
+
+```ts
+// backend/routes/rtc.ts
+import { Router } from 'express'
+import fetch from 'node-fetch'
+
+const router = Router()
+
+router.post('/connect', async (req, res) => {
+  const clientSdp = req.body // Raw text/sdp
+
+  // Forward the offer to OpenAI's WebRTC endpoint
+  const openaiResponse = await fetch(
+    `https://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17`,
+    {
+      method: 'POST',
+      body: clientSdp,
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Content-Type': 'application/sdp'
+      }
+    }
+  )
+
+  if (!openaiResponse.ok) {
+    return res.status(500).send('Failed to connect to OpenAI Realtime API')
+  }
+
+  const serverSdp = await openaiResponse.text()
+  
+  // Return the answer SDP back to the browser
+  res.setHeader('Content-Type', 'application/sdp')
+  res.send(serverSdp)
+})
+```
+
+> **Data Channel:** Along with audio, WebRTC opens a Data Channel where we can receive text transcripts of the conversation in real-time, which we save to the Supabase database after the call ends.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-20*
