@@ -3,6 +3,7 @@
 > **A high-performance, aesthetically pleasing AI chat platform built for the modern web — featuring multi-model switching, real-time streaming, and enterprise-grade security.**
 
 ## 🆕 Latest Updates
+- **2026-06-20**: Added Voice Output (TTS) integration, documented WebRTC real-time voice chat, and added usage quotas & billing warnings.
 - **2026-06-19**: Added message pagination, documented admin analytics dashboard, added custom domain routing, implemented user delete account flow, outlined RLS policies, and added OpenAI model fallbacks.
 - **2026-06-18**: Added Service Worker & PWA support, documented structured JSON outputs, added context window truncation rules, and introduced custom knowledge base ingestion.
 - **2026-06-17**: Added rate limiting for moderation API, documented streaming error handling, added keyboard a11y guide, documented token refresh flow, optimized frontend bundle, and outlined database migration strategy.
@@ -8909,4 +8910,4 @@ export async function createCompletionWithFallback(params: any, primaryModel: st
 
 ---
 
-*EKKA AI — Built together · Last updated: 2026-06-19*
+*EKKA AI — Built together · Last updated: 2026-06-20*
