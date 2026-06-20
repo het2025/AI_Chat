@@ -8908,6 +8908,95 @@ export async function createCompletionWithFallback(params: any, primaryModel: st
 
 > **Client Notification:** Currently, the fallback happens silently. In future versions, we may add a small toast notification to inform the user that their request was routed to a fallback model.
 
+## 🔊 Voice Output (TTS) Integration
+
+EKKA AI supports converting AI text responses into high-quality, natural-sounding speech using the ElevenLabs API. We stream the audio to minimize time-to-first-byte (TTFB).
+
+### Backend Streaming Endpoint
+
+We proxy the request to ElevenLabs to protect our API keys and handle rate limits. The response is a raw audio stream (`audio/mpeg`).
+
+```ts
+// backend/routes/tts.ts
+import { Router } from 'express'
+import fetch from 'node-fetch'
+
+const router = Router()
+
+router.post('/synthesize', async (req, res) => {
+  const { text, voiceId = '21m00Tcm4TlvDq8ikWAM' } = req.body
+
+  const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream`, {
+    method: 'POST',
+    headers: {
+      'Accept': 'audio/mpeg',
+      'Content-Type': 'application/json',
+      'xi-api-key': process.env.ELEVENLABS_API_KEY!
+    },
+    body: JSON.stringify({
+      text,
+      model_id: 'eleven_turbo_v2',
+      voice_settings: { stability: 0.5, similarity_boost: 0.75 }
+    })
+  })
+
+  if (!response.ok) {
+    return res.status(response.status).json({ error: 'TTS Synthesis failed' })
+  }
+
+  res.setHeader('Content-Type', 'audio/mpeg')
+  response.body.pipe(res)
+})
+```
+
+### Frontend Web Audio Playback
+
+On the frontend, we use the HTML5 `Audio` constructor to stream the response as it downloads.
+
+```tsx
+// src/hooks/useTTS.ts
+import { useState, useRef } from 'react'
+import { api } from '../lib/api'
+
+export function useTTS() {
+  const [isPlaying, setIsPlaying] = useState(false)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+
+  const playText = async (text: string) => {
+    // Stop any currently playing audio
+    if (audioRef.current) {
+      audioRef.current.pause()
+    }
+
+    // Fetch the audio stream blob
+    const response = await api.post('/tts/synthesize', { text }, { responseType: 'blob' })
+    const audioUrl = URL.createObjectURL(response.data)
+    
+    const audio = new Audio(audioUrl)
+    audioRef.current = audio
+    
+    audio.onplay = () => setIsPlaying(true)
+    audio.onended = () => {
+      setIsPlaying(false)
+      URL.revokeObjectURL(audioUrl) // Cleanup memory
+    }
+    
+    audio.play()
+  }
+
+  const stop = () => {
+    if (audioRef.current) {
+      audioRef.current.pause()
+      setIsPlaying(false)
+    }
+  }
+
+  return { playText, stop, isPlaying }
+}
+```
+
+> **UX Note:** Autoplay is blocked by modern browsers. The TTS feature is strictly triggered by explicit user interaction (e.g., clicking a "Read Aloud" button next to a message).
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-20*
