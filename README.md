@@ -9217,6 +9217,82 @@ export async function encryptMessage(text: string, key: CryptoKey) {
 
 > **Limitations:** When E2EE is enabled, the EKKA AI server cannot read the messages. This means server-side features like semantic search, auto-titling, and standard OpenAI streaming will not work. Users must supply their own local LLM (via Ollama) or direct API keys to decrypt and process messages locally.
 
+## 🔄 Offline Sync Queue
+
+To support poor network conditions (e.g., subway commutes), EKKA AI queues user messages when offline and automatically syncs them when the connection is restored.
+
+### IndexedDB Storage
+
+We use `idb` (a lightweight wrapper around IndexedDB) to store pending messages persistently.
+
+```ts
+// src/lib/syncQueue.ts
+import { openDB } from 'idb'
+
+const dbPromise = openDB('ekka-sync', 1, {
+  upgrade(db) {
+    db.createObjectStore('pending_messages', { keyPath: 'id', autoIncrement: true })
+  },
+})
+
+export async function addToSyncQueue(message: any) {
+  const db = await dbPromise
+  await db.add('pending_messages', {
+    ...message,
+    timestamp: Date.now(),
+    status: 'pending'
+  })
+}
+
+export async function getPendingMessages() {
+  const db = await dbPromise
+  return await db.getAll('pending_messages')
+}
+
+export async function clearSyncedMessage(id: number) {
+  const db = await dbPromise
+  await db.delete('pending_messages', id)
+}
+```
+
+### Background Sync Event
+
+We listen for the browser's `online` event and flush the queue to the backend.
+
+```tsx
+// src/hooks/useNetworkSync.ts
+import { useEffect } from 'react'
+import { getPendingMessages, clearSyncedMessage } from '../lib/syncQueue'
+import { api } from '../lib/api'
+
+export function useNetworkSync() {
+  useEffect(() => {
+    const handleOnline = async () => {
+      const pending = await getPendingMessages()
+      if (pending.length === 0) return
+
+      console.log(`Syncing ${pending.length} offline messages...`)
+
+      for (const msg of pending) {
+        try {
+          await api.post(`/conversations/${msg.conversationId}/messages`, msg.payload)
+          await clearSyncedMessage(msg.id)
+        } catch (error) {
+          console.error('Failed to sync message', msg.id, error)
+          // Stop syncing if the server is rejecting requests
+          break
+        }
+      }
+    }
+
+    window.addEventListener('online', handleOnline)
+    return () => window.removeEventListener('online', handleOnline)
+  }, [])
+}
+```
+
+> **UI Feedback:** When offline, messages appear in the chat UI with a small gray "Clock" icon indicating they are pending. Once synced, the icon changes to a "Checkmark".
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-22*
