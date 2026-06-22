@@ -9178,6 +9178,45 @@ export function QuotaWarningModal({ errorStatus }) {
 
 > **Admin Overrides:** Super admins can manually inject bonus credits into a user's Redis bucket via the `/admin/users/:id/credits` endpoint to resolve customer support issues.
 
+## 🔐 End-to-End Encryption (E2EE)
+
+For enterprise customers with extreme data privacy requirements, EKKA AI offers an opt-in E2EE mode. When enabled, messages are encrypted in the browser before being sent to the server.
+
+### Web Crypto API
+
+We use the native `window.crypto.subtle` API for high-performance, zero-dependency AES-GCM encryption.
+
+```ts
+// src/lib/crypto.ts
+export async function generateKey() {
+  return await window.crypto.subtle.generateKey(
+    { name: 'AES-GCM', length: 256 },
+    true, // extractable (so we can save it to the local vault)
+    ['encrypt', 'decrypt']
+  )
+}
+
+export async function encryptMessage(text: string, key: CryptoKey) {
+  const iv = window.crypto.getRandomValues(new Uint8Array(12))
+  const encodedText = new TextEncoder().encode(text)
+
+  const ciphertext = await window.crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv },
+    key,
+    encodedText
+  )
+
+  // Combine IV and ciphertext for storage
+  const payload = new Uint8Array(iv.byteLength + ciphertext.byteLength)
+  payload.set(iv, 0)
+  payload.set(new Uint8Array(ciphertext), iv.byteLength)
+
+  return btoa(String.fromCharCode(...payload))
+}
+```
+
+> **Limitations:** When E2EE is enabled, the EKKA AI server cannot read the messages. This means server-side features like semantic search, auto-titling, and standard OpenAI streaming will not work. Users must supply their own local LLM (via Ollama) or direct API keys to decrypt and process messages locally.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-22*
