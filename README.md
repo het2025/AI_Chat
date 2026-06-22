@@ -9360,6 +9360,85 @@ export function LanguageSelector() {
 
 > **Automated Translations:** During CI/CD builds, we use an automated script that calls the OpenAI API to translate our base `en.json` file into all supported languages. Human reviewers then approve the PR before it gets merged into main.
 
+## 🎨 Theme Customization Engine
+
+To support deep white-labeling for B2B tenants, EKKA AI avoids hardcoding Tailwind colors. Instead, we use a CSS variable abstraction layer.
+
+### CSS Variables Setup
+
+We define base HSL variables in the root CSS.
+
+```css
+/* src/index.css */
+:root {
+  --theme-primary: 221 83% 53%; /* Blue 600 */
+  --theme-surface: 0 0% 100%;    /* White */
+  --theme-text: 240 10% 3.9%;    /* Zinc 950 */
+}
+
+.dark {
+  --theme-primary: 217 91% 60%; /* Blue 500 */
+  --theme-surface: 240 10% 3.9%; /* Zinc 950 */
+  --theme-text: 0 0% 98%;        /* Zinc 50 */
+}
+```
+
+### Tailwind Configuration
+
+We map these variables into Tailwind's configuration file.
+
+```ts
+// tailwind.config.js
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        primary: 'hsl(var(--theme-primary) / <alpha-value>)',
+        surface: 'hsl(var(--theme-surface) / <alpha-value>)',
+        content: 'hsl(var(--theme-text) / <alpha-value>)',
+      }
+    }
+  }
+}
+```
+
+### Dynamic Injection
+
+When an enterprise tenant logs in (or visits their custom domain), we fetch their custom colors from the database and inject them into the DOM directly.
+
+```tsx
+// src/components/ThemeProvider.tsx
+import { useEffect } from 'react'
+
+export function ThemeProvider({ theme, children }) {
+  useEffect(() => {
+    if (!theme) return
+    
+    const root = document.documentElement
+    
+    // Inject custom HSL values
+    if (theme.primaryHsl) {
+      root.style.setProperty('--theme-primary', theme.primaryHsl)
+    }
+    
+    // Handle dark mode override
+    if (theme.forceDarkMode) {
+      root.classList.add('dark')
+    }
+    
+    return () => {
+      root.style.removeProperty('--theme-primary')
+    }
+  }, [theme])
+
+  return <>{children}</>
+}
+```
+
+> **Accessibility:** The admin dashboard includes a contrast checker that prevents tenants from setting a primary color that fails WCAG AA contrast standards against the surface background.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-22*
