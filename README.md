@@ -3,6 +3,7 @@
 > **A high-performance, aesthetically pleasing AI chat platform built for the modern web — featuring multi-model switching, real-time streaming, and enterprise-grade security.**
 
 ## 🆕 Latest Updates
+- **2026-06-22**: Added End-to-End Encryption (E2EE), documented offline sync queues, introduced multi-language support (i18n), added theme customization engine, and advanced search filters.
 - **2026-06-20**: Added Voice Output (TTS) integration, documented WebRTC real-time voice chat, and added usage quotas & billing warnings.
 - **2026-06-19**: Added message pagination, documented admin analytics dashboard, added custom domain routing, implemented user delete account flow, outlined RLS policies, and added OpenAI model fallbacks.
 - **2026-06-18**: Added Service Worker & PWA support, documented structured JSON outputs, added context window truncation rules, and introduced custom knowledge base ingestion.
@@ -9179,4 +9180,4 @@ export function QuotaWarningModal({ errorStatus }) {
 
 ---
 
-*EKKA AI — Built together · Last updated: 2026-06-20*
+*EKKA AI — Built together · Last updated: 2026-06-22*
