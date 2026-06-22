@@ -9293,6 +9293,73 @@ export function useNetworkSync() {
 
 > **UI Feedback:** When offline, messages appear in the chat UI with a small gray "Clock" icon indicating they are pending. Once synced, the icon changes to a "Checkmark".
 
+## 🌍 Multi-Language i18n Support
+
+To serve our global user base, the EKKA AI frontend supports seamless locale switching. We use `react-i18next` with lazy-loaded JSON translation files to keep the initial bundle small.
+
+### Setup and Configuration
+
+We configure `i18next` to fetch translation files asynchronously via HTTP backend and detect the user's preferred browser language.
+
+```ts
+// src/lib/i18n.ts
+import i18n from 'i18next'
+import { initReactI18next } from 'react-i18next'
+import HttpBackend from 'i18next-http-backend'
+import LanguageDetector from 'i18next-browser-languagedetector'
+
+i18n
+  .use(HttpBackend)
+  .use(LanguageDetector)
+  .use(initReactI18next)
+  .init({
+    fallbackLng: 'en',
+    supportedLngs: ['en', 'es', 'fr', 'de', 'ja', 'zh'],
+    debug: false,
+    interpolation: {
+      escapeValue: false, // React already safeguards from XSS
+    },
+    backend: {
+      loadPath: '/locales/{{lng}}/{{ns}}.json',
+    }
+  })
+
+export default i18n
+```
+
+### Component Usage
+
+In our React components, we use the `useTranslation` hook to retrieve localized strings.
+
+```tsx
+// src/components/Settings/LanguageSelector.tsx
+import { useTranslation } from 'react-i18next'
+
+export function LanguageSelector() {
+  const { t, i18n } = useTranslation('settings')
+
+  const changeLanguage = (lng: string) => {
+    i18n.changeLanguage(lng)
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <label>{t('language_select_label')}</label>
+      <select 
+        value={i18n.resolvedLanguage} 
+        onChange={(e) => changeLanguage(e.target.value)}
+      >
+        <option value="en">English</option>
+        <option value="es">Español</option>
+        <option value="ja">日本語 (Japanese)</option>
+      </select>
+    </div>
+  )
+}
+```
+
+> **Automated Translations:** During CI/CD builds, we use an automated script that calls the OpenAI API to translate our base `en.json` file into all supported languages. Human reviewers then approve the PR before it gets merged into main.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-22*
