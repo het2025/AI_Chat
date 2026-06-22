@@ -9439,6 +9439,61 @@ export function ThemeProvider({ theme, children }) {
 
 > **Accessibility:** The admin dashboard includes a contrast checker that prevents tenants from setting a primary color that fails WCAG AA contrast standards against the surface background.
 
+## 🔍 Advanced Search & Filters
+
+To allow users to find past chats quickly, we implement Postgres Full Text Search on the `messages` table, along with date and model filters.
+
+### Database Search Vector
+
+We use Postgres `tsvector` columns and a GIN index for lightning-fast keyword matching across millions of messages.
+
+```sql
+-- Add a tsvector column for fast full-text search
+ALTER TABLE messages ADD COLUMN fts tsvector GENERATED ALWAYS AS (to_tsvector('english', coalesce(content, ''))) STORED;
+
+-- Create a GIN index on the search vector
+CREATE INDEX messages_fts_idx ON messages USING GIN (fts);
+```
+
+### Search Endpoint
+
+The backend search endpoint supports text matching (`@@`) combined with optional filters.
+
+```ts
+// backend/routes/search.ts
+router.get('/search', async (req, res) => {
+  const { query, dateFrom, dateTo, model } = req.query
+  const userId = req.user.id
+
+  let dbQuery = supabase
+    .from('messages')
+    .select('id, content, created_at, conversations!inner(title, model)')
+    .eq('conversations.user_id', userId)
+
+  if (query) {
+    // websearch_to_tsquery handles quoted phrases and OR/AND logic naturally
+    dbQuery = dbQuery.textSearch('fts', query as string, { type: 'websearch' })
+  }
+  
+  if (dateFrom) dbQuery = dbQuery.gte('created_at', dateFrom)
+  if (dateTo) dbQuery = dbQuery.lte('created_at', dateTo)
+  if (model) dbQuery = dbQuery.eq('conversations.model', model)
+
+  // Order by rank (relevance) if querying, otherwise chronologically
+  if (query) {
+    dbQuery = dbQuery.order('fts', { ascending: false })
+  } else {
+    dbQuery = dbQuery.order('created_at', { ascending: false })
+  }
+
+  const { data, error } = await dbQuery.limit(20)
+  
+  res.json({ results: data })
+})
+```
+
+> **Client UI:** The search bar in the sidebar is debounced by 300ms to prevent spamming the database while the user is typing.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-22*
