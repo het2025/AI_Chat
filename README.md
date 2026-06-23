@@ -9495,6 +9495,58 @@ router.get('/search', async (req, res) => {
 
 > **Client UI:** The search bar in the sidebar is debounced by 300ms to prevent spamming the database while the user is typing.
 
+## 🤖 Agentic Function Calling Tools
+
+EKKA AI supports agentic workflows, allowing the model to execute backend tools (like searching the web, executing code, or querying databases) during a conversation to fulfill user requests.
+
+### Vercel AI SDK Integration
+
+We use the `@ai-sdk/openai` package along with `zod` for robust schema validation when defining tools.
+
+```ts
+// backend/services/chat.ts
+import { streamText, tool } from 'ai'
+import { openai } from '@ai-sdk/openai'
+import { z } from 'zod'
+
+export async function handleChatWithTools(messages: any[]) {
+  return await streamText({
+    model: openai('gpt-4o'),
+    messages,
+    tools: {
+      getWeather: tool({
+        description: 'Get the current weather in a given location.',
+        parameters: z.object({
+          location: z.string().describe('The city and state, e.g. "San Francisco, CA"'),
+          unit: z.enum(['celsius', 'fahrenheit']).optional(),
+        }),
+        execute: async ({ location, unit = 'celsius' }) => {
+          // Internal call to weather API
+          const data = await fetchWeather(location, unit)
+          return data
+        },
+      }),
+      executeSql: tool({
+        description: 'Execute a read-only SQL query against the analytics database.',
+        parameters: z.object({
+          query: z.string().describe('The SQL SELECT query to run.'),
+        }),
+        execute: async ({ query }) => {
+          if (!query.trim().toUpperCase().startsWith('SELECT')) {
+            return { error: 'Only SELECT queries are allowed.' }
+          }
+          return await db.query(query)
+        }
+      })
+    },
+    // Allows the model to use multiple tools in a single step before responding
+    maxSteps: 5,
+  })
+}
+```
+
+> **Security Guardrails:** All backend tools execute in a restricted sandbox. The `executeSql` tool, for instance, connects via a specific Postgres role that only has `SELECT` permissions to prevent injection attacks or data mutation.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-23*
