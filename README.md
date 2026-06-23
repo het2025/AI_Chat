@@ -3,6 +3,7 @@
 > **A high-performance, aesthetically pleasing AI chat platform built for the modern web — featuring multi-model switching, real-time streaming, and enterprise-grade security.**
 
 ## 🆕 Latest Updates
+- **2026-06-23**: Added agentic function calling tools, documented data export & compliance, and introduced Redis Pub/Sub real-time presence.
 - **2026-06-22**: Added End-to-End Encryption (E2EE), documented offline sync queues, introduced multi-language support (i18n), added theme customization engine, and advanced search filters.
 - **2026-06-20**: Added Voice Output (TTS) integration, documented WebRTC real-time voice chat, and added usage quotas & billing warnings.
 - **2026-06-19**: Added message pagination, documented admin analytics dashboard, added custom domain routing, implemented user delete account flow, outlined RLS policies, and added OpenAI model fallbacks.
@@ -9496,4 +9497,4 @@ router.get('/search', async (req, res) => {
 
 ---
 
-*EKKA AI — Built together · Last updated: 2026-06-22*
+*EKKA AI — Built together · Last updated: 2026-06-23*
