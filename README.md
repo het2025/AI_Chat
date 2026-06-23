@@ -9547,6 +9547,71 @@ export async function handleChatWithTools(messages: any[]) {
 
 > **Security Guardrails:** All backend tools execute in a restricted sandbox. The `executeSql` tool, for instance, connects via a specific Postgres role that only has `SELECT` permissions to prevent injection attacks or data mutation.
 
+## 📤 Data Export & Compliance
+
+To comply with GDPR "Right to Data Portability," EKKA AI allows users to export their entire conversation history as a single JSON file.
+
+### Postgres JSON Aggregation
+
+Instead of doing thousands of database queries and building the JSON object in Node.js (which would cause massive memory spikes), we offload the JSON generation directly to Postgres using `json_agg`.
+
+```ts
+// backend/routes/export.ts
+router.get('/export', async (req, res) => {
+  const userId = req.user.id
+
+  // Perform the entire export as a single SQL query
+  const { data, error } = await supabase.rpc('export_user_data_as_json', { uid: userId })
+
+  if (error) return res.status(500).json({ error: 'Export failed' })
+
+  // Set headers to trigger a file download in the browser
+  res.setHeader('Content-Type', 'application/json')
+  res.setHeader('Content-Disposition', `attachment; filename="ekka_ai_export_${new Date().toISOString()}.json"`)
+  
+  res.send(data)
+})
+```
+
+### The RPC Function
+
+```sql
+-- Supabase SQL Editor
+CREATE OR REPLACE FUNCTION export_user_data_as_json(uid uuid)
+RETURNS json AS $$
+DECLARE
+  result json;
+BEGIN
+  SELECT json_build_object(
+    'user', (SELECT row_to_json(p) FROM profiles p WHERE p.id = uid),
+    'conversations', (
+      SELECT json_agg(
+        json_build_object(
+          'id', c.id,
+          'title', c.title,
+          'created_at', c.created_at,
+          'messages', (
+            SELECT json_agg(
+              json_build_object('role', m.role, 'content', m.content, 'created_at', m.created_at)
+              ORDER BY m.created_at ASC
+            )
+            FROM messages m
+            WHERE m.conversation_id = c.id
+          )
+        )
+      )
+      FROM conversations c
+      WHERE c.user_id = uid
+    )
+  ) INTO result;
+  
+  RETURN result;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+```
+
+> **Background Jobs:** For users with extremely large histories (e.g., >100MB of text), this synchronous request might timeout. We plan to move this to a Redis-backed background queue (BullMQ) that emails the user a presigned S3 download link when the export is ready.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-23*
