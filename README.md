@@ -9612,6 +9612,87 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 > **Background Jobs:** For users with extremely large histories (e.g., >100MB of text), this synchronous request might timeout. We plan to move this to a Redis-backed background queue (BullMQ) that emails the user a presigned S3 download link when the export is ready.
 
+## 📡 Redis Pub/Sub Real-time Presence
+
+For enterprise teams collaborating on shared knowledge bases or multi-player agent workflows, we use Socket.IO backed by a Redis Adapter to sync state across multiple Node.js instances.
+
+### The Redis Adapter
+
+Without Redis, users connected to Server A wouldn't see real-time updates from users connected to Server B. The Redis adapter ensures messages broadcasted to a "room" reach all nodes.
+
+```ts
+// backend/lib/socket.ts
+import { Server } from 'socket.io'
+import { createAdapter } from '@socket.io/redis-adapter'
+import Redis from 'ioredis'
+
+const pubClient = new Redis(process.env.REDIS_URL!)
+const subClient = pubClient.duplicate()
+
+export function initSocket(httpServer: any) {
+  const io = new Server(httpServer, {
+    cors: { origin: process.env.FRONTEND_URL, credentials: true }
+  })
+  
+  io.adapter(createAdapter(pubClient, subClient))
+
+  io.on('connection', (socket) => {
+    // Users join a specific organization room
+    socket.on('join_org', (orgId) => {
+      socket.join(`org_${orgId}`)
+      
+      // Broadcast presence (who is online)
+      socket.to(`org_${orgId}`).emit('user_joined', { userId: socket.data.userId })
+    })
+    
+    socket.on('disconnect', () => {
+      // Handle cleanup
+    })
+  })
+  
+  return io
+}
+```
+
+### Frontend Presence Hook
+
+On the client, we listen for presence events to display green "online" dots next to team members' avatars in the sidebar.
+
+```tsx
+// src/hooks/usePresence.ts
+import { useEffect, useState } from 'react'
+import { socket } from '../lib/socket'
+
+export function usePresence(orgId: string) {
+  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set())
+
+  useEffect(() => {
+    socket.emit('join_org', orgId)
+
+    socket.on('user_joined', ({ userId }) => {
+      setOnlineUsers(prev => new Set(prev).add(userId))
+    })
+
+    socket.on('user_left', ({ userId }) => {
+      setOnlineUsers(prev => {
+        const next = new Set(prev)
+        next.delete(userId)
+        return next
+      })
+    })
+
+    return () => {
+      socket.off('user_joined')
+      socket.off('user_left')
+    }
+  }, [orgId])
+
+  return onlineUsers
+}
+```
+
+> **Scalability:** By keeping WebSocket connections entirely stateless and pushing the routing logic to Redis, we can auto-scale our Node.js container fleet horizontally based on CPU usage without worrying about sticky sessions dropping.
+
 ---
 
 *EKKA AI — Built together · Last updated: 2026-06-23*
